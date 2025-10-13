@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>POAP 管理 · 生成签到码</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,PingFang SC,Noto Sans SC,Arial;background:#FAF8F3;color:#1A1A1A;padding:24px;}
+    .wrap{max-width:780px;margin:0 auto;}
+    .card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.08);}
+    h1{font-size:28px;margin:0 0 8px;}
+    input,button{padding:12px;border-radius:10px;border:1px solid #e6e6e6;width:100%;margin:8px 0;}
+    button{background:#3A6A57;color:#fff;border:none;cursor:pointer;}
+    .row{display:flex;gap:12px;align-items:center;}
+    .row>*{flex:1}
+    .qrcode{display:flex;justify-content:center;margin-top:12px;}
+    .code{font-size:40px;letter-spacing:4px;text-align:center;margin-top:8px;}
+    .muted{color:#666}
+  </style>
+  <script src="./poap.config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>POAP 管理 · 生成签到码</h1>
+      <p class="muted">每次生成的签到码仅 5 分钟有效。可投屏展示；到期自动刷新。</p>
+      <label>活动 ID</label>
+      <input id="eventId" value="20251208"/>
+      <div class="row">
+        <button id="gen">生成签到码</button>
+        <button id="auto">开启自动刷新（每5分钟）</button>
+      </div>
+      <div class="code" id="code">------</div>
+      <div class="qrcode"><canvas id="qr"></canvas></div>
+      <p class="muted" id="expires"></p>
+    </div>
+  </div>
+
+  <script>
+    const base = window.POAP_CONFIG?.WORKER_BASE_URL || "";
+    if (!base) alert("请先在 poap.config.js 里设置 WORKER_BASE_URL");
+    const codeEl = document.getElementById("code");
+    const expEl = document.getElementById("expires");
+    const qrEl = document.getElementById("qr");
+    let timer = null;
+
+    async function genCode() {
+      const eventId = document.getElementById("eventId").value.trim();
+      const resp = await fetch(base + "/api/poap/code", {
+        method: "POST",
+        headers: {"content-type":"application/json"},
+        body: JSON.stringify({ eventId })
+      });
+      const data = await resp.json();
+      if (!data.ok) { alert(data.message || "生成失败"); return; }
+      codeEl.textContent = data.code;
+      expEl.textContent = "有效期至：" + new Date(data.expiresAt).toLocaleString();
+      const url = location.origin + "/checkin.html?eventId=" + encodeURIComponent(eventId) + "&code=" + data.code;
+      QRCode.toCanvas(qrEl, url, { width: 256 });
+    }
+
+    document.getElementById("gen").onclick = genCode;
+    document.getElementById("auto").onclick = ()=>{
+      if (timer) { clearInterval(timer); timer=null; alert("已关闭自动刷新"); return; }
+      genCode();
+      timer = setInterval(genCode, 5*60*1000);
+      alert("已开启自动刷新，每5分钟更新一次。");
+    };
+
+    // 支持从URL参数预填
+    const usp = new URLSearchParams(location.search);
+    if (usp.get("eventId")) document.getElementById("eventId").value = usp.get("eventId");
+  </script>
+</body>
+</html>

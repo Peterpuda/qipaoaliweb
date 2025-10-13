@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>POAP 签到 · 宋锦 × 旗袍DAO</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,PingFang SC,Noto Sans SC,Arial;background:#FAF8F3;color:#1A1A1A;padding:24px;}
+    .wrap{max-width:780px;margin:0 auto;}
+    .card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.08);}
+    h1{font-size:28px;margin:0 0 8px;}
+    .muted{color:#666}
+    input,select,button{padding:12px;border-radius:10px;border:1px solid #e6e6e6;width:100%;margin:8px 0;}
+    button{background:#B41E2E;color:#fff;border:none;cursor:pointer;}
+    button.secondary{background:#fff;color:#B41E2E;border:1px solid #B41E2E;}
+    .row{display:flex;gap:12px;align-items:center;}
+    .row>*{flex:1}
+    pre{background:#111;color:#0f0;padding:12px;border-radius:10px;overflow:auto;max-height:240px;}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid #e6e6e6;background:#fff;font-size:12px;margin-right:6px;}
+  </style>
+  <script src="./poap.config.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>活动签到 · 领取 POAP</h1>
+      <p class="muted">宋锦 × 旗袍DAO（示例 Event ID：20251208）</p>
+
+      <div class="row">
+        <select id="walletSelect">
+          <option value="">自动发现钱包中...</option>
+        </select>
+        <button id="refreshWallets" class="secondary">刷新钱包</button>
+      </div>
+      
+      <div class="row">
+        <button id="connect">连接钱包</button>
+        <button id="switch" class="secondary">切换到 Base Sepolia</button>
+      </div>
+
+      <label>活动 ID</label>
+      <input id="eventId" value="20251208"/>
+
+      <label>签到码（5分钟有效）</label>
+      <input id="code" placeholder="如：A7F3QX 或扫码自动填充"/>
+
+      <label>POAP 合约地址</label>
+      <input id="contract" placeholder="0x..."/>
+
+      <div class="row">
+        <button id="checkin">立即签到并领取</button>
+      </div>
+
+      <div class="row">
+        <span class="badge">隐私：仅发送钱包地址与签到码</span>
+        <span class="badge">签名：服务端签名，前端自费上链</span>
+      </div>
+
+      <pre id="log"></pre>
+    </div>
+  </div>
+
+  <script type="module">
+    import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.min.js";
+  
+    // ============ 多钱包发现（兼容 EIP-6963） ============
+    const registry = new Map(); // id -> {id, name, provider, info}
+    const walletSelect = document.querySelector("#walletSelect");
+  
+    // 基于注入的多 provider（MetaMask 可能在 window.ethereum.providers 内）
+    function addInjectedProviders() {
+      const providers = [];
+      if (window.ethereum?.providers?.length) {
+        providers.push(...window.ethereum.providers);
+      } else if (window.ethereum) {
+        providers.push(window.ethereum);
+      }
+      // Phantom 的 EVM 注入
+      if (window.phantom?.ethereum && !providers.includes(window.phantom.ethereum)) {
+        providers.push(window.phantom.ethereum);
+      }
+  
+      for (const p of providers) {
+        let name = "Injected";
+        if (p.isMetaMask) name = "MetaMask";
+        if (p.isCoinbaseWallet) name = "Coinbase Wallet";
+        if (p.isPhantom) name = "Phantom";
+        if (p.isBraveWallet) name = "Brave Wallet";
+  
+        const id = (name + "-" + (p._metamask ? "mm" : Math.random().toString(36).slice(2))).toLowerCase();
+        if (!registry.has(id)) {
+          registry.set(id, { id, name, provider: p, info: { rdns: "injected" } });
+        }
+      }
+    }
+  
+    // EIP-6963：多钱包发现（新标准）
+    function enableEip6963Discovery() {
+      const announceHandler = (event) => {
+        const { provider, info } = event.detail;
+        const name = info?.name || "Wallet";
+        const id = (info?.rdns || name).toLowerCase();
+        if (!registry.has(id)) {
+          registry.set(id, { id, name, provider, info });
+          renderWalletOptions();
+        }
+      };
+      window.addEventListener("eip6963:announceProvider", announceHandler);
+      window.dispatchEvent(new Event("eip6963:requestProvider"));
+    }
+  
+    function renderWalletOptions() {
+      // 清空
+      walletSelect.innerHTML = "";
+      // 可选项：WalletConnect（需要配置 projectId）
+      const wcProjectId = window.POAP_CONFIG?.WALLETCONNECT_PROJECT_ID || "";
+      if (wcProjectId) {
+        const opt = document.createElement("option");
+        opt.value = "walletconnect";
+        opt.textContent = "WalletConnect (QR)";
+        walletSelect.appendChild(opt);
+      }
+  
+      if (registry.size === 0) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "未发现浏览器钱包，请安装扩展或用 WalletConnect";
+        walletSelect.appendChild(opt);
+        return;
+      }
+  
+      // 去重后的注入钱包
+      Array.from(registry.values()).forEach(({ id, name }) => {
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = name;
+        walletSelect.appendChild(opt);
+      });
+    }
+  
+    function discoverWallets() {
+      registry.clear();
+      addInjectedProviders();
+      enableEip6963Discovery();
+      // 延时渲染，给 6963 一点时间
+      setTimeout(renderWalletOptions, 300);
+    }
+  
+    // 初次加载与“刷新钱包”按钮
+    discoverWallets();
+    document.querySelector("#refreshWallets").onclick = discoverWallets;
+  
+    // ============ 原有逻辑（连接 / 切换 / 签到） ============
+    const ABI = [
+      "function nonces(address) view returns (uint256)",
+      "function mintWithSig(address to,uint256 eventId,uint256 amount,uint256 deadline,uint8 v,bytes32 r,bytes32 s)"
+    ];
+    const log = (m)=>{ const el=document.querySelector("#log"); el.textContent += (typeof m==='string'?m:JSON.stringify(m,null,2)) + "\n"; el.scrollTop=el.scrollHeight; };
+  
+    let provider, signer, addr;
+  
+    async function getSelectedProvider() {
+      const selected = walletSelect.value;
+  
+      // WalletConnect（可选）
+      if (selected === "walletconnect") {
+        const projectId = window.POAP_CONFIG?.WALLETCONNECT_PROJECT_ID || "";
+        if (!projectId) throw new Error("未配置 WalletConnect 项目ID");
+        // 延迟加载 WalletConnect 依赖（CDN）
+        const { EthereumProvider } = await import("https://esm.sh/@walletconnect/ethereum-provider@2.11.2");
+        const ethProvider = await EthereumProvider.init({
+          projectId,
+          chains: [84532], // Base Sepolia
+          showQrModal: true,
+          methods: ["eth_sendTransaction","eth_signTypedData","personal_sign","eth_sign"],
+          optionalChains: [],
+          rpcMap: { 84532: "https://sepolia.base.org" }
+        });
+        await ethProvider.enable(); // 弹出 QR
+        return ethProvider;
+      }
+  
+      // 注入钱包
+      if (!selected) throw new Error("未选择钱包");
+      const item = registry.get(selected);
+      if (!item?.provider) throw new Error("未发现所选钱包的 Provider");
+      return item.provider;
+    }
+  
+    async function connect() {
+      try {
+        const injected = await getSelectedProvider();
+        // 对注入钱包/WalletConnect 统一化处理
+        if (injected.request) {
+          await injected.request({ method: "eth_requestAccounts" });
+        }
+        provider = new ethers.BrowserProvider(injected);
+        signer = await provider.getSigner();
+        addr = await signer.getAddress();
+        log("已连接: " + addr);
+      } catch (e) {
+        alert(e.message || e);
+        log("连接失败: " + (e.message || e));
+      }
+    }
+  
+    async function switchBaseSepolia() {
+      try {
+        const injected = await getSelectedProvider();
+        const baseSepolia = {
+          chainId: "0x14A34", // 84532
+          chainName: "Base Sepolia",
+          nativeCurrency: { name:"ETH", symbol:"ETH", decimals:18 },
+          rpcUrls: ["https://sepolia.base.org"],
+          blockExplorerUrls: ["https://sepolia.basescan.org"]
+        };
+        // 先尝试切换
+        await injected.request({ method: "wallet_switchEthereumChain", params: [{ chainId: baseSepolia.chainId }] });
+        log("已切换到 Base Sepolia");
+      } catch (e) {
+        if (e.code === 4902 || /not added/i.test(e.message || "")) {
+          // 未添加时就添加链
+          await injected.request({ method: "wallet_addEthereumChain", params: [baseSepolia] });
+          log("已添加并切换到 Base Sepolia");
+        } else {
+          log("切换网络失败: " + (e.message || e));
+          alert("切换网络失败：" + (e.message || e));
+        }
+      }
+    }
+  
+    async function checkin() {
+      try {
+        const eventId = document.querySelector("#eventId").value.trim();
+        const code = document.querySelector("#code").value.trim();
+        const contractAddr = document.querySelector("#contract").value.trim();
+        if (!eventId || !code || !contractAddr) { alert("请填写完整"); return; }
+        if (!signer) await connect();
+  
+        const c = new ethers.Contract(contractAddr, ABI, signer);
+        const nonce = await c.nonces(addr);
+        log("nonce: " + nonce);
+  
+        const base = window.POAP_CONFIG?.WORKER_BASE_URL || "";
+        if (!base) { alert("请先在 poap.config.js 里设置 WORKER_BASE_URL"); return; }
+        const resp = await fetch(base + "/api/poap/checkin", {
+          method: "POST",
+          headers: {"content-type":"application/json"},
+          body: JSON.stringify({ eventId, wallet: addr, code, nonce: nonce.toString() })
+        });
+        const data = await resp.json();
+        if (!data.ok) { throw new Error(data.message || "签到失败"); }
+        log(data);
+  
+        const { v, r, s, deadline, amount } = data;
+        const tx = await c.mintWithSig(addr, Number(eventId), amount || 1, deadline, v, r, s);
+        log("Tx: " + tx.hash);
+        const rc = await tx.wait();
+        log("成功领取，区块确认: " + rc.status);
+      } catch (e) {
+        log("Error: " + (e.message || e));
+        alert(e.message || e);
+      }
+    }
+  
+    // 事件绑定
+    document.querySelector("#connect").onclick = connect;
+    document.querySelector("#switch").onclick = switchBaseSepolia;
+    document.querySelector("#checkin").onclick = checkin;
+  
+    // URL 参数预填（保持原逻辑）
+    const usp = new URLSearchParams(location.search);
+    if (usp.get("eventId")) document.querySelector("#eventId").value = usp.get("eventId");
+    if (usp.get("code")) document.querySelector("#code").value = usp.get("code");
+  </script>

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>POAP 签到 · 宋锦 × 旗袍DAO</title>
+  <style>
+    body{font-family:system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, Noto Sans SC, Arial; background:#FAF8F3; color:#1A1A1A; padding:24px;}
+    .wrap{max-width:780px; margin:0 auto;}
+    .card{background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.08);}
+    h1{font-size:28px; margin:0 0 8px;}
+    .muted{color:#666}
+    input,select,button{padding:12px; border-radius:10px; border:1px solid #e6e6e6; width:100%; margin:8px 0;}
+    button{background:#B41E2E; color:#fff; border:none; cursor:pointer;}
+    button.secondary{background:#fff; color:#B41E2E; border:1px solid #B41E2E;}
+    .row{display:flex; gap:12px; align-items:center;}
+    .row > *{flex:1}
+    pre{background:#111; color:#0f0; padding:12px; border-radius:10px; overflow:auto; max-height:240px;}
+    .badge{display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid #e6e6e6; background:#fff; font-size:12px; margin-right:6px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>活动签到 · 领取 POAP</h1>
+      <p class="muted">宋锦 × 旗袍DAO「全球启动仪式」示例（Event ID：20251208）</p>
+
+      <div class="row">
+        <button id="connect">连接钱包</button>
+        <button id="switch" class="secondary">切换到 Base Sepolia</button>
+      </div>
+
+      <label>活动 ID</label>
+      <input id="eventId" value="20251208" />
+
+      <label>签到码（5分钟有效）</label>
+      <input id="code" placeholder="如：A7F3QX 或扫码自动填充" />
+
+      <label>POAP 合约地址</label>
+      <input id="contract" placeholder="0x..." />
+
+      <div class="row">
+        <button id="checkin">立即签到并领取</button>
+      </div>
+
+      <div class="row">
+        <span class="badge">隐私保护：仅发送钱包地址与签到码</span>
+        <span class="badge">签名授权：服务端签名，前端自费上链</span>
+      </div>
+
+      <pre id="log"></pre>
+    </div>
+  </div>
+
+  <script type="module">
+    import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.min.js";
+
+    const ABI = [
+      "function nonces(address) view returns (uint256)",
+      "function mintWithSig(address to,uint256 eventId,uint256 amount,uint256 deadline,uint8 v,bytes32 r,bytes32 s)"
+    ];
+
+    const log = (m)=>{ const el=document.querySelector("#log"); el.textContent += (typeof m==='string'?m:JSON.stringify(m,null,2)) + "\\n"; el.scrollTop=el.scrollHeight; };
+
+    let provider, signer, addr;
+
+    async function connect() {
+      if (!window.ethereum) { alert("请先安装钱包扩展"); return; }
+      provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      signer = await provider.getSigner();
+      addr = await signer.getAddress();
+      log("已连接: " + addr);
+    }
+
+    async function switchBaseSepolia() {
+      const baseSepolia = {
+        chainId: "0x14A34", // 84532
+        chainName: "Base Sepolia",
+        nativeCurrency: { name:"ETH", symbol:"ETH", decimals:18 },
+        rpcUrls: ["https://sepolia.base.org"],
+        blockExplorerUrls: ["https://sepolia.basescan.org"]
+      };
+      try {
+        await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: baseSepolia.chainId }] });
+      } catch (e) {
+        if (e.code === 4902) {
+          await window.ethereum.request({ method: "wallet_addEthereumChain", params: [baseSepolia] });
+        }
+      }
+      log("已切换到 Base Sepolia");
+    }
+
+    async function checkin() {
+      try {
+        const eventId = document.querySelector("#eventId").value.trim();
+        const code = document.querySelector("#code").value.trim();
+        const contractAddr = document.querySelector("#contract").value.trim();
+        if (!eventId || !code || !contractAddr) { alert("请填写完整"); return; }
+        if (!signer) await connect();
+
+        // 1) 查询当前 nonce（建议前端读取并传给后端校验）
+        const c = new ethers.Contract(contractAddr, ABI, signer);
+        const nonce = await c.nonces(addr);
+        log("nonce: " + nonce);
+
+        // 2) 请求后端校验签到码并返回签名包
+        // 说明：实际部署时，请替换为你的 Worker 真实地址
+        const resp = await fetch("http://localhost:8787/api/poap/checkin", {
+          method: "POST",
+          headers: {"content-type":"application/json"},
+          body: JSON.stringify({ eventId, wallet: addr, code, nonce: nonce.toString() })
+        });
+        const data = await resp.json();
+        if (!data.ok) { throw new Error(data.message || "签到失败"); }
+        log(data);
+
+        // 3) 前端自费上链领取 POAP
+        const { v, r, s, deadline, amount } = data;
+        const tx = await c.mintWithSig(addr, Number(eventId), amount || 1, deadline, v, r, s);
+        log("Tx: " + tx.hash);
+        const rc = await tx.wait();
+        log("成功领取，区块确认: " + rc.status);
+      } catch (e) {
+        log("Error: " + (e.message || e));
+      }
+    }
+
+    document.querySelector("#connect").onclick = connect;
+    document.querySelector("#switch").onclick = switchBaseSepolia;
+    document.querySelector("#checkin").onclick = checkin;
+  </script>
+</body>
+</html>

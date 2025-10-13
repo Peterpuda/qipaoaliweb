@@ -1,0 +1,21 @@
+{
+  "name": "poap-checkin-starter",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "hh": "hardhat",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js --network baseSepolia",
+    "local": "hardhat node"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.0.2",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.15.0",
+    "hardhat": "^2.22.5"
+  },
+  "dependencies": {
+    "hono": "^4.9.12"
+  }
+}
