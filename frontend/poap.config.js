@@ -13,4 +13,7 @@ window.POAP_CONFIG = {
   // 可选的前端预填（不写也行）
   DEFAULT_EVENT_ID: "",
   DEFAULT_POAP_CONTRACT: "",
+  
+  // ERC20 Merkle Distributor 合约地址（管理员部署后填入）
+  DISTRIBUTOR_CONTRACT: "", // 例如: "0x..."
 };

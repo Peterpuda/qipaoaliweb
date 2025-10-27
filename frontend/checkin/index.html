@@ -289,11 +289,12 @@
     <div class="row">
       <button class="btn" id="btnClaim">铭刻我的到场</button>
     </div>
-    <div class="row" id="claimButtonRow" style="display:none;margin-top:8px">
-      <button class="btn" onclick="window.location.href='../claim/index.html'">🎁 前往领取代币</button>
+    <div class="row" id="claimTokenRow" style="display:none;margin-top:8px">
+      <button class="btn" id="btnClaimToken" style="background:linear-gradient(90deg,#ff8a3d,#ffd05a)">🎁 领取 1000 枚代币</button>
     </div>
 
     <div class="panel" id="panel">就绪。</div>
+    <div class="panel" id="claimPanel" style="display:none;margin-top:10px;background:#1a1a1a;border:1px solid #ff8a3d"></div>
     <div class="hint">流程：连接钱包 → 输入签到码（活动固定码或临时码皆可）→ 点击「铭刻我的到场」。</div>
   </div>
 
@@ -541,8 +542,8 @@ async function claim(){
   
   if (eligible && points > 0) {
     setPanel(`签到成功！获得 ${points} 积分 🎁 已获得空投资格 💎`);
-    $('claimButtonRow').style.display = 'flex';
-    openModal(`你的参与已被记录。\n\n🎁 获得 ${points} 积分！\n💎 已获得空投资格！\n\n可以前往领取页面领取代币。`);
+    $('claimTokenRow').style.display = 'flex';
+    openModal(`你的参与已被记录。\n\n🎁 获得 ${points} 积分！\n💎 已获得空投资格（1000枚代币）！\n\n关闭此窗口后，点击下方「领取1000枚代币」按钮完成领取。`);
   } else if (points > 0) {
     setPanel(`签到成功！获得 ${points} 积分`);
     openModal(`你的参与已被记录。🎁 获得 ${points} 积分！`);
@@ -600,9 +601,120 @@ function displayCheckinHistory(orders) {
   historyList.innerHTML = historyHTML;
 }
 
+/** ===== 代币领取功能 ===== **/
+// ERC20 Merkle Distributor ABI
+const CLAIM_ABI = [
+  {"inputs":[{"internalType":"address","name":"token_","type":"address"},{"internalType":"bytes32","name":"merkleRoot_","type":"bytes32"}],"stateMutability":"nonpayable","type":"constructor"},
+  {"inputs":[],"name":"merkleRoot","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"token","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"isClaimed","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"index","type":"uint256"},{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"bytes32[]","name":"proof","type":"bytes32[]"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"}
+];
+
+// 合约地址配置（管理员部署合约后填入）
+const DISTRIBUTOR_CONTRACT = window.POAP_CONFIG?.DISTRIBUTOR_CONTRACT || "";
+
+function setClaimLog(text) {
+  const panel = $('claimPanel');
+  panel.style.display = 'block';
+  panel.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+}
+
+async function claimTokens() {
+  const p = SELECTED_PROVIDER;
+  if(!p) {
+    setClaimLog('请先连接钱包');
+    return;
+  }
+
+  const acc = await p.request({method:"eth_accounts"});
+  const address = acc?.[0];
+  if(!address) {
+    setClaimLog('钱包未授权地址');
+    return;
+  }
+
+  // 获取活动ID（批次号）
+  const params = new URLSearchParams(location.search);
+  const slug = (params.get("event") || params.get("slug") || "").trim();
+  if(!slug) {
+    setClaimLog('无法获取活动ID');
+    return;
+  }
+
+  // 获取合约地址（从配置或事件信息）
+  const distributorContract = DISTRIBUTOR_CONTRACT || $("poapContract").value.trim();
+  if(!distributorContract) {
+    setClaimLog('错误：未配置合约地址，请联系管理员');
+    return;
+  }
+
+  setClaimLog('正在查询领取资格...');
+
+  try {
+    // 1. 查询领取资格
+    const eligUrl = `${API_BASE}/rewards/v2/eligibility/${encodeURIComponent(slug)}/${encodeURIComponent(address)}`;
+    const eligResp = await fetch(eligUrl);
+    const eligData = await eligResp.json();
+
+    if(!eligData.ok || !eligData.eligible) {
+      setClaimLog('您暂无领取资格，请先完成签到');
+      return;
+    }
+
+    if(!eligData.ready) {
+      setClaimLog('管理员尚未生成Merkle证明，请稍后再试');
+      return;
+    }
+
+    setClaimLog(`✅ 资格验证通过！准备领取 ${(BigInt(eligData.amount) / BigInt(10**18)).toString()} 枚代币...`);
+
+    // 2. 加载 ethers.js（如果还没加载）
+    if(!window.ethers) {
+      setClaimLog('正在加载区块链库...');
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('加载失败'));
+        document.head.appendChild(script);
+      });
+    }
+
+    // 3. 连接合约并领取
+    setClaimLog('正在提交链上交易...');
+    const ethersProvider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await ethersProvider.getSigner();
+    const contract = new ethers.Contract(distributorContract, CLAIM_ABI, signer);
+
+    const index = BigInt(eligData.index);
+    const amount = BigInt(eligData.amount);
+    const proof = eligData.proof;
+
+    const tx = await contract.claim(index, address, amount, proof);
+    setClaimLog(`交易已提交：${tx.hash}\n等待确认...`);
+
+    const receipt = await tx.wait();
+    const amountInTokens = (BigInt(amount) / BigInt(10**18)).toString();
+
+    setClaimLog(`🎉 领取成功！\n✅ 已到账 ${amountInTokens} 枚代币\n📦 区块：${receipt.blockNumber}\n🔗 交易：${tx.hash}`);
+    
+    // 隐藏领取按钮
+    $('claimTokenRow').style.display = 'none';
+    
+    // 显示成功弹窗
+    openModal(`🎉 恭喜！代币领取成功！\n\n💰 到账数量：${amountInTokens} 枚代币\n📦 区块高度：${receipt.blockNumber}\n\n请在钱包中查看您的资产。`);
+
+  } catch(error) {
+    console.error('领取失败:', error);
+    setClaimLog(`❌ 领取失败：${error.message || error}`);
+  }
+}
+
 /** ===== 事件绑定 ===== **/
 document.getElementById('btnConnect').onclick = connect;
 document.getElementById('btnClaim').onclick = claim;
+document.getElementById('btnClaimToken').onclick = claimTokens;
 
 /** 初始渲染 **/
 loadEvent();
