@@ -578,6 +578,44 @@ export default {
         }
       }
 
+      // GET /events/get - 获取单个活动详情（按slug）
+      if (path === 'events/get' && req.method === 'GET') {
+        const slug = searchParams.get('slug');
+        if (!slug) {
+          return withCors(
+            errorResponse('missing slug parameter', 400),
+            pickAllowedOrigin(req)
+          );
+        }
+
+        try {
+          const rows = await query(env, `
+            SELECT id, slug, name, location, start_time, poap_contract, chain_id, created_at
+            FROM events
+            WHERE slug = ?
+            LIMIT 1
+          `, [slug]);
+
+          if (!rows || !rows.length) {
+            return withCors(
+              errorResponse('event not found', 404),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          return withCors(
+            jsonResponse({ ok: true, event: rows[0] }),
+            pickAllowedOrigin(req)
+          );
+        } catch (error) {
+          console.error("Error fetching event:", error);
+          return withCors(
+            errorResponse("Failed to fetch event: " + error.message, 500),
+            pickAllowedOrigin(req)
+          );
+        }
+      }
+
       // GET /poap/events - 获取活动列表（公开端点）
       if (pathname === "/poap/events" && req.method === "GET") {
         try {
@@ -1208,62 +1246,106 @@ export default {
       // POST /poap/checkin
       if (path === 'poap/checkin' && req.method === 'POST') {
         const body = await readJson(req);
-        if (!body || !body.event_id || !body.wallet) {
-          return json(env, { ok: false, error: 'MISSING_FIELDS' }, 400);
-        }
-
-        const addr = readBearerAddr(req);
-        if (!addr) return json(env, { ok: false, error: 'NO_TOKEN' }, 401);
-
+        
+        // 支持两种参数格式：slug或event_id
+        const slug = body.slug;
         const eventId = body.event_id;
-        const wallet = body.wallet.toLowerCase();
-        const code = body.code || '';
+        const wallet = (body.address || body.wallet || '').toLowerCase();
+        const code = (body.code || '').toUpperCase();
 
-        // 检查是否已经签到
-        const existing = await query(env, `
-          SELECT id FROM checkins 
-          WHERE event_id = ? AND wallet = ?
-        `, [eventId, wallet]);
-
-        if (existing && existing.length > 0) {
-          return json(env, { ok: false, error: 'ALREADY_CHECKED_IN' }, 400);
+        if (!wallet) {
+          return withCors(
+            jsonResponse({ ok: false, error: 'MISSING_WALLET' }),
+            pickAllowedOrigin(req)
+          );
         }
 
-        const id = genId();
-        const ts = Math.floor(Date.now() / 1000);
-        await run(env, `
-          INSERT INTO checkins (id, event_id, wallet, code, token_id, sig, tx_hash, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-        `, [id, eventId, wallet, code, null, null, null]);
+        if (!slug && !eventId) {
+          return withCors(
+            jsonResponse({ ok: false, error: 'MISSING_EVENT_ID_OR_SLUG' }),
+            pickAllowedOrigin(req)
+          );
+        }
 
-        // ✅ 添加积分奖励（每次签到 10 积分）
-        const CHECKIN_POINTS = 10;
-        await run(env, `
-          INSERT INTO rewards (wallet, type, points, meta, ts)
-          VALUES (?, 'checkin', ?, ?, strftime('%s', 'now'))
-        `, [
-          wallet.toLowerCase(),
-          CHECKIN_POINTS,
-          JSON.stringify({
-            description: `活动签到: ${eventId}`,
-            event_id: eventId,
-            checkin_id: id
-          })
-        ]);
+        try {
+          // 如果有slug但没有eventId，需要先查找eventId
+          let actualEventId = eventId;
+          let actualSlug = slug;
 
-        // ✅ 记录空投资格（1 个代币，18 decimals）
-        const AIRDROP_AMOUNT = "1000000000000000000";
-        await run(env, `
-          INSERT INTO airdrop_eligible (wallet, event_id, amount, claimed, created_at)
-          VALUES (?, ?, ?, 0, strftime('%s', 'now'))
-          ON CONFLICT(wallet, event_id) DO UPDATE SET amount = excluded.amount
-        `, [
-          wallet.toLowerCase(),
-          eventId,
-          AIRDROP_AMOUNT
-        ]);
+          if (slug && !eventId) {
+            const eventRows = await query(env, `
+              SELECT id, slug FROM events WHERE slug = ? LIMIT 1
+            `, [slug]);
 
-        return json(env, { ok: true, id, ts, points: CHECKIN_POINTS, eligible: true });
+            if (!eventRows || !eventRows.length) {
+              return withCors(
+                jsonResponse({ ok: false, error: 'EVENT_NOT_FOUND' }),
+                pickAllowedOrigin(req)
+              );
+            }
+
+            actualEventId = eventRows[0].id;
+            actualSlug = eventRows[0].slug;
+          }
+
+          // 检查是否已经签到
+          const existing = await query(env, `
+            SELECT id FROM checkins 
+            WHERE event_id = ? AND wallet = ?
+          `, [actualEventId, wallet]);
+
+          if (existing && existing.length > 0) {
+            return withCors(
+              jsonResponse({ ok: false, error: 'ALREADY_CHECKED_IN' }),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          const id = genId();
+          const ts = Math.floor(Date.now() / 1000);
+          await run(env, `
+            INSERT INTO checkins (id, event_id, wallet, code, token_id, sig, tx_hash, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          `, [id, actualEventId, wallet, code, null, null, null]);
+
+          // ✅ 添加积分奖励（每次签到 10 积分）
+          const CHECKIN_POINTS = 10;
+          await run(env, `
+            INSERT INTO rewards (wallet, type, points, meta, ts)
+            VALUES (?, 'checkin', ?, ?, strftime('%s', 'now'))
+          `, [
+            wallet.toLowerCase(),
+            CHECKIN_POINTS,
+            JSON.stringify({
+              description: `活动签到: ${actualSlug || actualEventId}`,
+              event_id: actualEventId,
+              checkin_id: id
+            })
+          ]);
+
+          // ✅ 记录空投资格（1 个代币，18 decimals）
+          const AIRDROP_AMOUNT = "1000000000000000000";
+          await run(env, `
+            INSERT INTO airdrop_eligible (wallet, event_id, amount, claimed, created_at)
+            VALUES (?, ?, ?, 0, strftime('%s', 'now'))
+            ON CONFLICT(wallet, event_id) DO UPDATE SET amount = excluded.amount
+          `, [
+            wallet.toLowerCase(),
+            actualEventId,
+            AIRDROP_AMOUNT
+          ]);
+
+          return withCors(
+            jsonResponse({ ok: true, id, ts, points: CHECKIN_POINTS, eligible: true }),
+            pickAllowedOrigin(req)
+          );
+        } catch (error) {
+          console.error('Checkin error:', error);
+          return withCors(
+            jsonResponse({ ok: false, error: error.message }),
+            pickAllowedOrigin(req)
+          );
+        }
       }
 
       // GET /rewards/v2/eligibility/{batch}/{wallet} - 查询空投资格
