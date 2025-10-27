@@ -168,19 +168,21 @@
           return;
         }
 
-        // 显示结果
+        // 显示结果（使用 camelCase 字段名）
         const resultHtml = `
 <strong>✅ 生成成功！</strong>
 
-活动 ID: ${data.event_id || eventId}
-Merkle Root: ${data.merkle_root || 'N/A'}
-总地址数: ${data.total_addresses || 'N/A'}
-总代币量: ${data.total_amount || 'N/A'} wei
+活动 ID: ${data.eventId || data.event_id || eventId}
+Merkle Root: ${data.merkleRoot || data.merkle_root || 'N/A'}
+总地址数: ${data.totalAddresses || data.total_addresses || 'N/A'}
+总代币量: ${data.totalAmount || data.total_amount || 'N/A'} wei
 
 <strong>下一步：</strong>
 1. 记录上面的 Merkle Root
-2. 部署 Sha256MerkleDistributor 合约（使用此 Root）
-3. 将合约地址告知用户
+2. 部署 ERC20MerkleDistributor 合约（使用此 Root）
+3. 将足够的代币转入合约地址
+4. 在前端配置合约地址（poap.config.js）
+5. 用户即可在签到页面领取代币
         `;
 
         document.getElementById('merkleResult').innerHTML = resultHtml.replace(/\n/g, '<br>');
@@ -191,7 +193,9 @@ Merkle Root: ${data.merkle_root || 'N/A'}
         statusSpan.className = 'status ready';
 
         log('Merkle Tree 生成成功！', 'success');
-        log(`Merkle Root: ${data.merkle_root || 'N/A'}`);
+        log(`Merkle Root: ${data.merkleRoot || data.merkle_root || 'N/A'}`);
+        log(`总地址数: ${data.totalAddresses || data.total_addresses || 'N/A'}`);
+        log(`总代币量: ${data.totalAmount || data.total_amount || 'N/A'} wei`);
 
       } catch (error) {
         log(`生成失败：${error.message}`, 'error');
