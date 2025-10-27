@@ -513,13 +513,27 @@ async function claim(){
   setPanel("请求服务器校验中…");
 
   const payload = { slug, code, address, poapContract: poap };
-  const tries = [
-    "/api/poap/checkin",
-    "/poap/checkin"
-  ];
-  const res = await postJSONWithFallbacks(tries, payload);
-
-  if(!res.ok){ setPanel("领取失败："+ (res.error || "UNKNOWN_ERROR")); return; }
+  
+  // 直接调用正确的API路径
+  let res;
+  try {
+    const r = await fetch(api("/api/poap/checkin"), {
+      method: "POST",
+      headers: {"content-type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    const data = await r.json();
+    
+    if(!r.ok || !data.ok) {
+      setPanel("签到失败："+ (data.error || "UNKNOWN_ERROR")); 
+      return;
+    }
+    
+    res = { ok: true, data };
+  } catch(e) {
+    setPanel("网络错误："+ (e?.message || e)); 
+    return;
+  }
 
   // ✅ 显示积分和空投资格
   const points = res.data?.points || 0;
