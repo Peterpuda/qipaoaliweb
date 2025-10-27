@@ -1355,8 +1355,27 @@ export default {
           return withCors(errorResponse("invalid path", 400), pickAllowedOrigin(req));
         }
         
-        const batch = decodeURIComponent(parts[3]); // event_id
+        const batchInput = decodeURIComponent(parts[3]); // event_id 或 slug
         const wallet = decodeURIComponent(parts[4]).toLowerCase();
+        
+        // 如果 batchInput 不是纯数字，尝试通过 slug 查找 event_id
+        let eventId = batchInput;
+        if (isNaN(parseInt(batchInput))) {
+          // 是 slug，需要查询 events 表获取数字 id
+          const eventRows = await query(env, `
+            SELECT id FROM events WHERE slug = ? LIMIT 1
+          `, [batchInput]);
+          
+          if (!eventRows || !eventRows.length) {
+            return withCors(jsonResponse({ 
+              ok: false, 
+              error: "EVENT_NOT_FOUND",
+              message: `Event with slug '${batchInput}' not found`
+            }), pickAllowedOrigin(req));
+          }
+          
+          eventId = eventRows[0].id;
+        }
         
         // 查询空投资格
         const rows = await query(env, `
@@ -1364,7 +1383,7 @@ export default {
           FROM airdrop_eligible
           WHERE event_id = ? AND wallet = ?
           LIMIT 1
-        `, [batch, wallet]);
+        `, [eventId, wallet]);
         
         if (!rows || !rows.length) {
           return withCors(jsonResponse({ 
