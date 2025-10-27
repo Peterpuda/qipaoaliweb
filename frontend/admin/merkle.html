@@ -141,7 +141,9 @@
       log(`开始生成 Merkle Tree...`);
 
       try {
-        const token = localStorage.getItem('admin_token');
+        const token = sessionStorage.getItem('qipao.admin.token') || 
+                      localStorage.getItem('qipao.admin.token') || 
+                      localStorage.getItem('bearer_token') || '';
         if (!token) {
           log('未登录，请先登录管理后台', 'error');
           setTimeout(() => {
@@ -198,7 +200,9 @@ Merkle Root: ${data.merkle_root || 'N/A'}
 
     // 页面加载时检查登录状态
     window.addEventListener('DOMContentLoaded', () => {
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('qipao.admin.token') || 
+                    localStorage.getItem('qipao.admin.token') || 
+                    localStorage.getItem('bearer_token') || '';
       if (!token) {
         log('未检测到登录状态，请先登录', 'error');
         if (confirm('需要登录管理后台，是否前往登录？')) {
