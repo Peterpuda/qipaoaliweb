@@ -404,28 +404,27 @@ async function detectInjected(choice="auto"){
   return eth||window.coinbaseWalletExtension||window.phantom?.ethereum||null;
 }
 async function getWalletConnectProvider(){
-  if (!window.EthereumProvider) {
+  if (!window.WalletConnectProvider) {
     await new Promise((resolve, reject)=>{
       const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2/dist/umd/index.min.js';
+      // 使用 WalletConnect v1 更稳定
+      s.src = 'https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js';
       s.onload = resolve;
-      s.onerror = ()=>reject(new Error('WalletConnect UMD load failed'));
+      s.onerror = ()=>reject(new Error('WalletConnect 加载失败，请刷新页面重试'));
       document.head.appendChild(s);
     });
   }
   if (WC_PROVIDER) return WC_PROVIDER;
-  WC_PROVIDER = await window.EthereumProvider.init({
-    projectId: WC_PROJECT_ID,
-    chains: [BASE_SEPOLIA.chainId],
-    showQrModal: true,
-    rpcMap: { [BASE_SEPOLIA.chainId]: BASE_SEPOLIA.rpcUrl },
-    metadata: {
-      name: "POAP Check-in",
-      description: "链上铭刻签到",
-      url: location.origin,
-      icons: ["https://walletconnect.com/walletconnect-logo.png"]
-    }
+  
+  // 使用 WalletConnect v1 API（更稳定）
+  WC_PROVIDER = new window.WalletConnectProvider.default({
+    rpc: {
+      [BASE_SEPOLIA.chainId]: BASE_SEPOLIA.rpcUrl
+    },
+    chainId: BASE_SEPOLIA.chainId,
+    qrcode: true
   });
+  
   return WC_PROVIDER;
 }
 async function ensureBaseSepolia(p){
@@ -444,8 +443,11 @@ async function ensureBaseSepolia(p){
 async function connect(){
   const choice=$("walletSel").value||"auto";
   try{
+    $("addrLine").textContent="连接中...";
     if(choice==="walletconnect" || (!window.ethereum && /Android|iPhone|iPad/i.test(navigator.userAgent))){
-      const p=await getWalletConnectProvider();await p.connect();SELECTED_PROVIDER=p;
+      const p=await getWalletConnectProvider();
+      await p.enable(); // WalletConnect v1 使用 enable()
+      SELECTED_PROVIDER=p;
     }else{
       const p=await detectInjected(choice);
       if(!p){$("addrLine").textContent="未检测到钱包，尝试自动唤起…"; openMetaMask();return;}
@@ -454,7 +456,10 @@ async function connect(){
     await ensureBaseSepolia(SELECTED_PROVIDER);
     const acc=await SELECTED_PROVIDER.request({method:"eth_accounts"});
     $("addrLine").textContent=acc[0]?`已连接：${shortAddr(acc[0])}`:"连接失败";
-  }catch(e){$("addrLine").textContent="连接错误："+(e?.message||e);}
+  }catch(e){
+    console.error('连接错误详情:', e);
+    $("addrLine").textContent="连接错误："+(e?.message||e);
+  }
 }
 function openMetaMask(){
   const deep="metamask://dapp/"+location.host;
