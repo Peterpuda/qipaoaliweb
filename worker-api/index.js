@@ -1351,12 +1351,14 @@ export default {
       // GET /rewards/v2/eligibility/{batch}/{wallet} - 查询空投资格
       if (pathname.startsWith("/rewards/v2/eligibility/") && req.method === "GET") {
         const parts = pathname.split("/");
-        if (parts.length !== 5) {
+        // 路径: /rewards/v2/eligibility/{batch}/{wallet}
+        // parts: ["", "rewards", "v2", "eligibility", "{batch}", "{wallet}"]
+        if (parts.length !== 6) {
           return withCors(errorResponse("invalid path", 400), pickAllowedOrigin(req));
         }
         
-        const batchInput = decodeURIComponent(parts[3]); // event_id 或 slug
-        const wallet = decodeURIComponent(parts[4]).toLowerCase();
+        const batchInput = decodeURIComponent(parts[4]); // event_id 或 slug
+        const wallet = decodeURIComponent(parts[5]).toLowerCase();
         
         // 如果 batchInput 不是纯数字，尝试通过 slug 查找 event_id
         let eventId = batchInput;
