@@ -1430,13 +1430,28 @@ export default {
         if (!adminCheck.ok) return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
         
         const body = await readJson(req);
-        const eventId = body.event_id || body.batch_id;
+        const eventInput = body.event_id || body.batch_id;
         
-        if (!eventId) {
+        if (!eventInput) {
           return withCors(errorResponse("missing event_id", 400), pickAllowedOrigin(req));
         }
         
         try {
+          // 如果 eventInput 不是纯数字，尝试通过 slug 查找 event_id
+          let eventId = eventInput;
+          if (isNaN(parseInt(eventInput))) {
+            // 是 slug，需要查询 events 表获取数字 id
+            const eventRows = await query(env, `
+              SELECT id FROM events WHERE slug = ? LIMIT 1
+            `, [eventInput]);
+            
+            if (!eventRows || !eventRows.length) {
+              return withCors(errorResponse(`Event with slug '${eventInput}' not found`, 404), pickAllowedOrigin(req));
+            }
+            
+            eventId = eventRows[0].id;
+          }
+          
           // 从数据库获取所有签到用户
           const checkins = await query(env, `
             SELECT DISTINCT wallet
