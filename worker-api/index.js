@@ -1304,9 +1304,9 @@ export default {
           const id = genId();
           const ts = Math.floor(Date.now() / 1000);
           await run(env, `
-            INSERT INTO checkins (id, event_id, wallet, code, ts, created_at)
-            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-          `, [id, actualEventId, wallet, code, ts]);
+            INSERT INTO checkins (event_id, wallet, code)
+            VALUES (?, ?, ?)
+          `, [actualEventId, wallet, code]);
 
           // ✅ 添加积分奖励（每次签到 10 积分）
           const CHECKIN_POINTS = 10;
