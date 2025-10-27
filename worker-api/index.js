@@ -1377,13 +1377,13 @@ export default {
           eventId = eventRows[0].id;
         }
         
-        // 查询空投资格
+        // 查询空投资格（使用 LIKE 处理 "25" vs "25.0" 的情况）
         const rows = await query(env, `
           SELECT wallet, event_id, amount, claimed, item_index, proof, merkle_batch, token_tx_hash
           FROM airdrop_eligible
-          WHERE event_id = ? AND wallet = ?
+          WHERE (event_id = ? OR event_id = ? || '.0') AND wallet = ?
           LIMIT 1
-        `, [eventId, wallet]);
+        `, [String(eventId), String(eventId), wallet]);
         
         if (!rows || !rows.length) {
           return withCors(jsonResponse({ 
