@@ -103,6 +103,9 @@
       <a href="/admin/orders.html" class="nav-item">
         <i class="fas fa-shopping-bag"></i> 订单管理
       </a>
+      <a href="/admin/merkle.html" class="nav-item" style="border-left: 3px solid #D4AF37;">
+        <i class="fas fa-project-diagram" style="color: #D4AF37;"></i> Merkle Tree 生成
+      </a>
       <a href="../profile/" class="nav-item">
         <i class="fas fa-user"></i> 个人中心
       </a>
@@ -232,6 +235,43 @@
             <i class="fas fa-download" style="margin-right: 4px;"></i>
             导出订单数据
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Merkle Tree 生成 -->
+    <div class="management-section" style="border-color: #D4AF37; background: rgba(212, 175, 55, 0.05);">
+      <div class="section-header">
+        <h3>
+          <i class="fas fa-project-diagram" style="margin-right: 6px; color: #D4AF37;"></i>
+          🎁 Merkle Tree 生成
+        </h3>
+        <button class="btn btn-primary" onclick="goto('merkle.html')" style="background: linear-gradient(135deg, #D4AF37 0%, #9E2A2B 100%);">
+          <i class="fas fa-magic" style="margin-right: 4px;"></i>
+          生成 Merkle Tree
+        </button>
+      </div>
+      <div class="section-content">
+        <p style="color: #9E2A2B; font-weight: 500;">为签到活动生成 Merkle Tree，使用户能够领取代币空投</p>
+        <div class="action-buttons">
+          <button class="btn btn-outline" onclick="goto('merkle.html')">
+            <i class="fas fa-tree" style="margin-right: 4px;"></i>
+            打开生成工具
+          </button>
+          <button class="btn btn-outline" onclick="alert('请先生成 Merkle Tree，然后查看 AIRDROP_CLAIM_GUIDE.md 文档')">
+            <i class="fas fa-book" style="margin-right: 4px;"></i>
+            查看使用指南
+          </button>
+        </div>
+        <div style="margin-top: 12px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; font-size: 13px;">
+          <strong>⚠️ 重要步骤：</strong>
+          <ol style="margin: 8px 0 0 20px; padding: 0;">
+            <li>确认活动签到人数正确</li>
+            <li>生成 Merkle Tree 并记录 Merkle Root</li>
+            <li>使用 Merkle Root 部署 MerkleDistributor 合约</li>
+            <li>将代币转入合约地址</li>
+            <li>在前端配置合约地址</li>
+          </ol>
         </div>
       </div>
     </div>
