@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修复测试页面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">修复测试页面</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 商品详情页测试 -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-4">商品详情页测试</h2>
+                <div class="space-y-2">
+                    <button onclick="testProductPage()" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        测试商品详情页
+                    </button>
+                    <div id="productTestResult" class="text-sm text-gray-600"></div>
+                </div>
+            </div>
+            
+            <!-- 商城页测试 -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-4">商城页测试</h2>
+                <div class="space-y-2">
+                    <button onclick="testMarketPage()" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        测试商城页
+                    </button>
+                    <div id="marketTestResult" class="text-sm text-gray-600"></div>
+                </div>
+            </div>
+            
+            <!-- Auth模块测试 -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-4">Auth模块测试</h2>
+                <div class="space-y-2">
+                    <button onclick="testAuthModule()" class="w-full bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+                        测试Auth模块
+                    </button>
+                    <div id="authTestResult" class="text-sm text-gray-600"></div>
+                </div>
+            </div>
+            
+            <!-- 控制台错误检查 -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-4">控制台错误检查</h2>
+                <div class="space-y-2">
+                    <button onclick="checkConsoleErrors()" class="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                        检查控制台错误
+                    </button>
+                    <div id="consoleTestResult" class="text-sm text-gray-600"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-8 bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-semibold mb-4">测试结果日志</h2>
+            <div id="testLog" class="bg-gray-50 p-4 rounded text-sm font-mono max-h-64 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function testProductPage() {
+            log('开始测试商品详情页...');
+            const resultDiv = document.getElementById('productTestResult');
+            
+            try {
+                // 检查是否能够访问商品详情页
+                fetch('/product.html?id=product_010')
+                    .then(response => {
+                        if (response.ok) {
+                            resultDiv.innerHTML = '<span class="text-green-600">✓ 商品详情页可访问</span>';
+                            log('✓ 商品详情页可访问');
+                        } else {
+                            resultDiv.innerHTML = '<span class="text-red-600">✗ 商品详情页访问失败</span>';
+                            log('✗ 商品详情页访问失败');
+                        }
+                    })
+                    .catch(error => {
+                        resultDiv.innerHTML = '<span class="text-red-600">✗ 网络错误</span>';
+                        log('✗ 网络错误: ' + error.message);
+                    });
+            } catch (error) {
+                resultDiv.innerHTML = '<span class="text-red-600">✗ 测试失败</span>';
+                log('✗ 测试失败: ' + error.message);
+            }
+        }
+
+        function testMarketPage() {
+            log('开始测试商城页...');
+            const resultDiv = document.getElementById('marketTestResult');
+            
+            try {
+                // 检查是否能够访问商城页
+                fetch('/market/')
+                    .then(response => {
+                        if (response.ok) {
+                            resultDiv.innerHTML = '<span class="text-green-600">✓ 商城页可访问</span>';
+                            log('✓ 商城页可访问');
+                        } else {
+                            resultDiv.innerHTML = '<span class="text-red-600">✗ 商城页访问失败</span>';
+                            log('✗ 商城页访问失败');
+                        }
+                    })
+                    .catch(error => {
+                        resultDiv.innerHTML = '<span class="text-red-600">✗ 网络错误</span>';
+                        log('✗ 网络错误: ' + error.message);
+                    });
+            } catch (error) {
+                resultDiv.innerHTML = '<span class="text-red-600">✗ 测试失败</span>';
+                log('✗ 测试失败: ' + error.message);
+            }
+        }
+
+        function testAuthModule() {
+            log('开始测试Auth模块...');
+            const resultDiv = document.getElementById('authTestResult');
+            
+            try {
+                // 检查auth模块是否加载
+                if (typeof window.authModule !== 'undefined') {
+                    const auth = window.authModule;
+                    if (auth && auth.API_BASE && auth.walletLogin && auth.showToast) {
+                        resultDiv.innerHTML = '<span class="text-green-600">✓ Auth模块完整加载</span>';
+                        log('✓ Auth模块完整加载');
+                    } else {
+                        resultDiv.innerHTML = '<span class="text-yellow-600">⚠ Auth模块部分加载</span>';
+                        log('⚠ Auth模块部分加载');
+                    }
+                } else {
+                    resultDiv.innerHTML = '<span class="text-red-600">✗ Auth模块未加载</span>';
+                    log('✗ Auth模块未加载');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<span class="text-red-600">✗ 测试失败</span>';
+                log('✗ 测试失败: ' + error.message);
+            }
+        }
+
+        function checkConsoleErrors() {
+            log('开始检查控制台错误...');
+            const resultDiv = document.getElementById('consoleTestResult');
+            
+            // 检查常见的JavaScript错误
+            const errors = [];
+            
+            // 检查auth变量重复声明
+            try {
+                eval('const auth = window.authModule; const auth2 = window.authModule;');
+            } catch (error) {
+                if (error.message.includes('already been declared')) {
+                    errors.push('auth变量重复声明');
+                }
+            }
+            
+            // 检查shortAddr函数
+            try {
+                eval('shortAddr("0x1234567890abcdef");');
+            } catch (error) {
+                if (error.message.includes('shortAddr is not defined')) {
+                    errors.push('shortAddr函数未定义');
+                }
+            }
+            
+            if (errors.length === 0) {
+                resultDiv.innerHTML = '<span class="text-green-600">✓ 未发现常见错误</span>';
+                log('✓ 未发现常见错误');
+            } else {
+                resultDiv.innerHTML = '<span class="text-red-600">✗ 发现错误: ' + errors.join(', ') + '</span>';
+                log('✗ 发现错误: ' + errors.join(', '));
+            }
+        }
+
+        // 页面加载完成后自动运行测试
+        document.addEventListener('DOMContentLoaded', function() {
+            log('测试页面加载完成，开始自动测试...');
+            setTimeout(() => {
+                testAuthModule();
+                checkConsoleErrors();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>旗袍社区管理 - 平台管理后台</title>
+  <link rel="stylesheet" href="/styles/app.css"/>
+  <link rel="stylesheet" href="common/admin-common.css"/>
+  <script src="/poap.config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <!-- 导航栏 -->
+  <nav class="admin-nav">
+    <div class="nav-brand">旗袍社区管理</div>
+    <button class="hamburger">☰</button>
+    <div class="nav-user">
+      <span id="authState" class="pill">未登录</span>
+    </div>
+  </nav>
+
+  <!-- 移动端侧边栏 -->
+  <div class="sidebar-overlay"></div>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div>导航菜单</div>
+      <button class="sidebar-close">×</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/admin/index.html" class="nav-item">
+        <i>📊</i> 平台概览
+      </a>
+      <a href="/admin/projects.html" class="nav-item">
+        <i>🌍</i> 非遗项目管理
+      </a>
+      <a href="/admin/qipao.html" class="nav-item">
+        <i>👗</i> 旗袍社区管理
+      </a>
+      <a href="/admin/events.html" class="nav-item">
+        <i>🎪</i> 活动管理
+      </a>
+      <a href="/admin/artisans.html" class="nav-item">
+        <i>👨‍🎨</i> 传承人管理
+      </a>
+      <a href="/admin/products.html" class="nav-item">
+        <i>🛍️</i> 商品管理
+      </a>
+      <a href="/admin/orders.html" class="nav-item">
+        <i>📦</i> 订单管理
+      </a>
+      <a href="../profile/" class="nav-item">
+        <i>👤</i> 个人中心
+      </a>
+      <a href="javascript:logout()" class="nav-item">
+        <i>🚪</i> 退出登录
+      </a>
+    </nav>
+  </div>
+
+  <!-- 旗袍社区概览 -->
+  <div class="card">
+    <h2 class="card-title">旗袍社区概览</h2>
+    
+    <div class="grid grid-2">
+      <div class="stat-card">
+        <div class="stat-number" id="qipaoMembers">1,200+</div>
+        <div class="stat-label">社区成员</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="qipaoArtisans">50+</div>
+        <div class="stat-label">传承人</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="qipaoProducts">300+</div>
+        <div class="stat-label">文化作品</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="qipaoEvents">25+</div>
+        <div class="stat-label">社区活动</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 社区管理功能 -->
+  <div class="card">
+    <h2 class="card-title">社区管理功能</h2>
+    
+    <div class="grid grid-2">
+      <a href="/admin/events.html" class="btn btn-primary">
+        <i>🎪</i> 活动管理
+      </a>
+      <a href="/admin/artisans.html" class="btn btn-secondary">
+        <i>👨‍🎨</i> 传承人管理
+      </a>
+      <a href="/admin/products.html" class="btn btn-secondary">
+        <i>🛍️</i> 商品管理
+      </a>
+      <a href="/admin/orders.html" class="btn btn-secondary">
+        <i>📦</i> 订单管理
+      </a>
+    </div>
+  </div>
+
+  <!-- 社区设置 -->
+  <div class="card">
+    <h2 class="card-title">社区设置</h2>
+    
+    <form id="communitySettingsForm">
+      <div class="field">
+        <label>社区名称</label>
+        <input id="community_name" name="name" value="旗袍文化社区" readonly/>
+      </div>
+      
+      <div class="field">
+        <label>社区描述</label>
+        <textarea id="community_description" name="description" rows="3" placeholder="社区描述">传承千年旗袍工艺，融合现代设计理念，打造全球旗袍文化数字社区</textarea>
+      </div>
+      
+      <div class="field">
+        <label>社区状态</label>
+        <select id="community_status" name="status">
+          <option value="active">活跃</option>
+          <option value="maintenance">维护中</option>
+          <option value="inactive">暂停</option>
+        </select>
+      </div>
+      
+      <div class="field">
+        <label>社区规则</label>
+        <textarea id="community_rules" name="rules" rows="4" placeholder="社区规则">1. 尊重传统文化，传承旗袍工艺
+2. 鼓励创新设计，融合现代元素
+3. 保护知识产权，禁止抄袭
+4. 维护社区和谐，禁止恶意行为</textarea>
+      </div>
+      
+      <div class="row">
+        <button type="button" id="btnSaveSettings" class="btn btn-primary btn-block">
+          保存设置
+        </button>
+        <button type="button" id="btnResetSettings" class="btn btn-secondary btn-block">
+          重置设置
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 社区数据统计 -->
+  <div class="card">
+    <h2 class="card-title">社区数据统计</h2>
+    
+    <div class="grid grid-2">
+      <div class="stat-card">
+        <div class="stat-number" id="dailyActiveUsers">120</div>
+        <div class="stat-label">日活跃用户</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="monthlyNewUsers">85</div>
+        <div class="stat-label">月新增用户</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalOrders">450</div>
+        <div class="stat-label">总订单数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalRevenue">¥125,000</div>
+        <div class="stat-label">总收入</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 社区动态 -->
+  <div class="card">
+    <h2 class="card-title">社区动态</h2>
+    
+    <div id="community_activity" class="list">
+      <div class="list-item">
+        <div style="flex: 1;">
+          <div style="font-weight: 600;">新传承人加入</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+            张师傅加入了旗袍社区，擅长传统旗袍制作工艺
+          </div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">
+            2小时前
+          </div>
+        </div>
+        <div>
+          <span class="pill pill-ok" style="font-size: 10px;">新成员</span>
+        </div>
+      </div>
+      
+      <div class="list-item">
+        <div style="flex: 1;">
+          <div style="font-weight: 600;">新商品上架</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+            "江南水乡"系列旗袍已上架，限量发售
+          </div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">
+            5小时前
+          </div>
+        </div>
+        <div>
+          <span class="pill pill-ok" style="font-size: 10px;">新商品</span>
+        </div>
+      </div>
+      
+      <div class="list-item">
+        <div style="flex: 1;">
+          <div style="font-weight: 600;">社区活动</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+            "旗袍文化节"活动即将开始，欢迎参与
+          </div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">
+            1天前
+          </div>
+        </div>
+        <div>
+          <span class="pill pill-warning" style="font-size: 10px;">活动</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="common/admin-common.js"></script>
+<script>
+// 旗袍社区管理特定功能
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+  loadCommunityData();
+});
+
+// 保存社区设置
+$('#btnSaveSettings').addEventListener('click', async () => {
+  if (!ensureAuth()) return;
+  
+  const formData = getFormData('communitySettingsForm');
+  
+  const btn = $('#btnSaveSettings');
+  const originalText = btn.textContent;
+  showLoading(btn);
+  
+  try {
+    // 这里应该调用实际的API
+    // const result = await apiJSONmulti(['/admin/community-settings'], {
+    //   method: 'POST',
+    //   body: JSON.stringify(formData)
+    // });
+    
+    // 模拟API调用
+    const result = { ok: true };
+    
+    if (result.ok) {
+      toast('社区设置已保存');
+    } else {
+      toast('保存失败: ' + (result.error || 'unknown'), 'error');
+    }
+    
+  } catch (error) {
+    console.error('保存社区设置失败:', error);
+    toast('保存失败: ' + error.message, 'error');
+  } finally {
+    hideLoading(btn, originalText);
+  }
+});
+
+// 重置社区设置
+$('#btnResetSettings').addEventListener('click', () => {
+  if (confirm('确定要重置社区设置吗？')) {
+    $('#community_name').value = '旗袍文化社区';
+    $('#community_description').value = '传承千年旗袍工艺，融合现代设计理念，打造全球旗袍文化数字社区';
+    $('#community_status').value = 'active';
+    $('#community_rules').value = '1. 尊重传统文化，传承旗袍工艺\n2. 鼓励创新设计，融合现代元素\n3. 保护知识产权，禁止抄袭\n4. 维护社区和谐，禁止恶意行为';
+    toast('设置已重置');
+  }
+});
+
+// 加载社区数据
+async function loadCommunityData() {
+  if (!ensureAuth()) return;
+  
+  try {
+    // 这里应该调用实际的API获取社区数据
+    // 模拟数据
+    $('#qipaoMembers').textContent = '1,200+';
+    $('#qipaoArtisans').textContent = '50+';
+    $('#qipaoProducts').textContent = '300+';
+    $('#qipaoEvents').textContent = '25+';
+    
+    $('#dailyActiveUsers').textContent = '120';
+    $('#monthlyNewUsers').textContent = '85';
+    $('#totalOrders').textContent = '450';
+    $('#totalRevenue').textContent = '¥125,000';
+    
+  } catch (error) {
+    console.error('加载社区数据失败:', error);
+  }
+}
+</script>
+</body>
+</html>

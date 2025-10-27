@@ -1,9 +1,0 @@
-name = "poap-checkin-worker"
-main = "worker/index.ts"
-compatibility_date = "2024-10-01"
-
-# 绑定名请用 D1 —— 和代码里的 c.env.D1 对齐
-[[d1_databases]]
-binding = "D1"
-database_name = "poap-db"
-database_id = "ba24fce5-6b11-4c24-828d-336787011ffd"

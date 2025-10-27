@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>非遗项目 - 非遗上链平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f9f6f0;
+      font-family: "Noto Serif SC", serif;
+    }
+    .text-shadow {
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .heritage-card {
+      transition: all 0.3s ease;
+    }
+    .heritage-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+  </style>
+</head>
+<body class="bg-paper text-ink min-h-screen">
+  <div class="min-h-screen flex flex-col px-2 sm:px-4 max-w-[600px] mx-auto">
+    <!-- 导航栏 -->
+    <header class="fixed w-full z-[9999] bg-paper/95 backdrop-blur-sm shadow-md" id="navbar">
+      <div class="flex justify-between items-center px-2 py-3 sm:px-4">
+        <a class="flex items-center" href="../index.html">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary flex items-center justify-center text-paper mr-2">
+            <i class="fas fa-chess-rook text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-primary leading-tight">非遗项目</h1>
+            <p class="text-xs sm:text-sm text-secondary/80 leading-none">非遗上链平台</p>
+          </div>
+        </a>
+        <div class="relative">
+          <button id="connectWallet" class="bg-primary hover:bg-primary/90 text-paper px-6 py-2 rounded-full text-base font-medium shadow-md transition-all duration-300">
+            <i class="fab fa-ethereum mr-2"></i>连接钱包
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow pt-20">
+      <!-- 英雄区域 -->
+      <section class="relative flex flex-col items-center justify-center text-center text-ink py-16 sm:py-20">
+        <div class="container mx-auto px-4">
+          <h1 class="text-3xl sm:text-4xl font-bold text-primary mb-6 text-shadow">
+            全球非遗项目
+          </h1>
+          <p class="text-base sm:text-lg text-secondary mb-8 leading-relaxed">
+            探索世界各地的非物质文化遗产，共同守护人类文明的瑰宝
+          </p>
+          <div class="flex flex-wrap gap-4 justify-center">
+            <button class="bg-primary text-paper px-6 py-3 rounded-full text-sm sm:text-base shadow-md hover:bg-primary/90 transition-colors">
+              <i class="fas fa-plus mr-2"></i>提交项目
+            </button>
+            <button class="border border-primary text-primary px-6 py-3 rounded-full text-sm sm:text-base hover:bg-primary hover:text-paper transition-all duration-300">
+              <i class="fas fa-search mr-2"></i>搜索项目
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 项目分类 -->
+      <section class="py-12 sm:py-16 bg-white">
+        <div class="container mx-auto px-4 sm:px-6">
+          <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl font-bold text-ink mb-6">项目分类</h2>
+            <p class="text-sm sm:text-base text-secondary leading-relaxed max-w-2xl mx-auto">
+              按照联合国教科文组织非遗分类标准，展示各类非物质文化遗产项目
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+            <button class="heritage-category bg-primary text-paper px-4 py-3 rounded-lg text-sm font-medium shadow-md">
+              传统手工艺
+            </button>
+            <button class="heritage-category bg-paper border border-primary text-primary px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary hover:text-paper transition-all">
+              表演艺术
+            </button>
+            <button class="heritage-category bg-paper border border-primary text-primary px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary hover:text-paper transition-all">
+              节庆活动
+            </button>
+            <button class="heritage-category bg-paper border border-primary text-primary px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary hover:text-paper transition-all">
+              口头传统
+            </button>
+            <button class="heritage-category bg-paper border border-primary text-primary px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary hover:text-paper transition-all">
+              社会实践
+            </button>
+            <button class="heritage-category bg-paper border border-primary text-primary px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary hover:text-paper transition-all">
+              传统知识
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 特色项目展示 -->
+      <section class="py-12 sm:py-16 bg-paper">
+        <div class="container mx-auto px-4 sm:px-6">
+          <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl font-bold text-ink mb-6">特色项目</h2>
+            <p class="text-sm sm:text-base text-secondary leading-relaxed">
+              精选全球优秀非遗项目，展示人类文明的多样性
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 旗袍文化 -->
+            <div class="heritage-card bg-white p-6 rounded-xl shadow-md">
+              <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 mr-4">
+                  <i class="fas fa-tshirt text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-ink">旗袍文化</h3>
+                  <p class="text-sm text-secondary">中国 · 传统服饰</p>
+                </div>
+              </div>
+              <p class="text-sm text-secondary leading-relaxed mb-4">
+                旗袍作为中国传统服饰的代表，承载着深厚的文化内涵和工艺价值，体现了东方女性的优雅与魅力。
+              </p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center text-sm text-secondary">
+                  <i class="fas fa-users mr-1"></i>
+                  <span>1,200+ 参与者</span>
+                </div>
+                <a href="../qipao/" class="text-primary hover:text-primary/80 font-medium text-sm">
+                  进入社区 <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+              </div>
+            </div>
+
+            <!-- 陶瓷工艺 -->
+            <div class="heritage-card bg-white p-6 rounded-xl shadow-md">
+              <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mr-4">
+                  <i class="fas fa-wine-bottle text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-ink">陶瓷工艺</h3>
+                  <p class="text-sm text-secondary">中国 · 传统手工艺</p>
+                </div>
+              </div>
+              <p class="text-sm text-secondary leading-relaxed mb-4">
+                中国陶瓷工艺历史悠久，技艺精湛，从青花瓷到景德镇瓷器，每一件作品都是艺术与技术的完美结合。
+              </p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center text-sm text-secondary">
+                  <i class="fas fa-users mr-1"></i>
+                  <span>800+ 参与者</span>
+                </div>
+                <button class="text-primary hover:text-primary/80 font-medium text-sm">
+                  即将开放 <i class="fas fa-clock ml-1"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 丝绸织造 -->
+            <div class="heritage-card bg-white p-6 rounded-xl shadow-md">
+              <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mr-4">
+                  <i class="fas fa-spider text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-ink">丝绸织造</h3>
+                  <p class="text-sm text-secondary">中国 · 传统手工艺</p>
+                </div>
+              </div>
+              <p class="text-sm text-secondary leading-relaxed mb-4">
+                丝绸织造技艺是中华文明的重要象征，从养蚕到织造，每一道工序都体现了古人的智慧与匠心。
+              </p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center text-sm text-secondary">
+                  <i class="fas fa-users mr-1"></i>
+                  <span>600+ 参与者</span>
+                </div>
+                <button class="text-primary hover:text-primary/80 font-medium text-sm">
+                  即将开放 <i class="fas fa-clock ml-1"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 传统建筑 -->
+            <div class="heritage-card bg-white p-6 rounded-xl shadow-md">
+              <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 mr-4">
+                  <i class="fas fa-building text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-ink">传统建筑</h3>
+                  <p class="text-sm text-secondary">中国 · 传统技艺</p>
+                </div>
+              </div>
+              <p class="text-sm text-secondary leading-relaxed mb-4">
+                中国传统建筑技艺博大精深，从木结构到园林设计，体现了人与自然和谐共生的理念。
+              </p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center text-sm text-secondary">
+                  <i class="fas fa-users mr-1"></i>
+                  <span>400+ 参与者</span>
+                </div>
+                <button class="text-primary hover:text-primary/80 font-medium text-sm">
+                  即将开放 <i class="fas fa-clock ml-1"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 全球分布 -->
+      <section class="py-12 sm:py-16 bg-white">
+        <div class="container mx-auto px-4 sm:px-6">
+          <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl font-bold text-ink mb-6">全球分布</h2>
+            <p class="text-sm sm:text-base text-secondary leading-relaxed">
+              非遗项目遍布全球，展现人类文明的多样性
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="text-center">
+              <div class="text-3xl font-bold text-primary mb-2">15+</div>
+              <div class="text-sm text-secondary">国家地区</div>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-primary mb-2">50+</div>
+              <div class="text-sm text-secondary">非遗项目</div>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-primary mb-2">3,000+</div>
+              <div class="text-sm text-secondary">社区成员</div>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-primary mb-2">100+</div>
+              <div class="text-sm text-secondary">传承人</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-ink text-paper py-8">
+      <div class="container mx-auto px-4 sm:px-6 text-center">
+        <div class="flex items-center justify-center mb-4">
+          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-paper mr-3">
+            <i class="fas fa-chess-rook text-sm"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-paper">非遗项目</h3>
+            <p class="text-xs text-paper/60">非遗上链平台</p>
+          </div>
+        </div>
+        <p class="text-sm text-paper/70 mb-4">
+          探索世界各地的非物质文化遗产，共同守护人类文明的瑰宝
+        </p>
+        <div class="flex justify-center space-x-4">
+          <a href="../index.html" class="text-paper/70 hover:text-paper text-sm">返回平台首页</a>
+          <a href="../qipao/" class="text-paper/70 hover:text-paper text-sm">旗袍社区</a>
+          <a href="javascript:void(0);" class="text-paper/70 hover:text-paper text-sm">提交项目</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // 分类筛选功能
+    document.querySelectorAll('.heritage-category').forEach(button => {
+      button.addEventListener('click', function() {
+        // 移除所有按钮的激活状态
+        document.querySelectorAll('.heritage-category').forEach(btn => {
+          btn.className = 'heritage-category bg-paper border border-primary text-primary px-4 py-3 rounded-lg text-sm font-medium hover:bg-primary hover:text-paper transition-all';
+        });
+        
+        // 激活当前按钮
+        this.className = 'heritage-category bg-primary text-paper px-4 py-3 rounded-lg text-sm font-medium shadow-md';
+        
+        // 这里可以添加筛选逻辑
+        console.log('筛选分类:', this.textContent);
+      });
+    });
+
+    // 钱包连接功能
+    document.getElementById('connectWallet').addEventListener('click', function() {
+      alert('钱包连接功能开发中...');
+    });
+  </script>
+</body>
+</html>

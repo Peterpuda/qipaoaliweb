@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <base href="/" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>$QI 奖励计划 | 非遗上链 · 旗袍文化全球社区</title>
+
+  <!-- 字体与样式 -->
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:'#9E2A2B', secondary:'#D5BDAF', accent:'#D5BDAF',
+            gold:'#D4AF37', ink:'#2D2A26', paper:'#F9F6F0',
+            bordergold: 'rgba(213,189,175,0.5)',
+            cardbg: 'rgba(255,255,255,0.85)'
+          },
+          fontFamily:{ song:['"Noto Serif SC"','serif'], kai:['"Noto Serif SC"','serif'] }
+        }
+      }
+    };
+  </script>
+
+  <!-- ethers (UMD版) -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.0/dist/ethers.umd.min.js"
+          onload="console.log('✅ ethers UMD loaded');"
+          onerror="console.error('❌ ethers failed to load');"></script>
+  
+  <style>
+    /* 移动端优化样式 */
+    @media (max-width: 640px) {
+      .task-btn {
+        min-width: 80px;
+        font-size: 14px;
+      }
+    }
+    
+    /* 确保按钮在移动端有足够的触摸区域 */
+    .task-btn {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* 改善文字可读性 */
+    .text-primary {
+      line-height: 1.4;
+    }
+    
+    .text-secondary {
+      line-height: 1.5;
+    }
+    
+    /* 卡片悬停效果 */
+    .bg-white\/90:hover {
+      transform: translateY(-1px);
+      transition: transform 0.2s ease;
+    }
+  </style>
+</head>
+
+<body class="bg-paper text-ink font-song min-h-screen" style="background-image: none;">
+  <div class="min-h-screen flex flex-col px-2 sm:px-4 max-w-[600px] mx-auto">
+    <!-- 顶部 -->
+    <header class="sticky top-0 bg-paper/95 backdrop-blur-sm shadow-md z-50">
+      <div class="flex items-center justify-between px-4 py-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-md">
+            <i class="fas fa-chess-rook"></i>
+          </div>
+          <div>
+            <div class="text-base text-primary font-bold">非遗web3</div>
+            <div class="text-xs text-secondary">旗袍文化全球自治社区</div>
+          </div>
+        </div>
+        <button id="top-connect" data-qi-connect class="px-4 py-2 rounded-full bg-gradient-to-r from-primary to-gold text-white hover:from-[#7a1d1e] hover:to-[#a17f1a] transition-colors border border-transparent text-sm font-medium">连接钱包</button>
+      </div>
+    </header>
+
+    <!-- 主体 -->
+    <main class="flex-grow px-4 py-6">
+      <!-- 标题区域 -->
+      <section class="mb-8">
+        <div class="text-center mb-6">
+          <span class="inline-block bg-primary/20 text-primary text-sm font-medium px-4 py-2 rounded-full mb-4">QI Rewards</span>
+          <h1 class="text-3xl font-bold mb-3 text-primary">贡献奖励计划</h1>
+          <p class="text-lg text-secondary leading-relaxed">表彰社区贡献与治理参与，仅限社区内投票与权益兑换</p>
+        </div>
+      </section>
+
+      <!-- 账户卡片 -->
+      <section class="mb-8">
+        <div class="bg-white/90 rounded-2xl p-6 shadow-lg border border-bordergold">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-primary">我的账户</h2>
+            <button id="card-connect" data-qi-connect class="px-4 py-2 rounded-full bg-primary text-white hover:bg-[#7a1d1e] transition-colors border border-transparent text-sm font-medium">连接钱包</button>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="p-4 rounded-xl bg-paper border border-bordergold">
+              <div class="text-sm text-secondary mb-2">当前余额</div>
+              <div id="qi-balance" class="text-3xl font-bold text-primary">—</div>
+            </div>
+            <div class="p-4 rounded-xl bg-paper border border-bordergold">
+              <div class="text-sm text-secondary mb-2">本月获取</div>
+              <div id="qi-month" class="text-3xl font-bold text-primary">—</div>
+            </div>
+          </div>
+          <div class="text-sm text-secondary break-words" id="addr">未连接</div>
+        </div>
+      </section>
+
+      <!-- 任务区域 -->
+      <section class="mb-8">
+        <h2 class="text-2xl font-bold mb-6 text-primary">今日任务</h2>
+        <div class="space-y-4">
+          <div class="p-6 rounded-2xl border border-bordergold bg-white/90 shadow-lg">
+            <div class="flex justify-between items-center">
+              <div class="flex-1">
+                <div class="text-lg font-semibold text-primary mb-2">发布一条社区动态</div>
+                <div class="text-sm text-secondary">奖励 +10 QI</div>
+              </div>
+              <button class="task-btn px-6 py-3 rounded-full bg-gradient-to-r from-primary to-gold text-white hover:from-[#7a1d1e] hover:to-[#a17f1a] transition-colors font-medium" data-action="post">领取</button>
+            </div>
+          </div>
+          <div class="p-6 rounded-2xl border border-bordergold bg-white/90 shadow-lg">
+            <div class="flex justify-between items-center">
+              <div class="flex-1">
+                <div class="text-lg font-semibold text-primary mb-2">参与一次提案投票</div>
+                <div class="text-sm text-secondary">奖励 +20 QI</div>
+              </div>
+              <button class="task-btn px-6 py-3 rounded-full bg-gradient-to-r from-primary to-gold text-white hover:from-[#7a1d1e] hover:to-[#a17f1a] transition-colors font-medium" data-action="vote">领取</button>
+            </div>
+          </div>
+        </div>
+        <p id="task-tip" class="mt-4 text-base text-secondary text-center"></p>
+      </section>
+    </main>
+
+    <!-- 底部 -->
+    <footer class="px-4 py-6 text-center text-sm text-secondary border-t border-bordergold">
+      © 非遗上链 · QI Rewards
+    </footer>
+  </div>
+
+  <script>
+    let provider, signer, userAddress;
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert('请先安装 MetaMask 或兼容钱包');
+        return;
+      }
+      try {
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        userAddress = await signer.getAddress();
+        console.log("🎉 钱包连接成功:", userAddress);
+        onWalletConnected(userAddress);
+        await signLoginMessage();   // ✅ 连接成功后立刻签名登录
+      } catch (err) {
+        console.error("钱包连接失败:", err);
+        alert("钱包连接失败: " + err.message);
+      }
+    }
+
+    function onWalletConnected(address) {
+      document.querySelectorAll('[data-qi-connect]').forEach(el => {
+        el.textContent = '已连接: ' + address.slice(0,6) + '...' + address.slice(-4);
+      });
+      document.getElementById('addr').textContent = address;
+      loadUserData();
+    }
+
+    async function signLoginMessage() {
+      try {
+        const message = `欢迎来到非遗上链 QI 奖励系统\n钱包地址: ${userAddress}\n时间戳: ${Date.now()}`;
+        const signature = await signer.signMessage(message);
+        console.log('🪶 签名成功:', signature);
+        // 这里未来可以发送给后端验证钱包身份
+        // await fetch('/api/verify', { method:'POST', body: JSON.stringify({address:userAddress,signature,message}) });
+        alert("签名成功，钱包身份已验证 ✅");
+      } catch (err) {
+        console.warn('签名被用户拒绝:', err);
+      }
+    }
+
+    function loadUserData() {
+      document.getElementById("qi-balance").textContent = "1,250";
+      document.getElementById("qi-month").textContent = "180";
+    }
+
+    function getTaskReward(action){ return {post:10,vote:20}[action]||0; }
+    function handleTaskClick(e){
+      const action=e.currentTarget.dataset.action;
+      if(!userAddress) return alert('请先连接钱包');
+      e.currentTarget.textContent='已完成';
+      e.currentTarget.disabled=true;
+      document.getElementById('task-tip').textContent=`任务完成！获得 ${getTaskReward(action)} QI（示例）`;
+      loadUserData();
+    }
+
+    document.addEventListener("DOMContentLoaded", ()=>{
+      document.querySelectorAll('[data-qi-connect]').forEach(btn=>btn.addEventListener('click', connectWallet));
+      document.querySelectorAll('.task-btn').forEach(btn=>btn.addEventListener('click', handleTaskClick));
+      console.log("📄 页面初始化完成，等待连接钱包");
+    });
+  </script>
+</body>
+</html>

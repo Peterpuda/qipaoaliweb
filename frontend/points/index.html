@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <script src="./common.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
+<title>我的积分 · POAP Check-in</title>
+<meta name="theme-color" content="#0a0a0a" />
+<style>
+  :root{
+    --bg:#0a0a0a; --card:#111113; --line:#232325; --muted:#9b9ca0; --text:#f4f4f5;
+    --brand:#ff8a3d; --brand2:#ffd05a; --ok:#34c759; --err:#ff4d4f;
+    --shadow:0 8px 24px rgba(0,0,0,.45);
+    --radius:16px;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;background:radial-gradient(80% 50% at 50% 0%, #1a1713 0%, var(--bg) 65%);color:var(--text);
+    font-family: system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial}
+  body{margin:0;padding:0;overflow-x:hidden}
+  .appbar{
+    position:sticky;top:0;padding: clamp(10px, 10px + var(--safe-top), 18px) 16px 12px;
+    background:rgba(10,10,10,.7); backdrop-filter: blur(10px); border-bottom:1px solid var(--line); z-index:10;
+  }
+  .appTitle{font-size:18px;font-weight:800;letter-spacing:.2px}
+  .appSub{font-size:12px;color:var(--muted)}
+  .wrap{padding:14px 14px calc(86px + var(--safe-bottom)); max-width:720px; margin:0 auto}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:14px; margin:12px 0}
+  .card h3{margin:2px 2px 10px; font-size:16px}
+  label{display:block; font-size:12px; color:var(--muted); margin:8px 2px 6px}
+  input,button{
+    width:100%; height:48px; border-radius:14px; font-size:15px; border:1px solid var(--line);
+    background:#161616; color:var(--text); padding:0 12px;
+  }
+  .row{display:flex; gap:10px; flex-wrap:wrap}
+  .row > .col{flex:1; min-width: 140px}
+  .btn{border:none;background:linear-gradient(90deg,var(--brand),var(--brand2)); color:#2b1706; font-weight:800; box-shadow:0 6px 20px rgba(255,160,64,.35)}
+  .ghost{background:#171717; color:var(--text)}
+  .panel{background:#0d0d0d; border:1px solid #222; border-radius:12px; padding:10px 12px;
+    font:13px/1.5 ui-monospace,Menlo,monospace; color:#bde0ff; min-height:48px; white-space:pre-wrap}
+  .toast{position:fixed; left:50%; transform:translateX(-50%); bottom: calc(80px + var(--safe-bottom));
+    background:#111; color:#fff; padding:10px 14px; border-radius:12px; font-size:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:.25s; z-index:99}
+  .toast.show{opacity:1}
+  table{width:100%; border-collapse:collapse}
+  th,td{border-bottom:1px solid var(--line); padding:10px; font-size:14px; text-align:left}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace}
+</style>
+</head>
+<body>
+  <div class="appbar">
+    <div class="appTitle">我的积分 · POAP Check-in</div>
+    <div class="appSub">连接钱包查看积分与明细</div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h3>① 连接钱包</h3>
+      <div class="row">
+        <div class="col">
+          <label>地址</label>
+          <input id="addr" placeholder="0x..." autocapitalize="off" spellcheck="false" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button id="btnConnect" class="btn">🔗 连接钱包</button>
+        <button id="btnLoad" class="ghost">📥 加载积分</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>② 积分摘要</h3>
+      <div class="row">
+        <div class="col">
+          <label>总积分</label>
+          <input id="total" readonly class="readonly" value="0" />
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <table>
+          <thead><tr><th>事件 / 活动</th><th>积分</th><th>原因</th><th>时间</th></tr></thead>
+          <tbody id="items"><tr><td colspan="4" style="color:#888">暂无数据</td></tr></tbody>
+        </table>
+      </div>
+      <div class="panel" id="log">就绪。</div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="/poap.config.js?v=20251016"></script>
+  <script>
+    const $ = (id)=>document.getElementById(id);
+    const toast = (t)=>{ const el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1600); };
+    const API = (()=>{ const q=new URLSearchParams(location.search); if(q.get('api')) localStorage.setItem('API_BASE', q.get('api')); return (localStorage.getItem('API_BASE')||window.POAP_CONFIG?.WORKER_BASE_URL||'').trim(); })();
+    const setLog = (t)=> $('log').textContent = '['+new Date().toLocaleTimeString()+'] '+t;
+
+    async function connect(){
+      if(!window.ethereum){ toast('请先安装钱包'); return; }
+      const [addr] = await window.ethereum.request({ method:'eth_requestAccounts' });
+      $('addr').value = addr || '';
+    }
+    function ts(s){ return new Date(s*1000).toLocaleString(); }
+
+    async function loadPoints(){
+      const w = ($('addr').value||'').trim().toLowerCase();
+      if(!w){ toast('请输入地址或连接钱包'); return; }
+      try{
+        const r = await fetch(`${API}/points/${encodeURIComponent(w)}/summary`);
+        const j = await r.json();
+        $('total').value = j?.total || 0;
+        const tb = $('items'); tb.innerHTML='';
+        (j.items||[]).forEach(it=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td><code>${it.event_id||'-'}</code></td><td>${it.points}</td><td>${it.reason||'-'}</td><td>${ts(it.created_at||0)}</td>`;
+          tb.appendChild(tr);
+        });
+        if(!j.items || !j.items.length){ tb.innerHTML = '<tr><td colspan="4" style="color:#888">暂无数据</td></tr>'; }
+        setLog('积分已加载');
+      }catch(e){ setLog('加载失败：'+(e?.message||e)); }
+    }
+
+    $('btnConnect').onclick = connect;
+    $('btnLoad').onclick = loadPoints;
+  </script>
+</body>
+</html>

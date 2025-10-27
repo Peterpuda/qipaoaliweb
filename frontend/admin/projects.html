@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>非遗项目管理 - 平台管理后台</title>
+  <link rel="stylesheet" href="/styles/app.css"/>
+  <link rel="stylesheet" href="common/admin-common.css"/>
+  <script src="/poap.config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <!-- 导航栏 -->
+  <nav class="admin-nav">
+    <div class="nav-brand">非遗项目管理</div>
+    <button class="hamburger">☰</button>
+    <div class="nav-user">
+      <span id="authState" class="pill">未登录</span>
+    </div>
+  </nav>
+
+  <!-- 移动端侧边栏 -->
+  <div class="sidebar-overlay"></div>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div>导航菜单</div>
+      <button class="sidebar-close">×</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/admin/index.html" class="nav-item">
+        <i>📊</i> 平台概览
+      </a>
+      <a href="/admin/projects.html" class="nav-item">
+        <i>🌍</i> 非遗项目管理
+      </a>
+      <a href="/admin/qipao.html" class="nav-item">
+        <i>👗</i> 旗袍社区管理
+      </a>
+      <a href="/admin/events.html" class="nav-item">
+        <i>🎪</i> 活动管理
+      </a>
+      <a href="/admin/artisans.html" class="nav-item">
+        <i>👨‍🎨</i> 传承人管理
+      </a>
+      <a href="/admin/products.html" class="nav-item">
+        <i>🛍️</i> 商品管理
+      </a>
+      <a href="/admin/orders.html" class="nav-item">
+        <i>📦</i> 订单管理
+      </a>
+      <a href="../profile/" class="nav-item">
+        <i>👤</i> 个人中心
+      </a>
+      <a href="javascript:logout()" class="nav-item">
+        <i>🚪</i> 退出登录
+      </a>
+    </nav>
+  </div>
+
+  <!-- 项目创建/编辑表单 -->
+  <div class="card">
+    <h2 class="card-title">非遗项目信息</h2>
+    
+    <form id="projectForm">
+      <input type="hidden" id="project_id" name="id" />
+      
+      <div class="field">
+        <label>项目ID（编辑时自动填入）</label>
+        <input id="project_id_display" placeholder="新建时留空" readonly/>
+      </div>
+      
+      <div class="field">
+        <label>项目名称 *</label>
+        <input id="project_name" name="name" placeholder="如：旗袍文化" required/>
+      </div>
+      
+      <div class="field">
+        <label>项目英文名称</label>
+        <input id="project_name_en" name="name_en" placeholder="如：Qipao Culture"/>
+      </div>
+      
+      <div class="field">
+        <label>项目分类 *</label>
+        <select id="project_category" name="category" required>
+          <option value="">请选择分类</option>
+          <option value="traditional_craft">传统手工艺</option>
+          <option value="performing_arts">表演艺术</option>
+          <option value="festivals">节庆活动</option>
+          <option value="oral_tradition">口头传统</option>
+          <option value="social_practice">社会实践</option>
+          <option value="traditional_knowledge">传统知识</option>
+        </select>
+      </div>
+      
+      <div class="field">
+        <label>所属国家/地区 *</label>
+        <input id="project_country" name="country" placeholder="如：中国" required/>
+      </div>
+      
+      <div class="field">
+        <label>项目描述</label>
+        <textarea id="project_description" name="description" rows="4" placeholder="详细描述项目的文化背景、历史价值等"></textarea>
+      </div>
+      
+      <div class="field">
+        <label>项目状态 *</label>
+        <select id="project_status" name="status" required>
+          <option value="active">活跃</option>
+          <option value="inactive">暂停</option>
+          <option value="archived">归档</option>
+        </select>
+      </div>
+      
+      <div class="row">
+        <button type="button" id="btnSaveProject" class="btn btn-primary btn-block">
+          保存 / 更新 项目
+        </button>
+        <button type="button" id="btnClearProjectForm" class="btn btn-secondary btn-block">
+          清空表单
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 项目列表 -->
+  <div class="card">
+    <h2 class="card-title">非遗项目列表</h2>
+    
+    <div class="row" style="justify-content: space-between; align-items: center;">
+      <div>当前项目</div>
+      <button id="btnRefreshProjects" class="btn btn-sm btn-secondary">
+        刷新
+      </button>
+    </div>
+    
+    <div id="project_list" class="list" style="margin-top: 12px;">
+      <div class="list-item text-center">
+        <div class="loading"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 项目统计 -->
+  <div class="card">
+    <h2 class="card-title">项目统计</h2>
+    
+    <div class="grid grid-2">
+      <div class="stat-card">
+        <div class="stat-number" id="totalProjects">-</div>
+        <div class="stat-label">项目总数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="activeProjects">-</div>
+        <div class="stat-label">活跃项目</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalCountries">-</div>
+        <div class="stat-label">涉及国家</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalParticipants">-</div>
+        <div class="stat-label">总参与者</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="common/admin-common.js"></script>
+<script>
+// 非遗项目管理特定功能
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+  loadProjects();
+  loadProjectStats();
+});
+
+// 保存/更新项目
+$('#btnSaveProject').addEventListener('click', async () => {
+  if (!ensureAuth()) return;
+  
+  const formData = getFormData('projectForm');
+  const errors = validateForm(formData, ['name', 'category', 'country', 'status']);
+  
+  if (errors.length > 0) {
+    toast(errors.join(', '), 'error');
+    return;
+  }
+  
+  const btn = $('#btnSaveProject');
+  const originalText = btn.textContent;
+  showLoading(btn);
+  
+  try {
+    const payload = {
+      id: formData.id || undefined,
+      name: formData.name.trim(),
+      name_en: formData.name_en.trim(),
+      category: formData.category,
+      country: formData.country.trim(),
+      description: formData.description.trim(),
+      status: formData.status
+    };
+    
+    // 这里应该调用实际的API
+    // const result = await apiJSONmulti(['/admin/project-upsert'], {
+    //   method: 'POST',
+    //   body: JSON.stringify(payload)
+    // });
+    
+    // 模拟API调用
+    const result = { ok: true, id: payload.id || 'new_project_' + Date.now() };
+    
+    if (result.ok) {
+      toast('已保存项目 / ID: ' + result.id);
+      clearProjectForm();
+      loadProjects();
+      loadProjectStats();
+    } else {
+      toast('保存失败: ' + (result.error || 'unknown'), 'error');
+    }
+    
+  } catch (error) {
+    console.error('保存项目失败:', error);
+    toast('保存失败: ' + error.message, 'error');
+  } finally {
+    hideLoading(btn, originalText);
+  }
+});
+
+// 清空项目表单
+$('#btnClearProjectForm').addEventListener('click', clearProjectForm);
+
+// 刷新项目列表
+$('#btnRefreshProjects').addEventListener('click', loadProjects);
+
+// 加载项目列表
+async function loadProjects() {
+  if (!ensureAuth()) return;
+  
+  try {
+    // 这里应该调用实际的API
+    // const result = await apiJSONmulti(['/admin/projects']);
+    
+    // 模拟数据
+    const mockProjects = [
+      {
+        id: 'qipao_001',
+        name: '旗袍文化',
+        name_en: 'Qipao Culture',
+        category: 'traditional_craft',
+        country: '中国',
+        status: 'active',
+        description: '中国传统旗袍文化传承与创新',
+        participants: 1200,
+        created_at: Date.now() / 1000 - 86400 * 30
+      },
+      {
+        id: 'ceramics_001',
+        name: '陶瓷工艺',
+        name_en: 'Ceramics Craft',
+        category: 'traditional_craft',
+        country: '中国',
+        status: 'active',
+        description: '中国传统陶瓷制作工艺',
+        participants: 800,
+        created_at: Date.now() / 1000 - 86400 * 15
+      },
+      {
+        id: 'silk_001',
+        name: '丝绸织造',
+        name_en: 'Silk Weaving',
+        category: 'traditional_craft',
+        country: '中国',
+        status: 'inactive',
+        description: '传统丝绸织造技艺',
+        participants: 600,
+        created_at: Date.now() / 1000 - 86400 * 7
+      }
+    ];
+    
+    displayProjects(mockProjects);
+  } catch (error) {
+    console.error('加载项目列表失败:', error);
+    $('#project_list').innerHTML = '<div class="list-item text-center">加载失败</div>';
+  }
+}
+
+// 显示项目列表
+function displayProjects(projects) {
+  const container = $('#project_list');
+  
+  if (!projects || projects.length === 0) {
+    container.innerHTML = '<div class="list-item text-center">暂无项目</div>';
+    return;
+  }
+  
+  container.innerHTML = projects.map(project => {
+    const statusClass = getProjectStatusClass(project.status);
+    const statusText = getProjectStatusText(project.status);
+    const categoryText = getCategoryText(project.category);
+    
+    return `
+      <div class="list-item">
+        <div style="flex: 1;">
+          <div style="font-weight: 600; display: flex; align-items: center; gap: 8px;">
+            ${project.name}
+            <span class="pill ${statusClass}" style="font-size: 10px;">${statusText}</span>
+          </div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+            ${categoryText} | ${project.country} | 参与者: ${project.participants || 0}
+          </div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">
+            ${project.description || '暂无描述'} | ID: ${project.id}
+          </div>
+        </div>
+        <div>
+          <button onclick="editProject('${project.id}')" class="btn btn-sm btn-secondary">
+            编辑
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 获取项目状态样式类
+function getProjectStatusClass(status) {
+  switch (status) {
+    case 'active': return 'pill-ok';
+    case 'inactive': return 'pill-warning';
+    case 'archived': return 'pill-error';
+    default: return 'pill';
+  }
+}
+
+// 获取项目状态文本
+function getProjectStatusText(status) {
+  switch (status) {
+    case 'active': return '活跃';
+    case 'inactive': return '暂停';
+    case 'archived': return '归档';
+    default: return status;
+  }
+}
+
+// 获取分类文本
+function getCategoryText(category) {
+  const categoryMap = {
+    'traditional_craft': '传统手工艺',
+    'performing_arts': '表演艺术',
+    'festivals': '节庆活动',
+    'oral_tradition': '口头传统',
+    'social_practice': '社会实践',
+    'traditional_knowledge': '传统知识'
+  };
+  return categoryMap[category] || category;
+}
+
+// 编辑项目
+function editProject(projectId) {
+  // 这里应该从列表中获取项目数据，或者重新加载单个项目
+  loadProjects().then(() => {
+    toast('请从服务器重新加载项目数据', 'error');
+  });
+}
+
+// 清空项目表单
+function clearProjectForm() {
+  clearForm('projectForm');
+  $('#project_id').value = '';
+  $('#project_id_display').value = '';
+}
+
+// 填充项目表单
+function fillProjectForm(project) {
+  $('#project_id').value = project.id || '';
+  $('#project_id_display').value = project.id || '';
+  $('#project_name').value = project.name || '';
+  $('#project_name_en').value = project.name_en || '';
+  $('#project_category').value = project.category || '';
+  $('#project_country').value = project.country || '';
+  $('#project_description').value = project.description || '';
+  $('#project_status').value = project.status || '';
+}
+
+// 加载项目统计
+async function loadProjectStats() {
+  if (!ensureAuth()) return;
+  
+  try {
+    // 这里应该调用实际的API获取统计数据
+    // 模拟数据
+    $('#totalProjects').textContent = '3';
+    $('#activeProjects').textContent = '2';
+    $('#totalCountries').textContent = '1';
+    $('#totalParticipants').textContent = '2,600';
+  } catch (error) {
+    console.error('加载项目统计失败:', error);
+  }
+}
+
+// 将函数暴露到全局作用域
+window.editProject = editProject;
+window.fillProjectForm = fillProjectForm;
+window.clearProjectForm = clearProjectForm;
+</script>
+</body>
+</html>

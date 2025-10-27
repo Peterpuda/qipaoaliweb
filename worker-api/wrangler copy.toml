@@ -1,0 +1,12 @@
+name = "poap-checkin-worker"
+main = "index.ts"
+compatibility_date = "2025-10-17"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "poap-db"
+database_id = "ba24fce5-6b11-4c24-828d-336787011ffd"
+
+[vars]
+ADMIN_WALLETS = "0x1111111111111111111111111111111111111111,0x2222222222222222222222222222222222222222"
+CORS_ORIGIN = "https://poap-checkin-frontend.pages.dev"

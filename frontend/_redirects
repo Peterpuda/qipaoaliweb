@@ -1,0 +1,19 @@
+# Cloudflare Pages redirects configuration
+# Note: Cloudflare Pages automatically serves .html files without the extension
+# We only need redirects for directory-style URLs (ending with /)
+
+# Redirect directory-style URLs to index.html
+/admin/ /admin/index.html 200
+/checkin/ /checkin/index.html 200
+/profile/ /profile/index.html 200
+/points/ /points/index.html 200
+/rewards/ /rewards/index.html 200
+/claim/ /claim/index.html 200
+
+# Redirect root to index.html (keep this)
+/ /index.html 200
+
+
+
+
+

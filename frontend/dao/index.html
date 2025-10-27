@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>DAO治理 - 非遗上链平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/poap.config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #9E2A2B;
+      --secondary: #4A403A;
+      --accent: #D5BDAF;
+      --gold: #D4AF37;
+      --ink: #2D2A26;
+      --paper: #F9F6F0;
+      --line: #D5BDAF;
+      --muted: #9E2A2B;
+    }
+    
+    body {
+      font-family: "Noto Serif SC", serif;
+      background-color: var(--paper);
+      color: var(--ink);
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      color: var(--paper);
+      box-shadow: 0 3px 14px rgba(158, 42, 43, 0.6);
+    }
+    
+    .btn-primary:hover {
+      background: #7a1b1c;
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: var(--paper);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--accent);
+      color: var(--ink);
+    }
+    
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(213, 189, 175, 0.4);
+      padding: 20px;
+      margin: 16px 0;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid var(--line);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .proposal-card {
+      border-left: 4px solid var(--primary);
+    }
+    
+    .proposal-card.active {
+      border-left-color: var(--gold);
+    }
+    
+    .proposal-card.passed {
+      border-left-color: #10B981;
+    }
+    
+    .proposal-card.failed {
+      border-left-color: #EF4444;
+    }
+    
+    .progress-bar {
+      height: 8px;
+      background: var(--line);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.3s ease;
+    }
+    
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal.hidden {
+      display: none;
+    }
+    
+    .modal-content {
+      background: var(--paper);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .admin-only {
+      display: none;
+    }
+    
+    .admin-only.show {
+      display: block;
+    }
+    
+    .voting-section {
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+    
+    .signature-pending {
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid #F59E0B;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen max-w-[600px] mx-auto px-4 py-4">
+    <!-- 导航栏 -->
+    <header class="flex items-center justify-between py-4 mb-4">
+      <a href="../index.html" class="flex items-center">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-paper mr-3">
+          <i class="fas fa-vote-yea text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-primary">DAO治理</h1>
+          <p class="text-xs text-secondary">社区共治</p>
+        </div>
+      </a>
+      <div class="flex items-center gap-2">
+        <span id="walletStatus" class="text-sm text-secondary">未连接</span>
+        <button id="connectWallet" class="btn btn-primary">
+          <i class="fab fa-ethereum mr-2"></i>连接钱包
+        </button>
+      </div>
+    </header>
+
+    <!-- 用户贡献度 -->
+    <div class="card mb-4">
+      <h3 class="text-base font-bold text-ink mb-3">我的贡献度</h3>
+      <div id="userStats" class="text-center py-8">
+        <div class="loading"></div>
+        <p class="text-secondary mt-4">加载中...</p>
+      </div>
+    </div>
+
+    <!-- 治理统计 -->
+    <div class="card mb-4">
+      <h3 class="text-base font-bold text-ink mb-3">治理统计</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="text-center">
+          <div class="text-xl font-bold text-primary" id="totalProposals">-</div>
+          <div class="text-xs text-secondary">总提案数</div>
+        </div>
+        <div class="text-center">
+          <div class="text-xl font-bold text-primary" id="activeProposals">-</div>
+          <div class="text-xs text-secondary">活跃提案</div>
+        </div>
+        <div class="text-center">
+          <div class="text-xl font-bold text-primary" id="totalVoters">-</div>
+          <div class="text-xs text-secondary">参与投票</div>
+        </div>
+        <div class="text-center">
+          <div class="text-xl font-bold text-primary" id="totalVotes">-</div>
+          <div class="text-xs text-secondary">总投票数</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 提案列表 -->
+    <div class="card mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-ink">最新提案</h3>
+        <div class="flex gap-2">
+          <button id="createProposalBtn" class="btn btn-primary btn-sm admin-only">
+            <i class="fas fa-plus mr-2"></i>发起提案
+          </button>
+          <button id="refreshProposals" class="btn btn-secondary btn-sm">
+            <i class="fas fa-refresh mr-2"></i>刷新
+          </button>
+        </div>
+      </div>
+      <div id="proposalsList" class="space-y-4">
+        <div class="text-center py-8">
+          <div class="loading"></div>
+          <p class="text-secondary mt-4">加载提案中...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 投票历史 -->
+    <div class="card mb-4">
+      <h3 class="text-lg font-bold text-ink mb-4">我的投票历史</h3>
+      <div id="votingHistory" class="space-y-3">
+        <div class="text-center py-8">
+          <div class="loading"></div>
+          <p class="text-secondary mt-4">加载投票历史...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提案创建模态框 -->
+  <div id="proposalModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-ink">发起新提案</h3>
+        <button id="closeModal" class="text-secondary hover:text-ink">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="proposalForm">
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-ink mb-2">提案标题</label>
+          <input type="text" id="proposalTitle" class="w-full p-3 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入提案标题" required>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-ink mb-2">提案描述</label>
+          <textarea id="proposalDescription" class="w-full p-3 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" rows="4" placeholder="请详细描述提案内容..." required></textarea>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-ink mb-2">投票时长（天）</label>
+          <select id="votingDuration" class="w-full p-3 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            <option value="3">3天</option>
+            <option value="7" selected>7天</option>
+            <option value="14">14天</option>
+            <option value="30">30天</option>
+          </select>
+        </div>
+        
+        <div class="flex gap-3">
+          <button type="button" id="cancelProposal" class="btn btn-secondary flex-1">取消</button>
+          <button type="submit" class="btn btn-primary flex-1">发起提案</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 投票确认模态框 -->
+  <div id="voteModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-ink">确认投票</h3>
+        <button id="closeVoteModal" class="text-secondary hover:text-ink">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <div id="voteProposalInfo" class="mb-4">
+        <!-- 提案信息将在这里显示 -->
+      </div>
+      
+      <div class="signature-pending">
+        <p class="text-sm text-secondary mb-2">请使用钱包签名确认投票</p>
+        <div class="flex items-center gap-2">
+          <div class="loading"></div>
+          <span class="text-sm">等待签名...</span>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-4">
+        <button id="cancelVote" class="btn btn-secondary flex-1">取消</button>
+        <button id="confirmVote" class="btn btn-primary flex-1">确认投票</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API配置
+    const API_BASE = (window.POAP_CONFIG?.WORKER_BASE_URL || 'https://songbrocade-api.petterbrand03.workers.dev').replace(/\/+$/, '');
+    
+    // 全局变量
+    let currentWallet = '';
+    let provider = null;
+    let signer = null;
+    let isAdmin = false;
+    let currentProposal = null;
+    let currentVote = null;
+    
+    // 模拟数据（实际应该从API获取）
+    const mockProposals = [
+      {
+        id: 'prop_001',
+        title: '旗袍文化社区治理规则修订',
+        description: '修订社区治理规则，增加新的投票机制和提案流程...',
+        status: 'active',
+        votesFor: 120,
+        votesAgainst: 45,
+        totalVotes: 165,
+        endTime: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7天后
+        creator: '0x1234...5678',
+        createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000
+      },
+      {
+        id: 'prop_002',
+        title: '新增陶瓷工艺传承人认证标准',
+        description: '为陶瓷工艺传承人制定新的认证标准和审核流程...',
+        status: 'passed',
+        votesFor: 200,
+        votesAgainst: 50,
+        totalVotes: 250,
+        endTime: Date.now() - 24 * 60 * 60 * 1000, // 1天前
+        creator: '0x2345...6789',
+        createdAt: Date.now() - 8 * 24 * 60 * 60 * 1000
+      },
+      {
+        id: 'prop_003',
+        title: '平台手续费调整方案',
+        description: '调整平台交易手续费，从2%降低到1.5%...',
+        status: 'failed',
+        votesFor: 80,
+        votesAgainst: 150,
+        totalVotes: 230,
+        endTime: Date.now() - 3 * 24 * 60 * 60 * 1000, // 3天前
+        creator: '0x3456...7890',
+        createdAt: Date.now() - 10 * 24 * 60 * 60 * 1000
+      }
+    ];
+    
+    const mockUserStats = {
+      qiTokens: 1250,
+      votingPower: 1250,
+      proposalsCreated: 2,
+      votesCast: 15,
+      rank: 25
+    };
+    
+    // 钱包连接功能
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert('未检测到钱包，请安装MetaMask或其他Web3钱包');
+        return;
+      }
+      
+      try {
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send('eth_requestAccounts', []);
+        signer = await provider.getSigner();
+        currentWallet = await signer.getAddress();
+        
+        // 更新UI
+        document.getElementById('walletStatus').textContent = `${currentWallet.slice(0, 6)}...${currentWallet.slice(-4)}`;
+        document.getElementById('connectWallet').textContent = '已连接';
+        document.getElementById('connectWallet').disabled = true;
+        
+        // 检查是否为管理员
+        await checkAdminStatus();
+        
+        // 加载用户数据
+        await loadUserStats();
+        await loadGovernanceStats();
+        await loadProposals();
+        await loadVotingHistory();
+        
+        showToast('钱包连接成功！', 'success');
+        
+      } catch (error) {
+        console.error('连接钱包失败:', error);
+        showToast('连接钱包失败: ' + error.message, 'error');
+      }
+    }
+    
+    // 检查管理员状态
+    async function checkAdminStatus() {
+      try {
+        const response = await fetch(`${API_BASE}/admin/artisans`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('bearer_token') || ''}`
+          }
+        });
+        
+        isAdmin = response.ok;
+        
+        // 显示/隐藏管理员功能
+        const adminElements = document.querySelectorAll('.admin-only');
+        adminElements.forEach(el => {
+          if (isAdmin) {
+            el.classList.add('show');
+          } else {
+            el.classList.remove('show');
+          }
+        });
+        
+      } catch (error) {
+        console.error('检查管理员状态失败:', error);
+        isAdmin = false;
+      }
+    }
+    
+    // 加载用户统计
+    async function loadUserStats() {
+      if (!currentWallet) {
+        document.getElementById('userStats').innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-wallet text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-bold text-ink mb-2">请先连接钱包</h3>
+            <p class="text-secondary">连接钱包后查看您的贡献度</p>
+          </div>
+        `;
+        return;
+      }
+      
+      try {
+        // 这里应该调用API获取真实的用户数据
+        // const response = await fetch(`${API_BASE}/dao/user-stats?wallet=${currentWallet}`);
+        // const userStats = await response.json();
+        
+        // 暂时使用模拟数据
+        const userStats = mockUserStats;
+        
+        document.getElementById('userStats').innerHTML = `
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-primary">${userStats.qiTokens}</div>
+              <div class="text-sm text-secondary">QI 代币</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-primary">${userStats.votingPower}</div>
+              <div class="text-sm text-secondary">投票权重</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-primary">${userStats.proposalsCreated}</div>
+              <div class="text-sm text-secondary">发起提案</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-primary">${userStats.votesCast}</div>
+              <div class="text-sm text-secondary">参与投票</div>
+            </div>
+          </div>
+          <div class="text-center">
+            <span class="text-sm text-secondary">社区排名: </span>
+            <span class="text-sm font-bold text-primary">#${userStats.rank}</span>
+          </div>
+        `;
+      } catch (error) {
+        console.error('加载用户统计失败:', error);
+        showToast('加载用户统计失败', 'error');
+      }
+    }
+    
+    // 加载治理统计
+    function loadGovernanceStats() {
+      document.getElementById('totalProposals').textContent = mockProposals.length;
+      document.getElementById('activeProposals').textContent = mockProposals.filter(p => p.status === 'active').length;
+      document.getElementById('totalVoters').textContent = '156';
+      document.getElementById('totalVotes').textContent = mockProposals.reduce((sum, p) => sum + p.totalVotes, 0);
+    }
+    
+    // 加载提案列表
+    function loadProposals() {
+      const container = document.getElementById('proposalsList');
+      
+      if (mockProposals.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-vote-yea text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-bold text-ink mb-2">暂无提案</h3>
+            <p class="text-secondary">成为第一个发起提案的人吧！</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = mockProposals.map(proposal => {
+        const isActive = proposal.status === 'active';
+        const isPassed = proposal.status === 'passed';
+        const isFailed = proposal.status === 'failed';
+        
+        const statusText = isActive ? '进行中' : isPassed ? '已通过' : '已否决';
+        const statusClass = isActive ? 'active' : isPassed ? 'passed' : 'failed';
+        
+        const votePercentage = proposal.totalVotes > 0 ? (proposal.votesFor / proposal.totalVotes * 100).toFixed(1) : 0;
+        const timeLeft = isActive ? Math.ceil((proposal.endTime - Date.now()) / (24 * 60 * 60 * 1000)) : 0;
+        
+        return `
+          <div class="proposal-card ${statusClass} p-4 rounded-lg">
+            <div class="flex items-start justify-between mb-3">
+              <h4 class="text-lg font-semibold text-ink">${proposal.title}</h4>
+              <span class="text-xs px-2 py-1 rounded-full ${isActive ? 'bg-yellow-100 text-yellow-800' : isPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                ${statusText}
+              </span>
+            </div>
+            <p class="text-sm text-secondary mb-4 line-clamp-2">${proposal.description}</p>
+            
+            <div class="mb-3">
+              <div class="flex items-center justify-between text-sm text-secondary mb-1">
+                <span>支持率: ${votePercentage}%</span>
+                <span>${proposal.votesFor} / ${proposal.totalVotes} 票</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${votePercentage}%"></div>
+              </div>
+            </div>
+            
+            <div class="flex items-center justify-between text-sm text-secondary">
+              <span>发起人: ${proposal.creator}</span>
+              ${isActive ? `<span>剩余 ${timeLeft} 天</span>` : ''}
+            </div>
+            
+            ${isActive ? `
+              <div class="flex gap-2 mt-3">
+                <button class="btn btn-primary btn-sm flex-1" onclick="voteProposal('${proposal.id}', true)">
+                  <i class="fas fa-thumbs-up mr-1"></i>支持
+                </button>
+                <button class="btn btn-secondary btn-sm flex-1" onclick="voteProposal('${proposal.id}', false)">
+                  <i class="fas fa-thumbs-down mr-1"></i>反对
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // 加载投票历史
+    function loadVotingHistory() {
+      const mockVotes = [
+        { proposalId: 'prop_001', title: '旗袍文化社区治理规则修订', vote: '支持', time: '2天前' },
+        { proposalId: 'prop_002', title: '新增陶瓷工艺传承人认证标准', vote: '支持', time: '5天前' },
+        { proposalId: 'prop_003', title: '平台手续费调整方案', vote: '反对', time: '1周前' }
+      ];
+      
+      const container = document.getElementById('votingHistory');
+      
+      if (mockVotes.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-history text-4xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-bold text-ink mb-2">暂无投票记录</h3>
+            <p class="text-secondary">参与社区治理，投出你的一票！</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = mockVotes.map(vote => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div class="flex-1">
+            <h4 class="text-sm font-semibold text-ink">${vote.title}</h4>
+            <p class="text-xs text-secondary">${vote.time}</p>
+          </div>
+          <span class="text-xs px-2 py-1 rounded-full ${vote.vote === '支持' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+            ${vote.vote}
+          </span>
+        </div>
+      `).join('');
+    }
+    
+    // 投票功能
+    async function voteProposal(proposalId, support) {
+      if (!currentWallet) {
+        showToast('请先连接钱包', 'error');
+        return;
+      }
+      
+      const proposal = mockProposals.find(p => p.id === proposalId);
+      if (!proposal) {
+        showToast('提案不存在', 'error');
+        return;
+      }
+      
+      if (proposal.status !== 'active') {
+        showToast('该提案已结束投票', 'error');
+        return;
+      }
+      
+      currentProposal = proposal;
+      currentVote = support;
+      
+      // 显示投票确认模态框
+      document.getElementById('voteProposalInfo').innerHTML = `
+        <div class="p-4 bg-gray-50 rounded-lg">
+          <h4 class="font-semibold text-ink mb-2">${proposal.title}</h4>
+          <p class="text-sm text-secondary mb-3">${proposal.description}</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-semibold">您的投票:</span>
+            <span class="text-sm ${support ? 'text-green-600' : 'text-red-600'}">
+              ${support ? '支持' : '反对'}
+            </span>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('voteModal').classList.remove('hidden');
+    }
+    
+    // 确认投票
+    async function confirmVote() {
+      if (!currentProposal || currentVote === null) {
+        showToast('投票信息错误', 'error');
+        return;
+      }
+      
+      try {
+        // 创建投票消息
+        const message = `DAO投票\n提案: ${currentProposal.title}\n投票: ${currentVote ? '支持' : '反对'}\n时间: ${new Date().toISOString()}`;
+        
+        // 使用钱包签名
+        const signature = await signer.signMessage(message);
+        
+        // 这里应该调用API提交投票
+        // const response = await fetch(`${API_BASE}/dao/vote`, {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'Authorization': `Bearer ${localStorage.getItem('bearer_token') || ''}`
+        //   },
+        //   body: JSON.stringify({
+        //     proposalId: currentProposal.id,
+        //     wallet: currentWallet,
+        //     support: currentVote,
+        //     signature: signature,
+        //     message: message
+        //   })
+        // });
+        
+        // 模拟投票成功
+        showToast(`投票${currentVote ? '支持' : '反对'}成功！`, 'success');
+        
+        // 关闭模态框
+        document.getElementById('voteModal').classList.add('hidden');
+        
+        // 刷新提案列表
+        await loadProposals();
+        await loadVotingHistory();
+        
+      } catch (error) {
+        console.error('投票失败:', error);
+        showToast('投票失败: ' + error.message, 'error');
+      }
+    }
+    
+    // 发起提案
+    function openProposalModal() {
+      if (!isAdmin) {
+        showToast('只有管理员可以发起提案', 'error');
+        return;
+      }
+      
+      document.getElementById('proposalModal').classList.remove('hidden');
+    }
+    
+    // 提交提案
+    async function submitProposal(event) {
+      event.preventDefault();
+      
+      if (!isAdmin) {
+        showToast('只有管理员可以发起提案', 'error');
+        return;
+      }
+      
+      const title = document.getElementById('proposalTitle').value;
+      const description = document.getElementById('proposalDescription').value;
+      const duration = parseInt(document.getElementById('votingDuration').value);
+      
+      if (!title || !description) {
+        showToast('请填写完整的提案信息', 'error');
+        return;
+      }
+      
+      try {
+        // 创建提案消息
+        const message = `DAO提案\n标题: ${title}\n描述: ${description}\n投票时长: ${duration}天\n时间: ${new Date().toISOString()}`;
+        
+        // 使用钱包签名
+        const signature = await signer.signMessage(message);
+        
+        // 这里应该调用API创建提案
+        // const response = await fetch(`${API_BASE}/dao/proposal`, {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'Authorization': `Bearer ${localStorage.getItem('bearer_token') || ''}`
+        //   },
+        //   body: JSON.stringify({
+        //     title: title,
+        //     description: description,
+        //     duration: duration,
+        //     creator: currentWallet,
+        //     signature: signature,
+        //     message: message
+        //   })
+        // });
+        
+        // 模拟提案创建成功
+        showToast('提案创建成功！', 'success');
+        
+        // 关闭模态框并重置表单
+        document.getElementById('proposalModal').classList.add('hidden');
+        document.getElementById('proposalForm').reset();
+        
+        // 刷新提案列表
+        await loadProposals();
+        
+      } catch (error) {
+        console.error('创建提案失败:', error);
+        showToast('创建提案失败: ' + error.message, 'error');
+      }
+    }
+    
+    // 工具函数
+    function showToast(message, type = 'info') {
+      // 简单的toast实现
+      const toast = document.createElement('div');
+      toast.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${
+        type === 'success' ? 'bg-green-500' : 
+        type === 'error' ? 'bg-red-500' : 
+        'bg-blue-500'
+      }`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 3000);
+    }
+    
+    // 事件监听器
+    document.getElementById('connectWallet').addEventListener('click', connectWallet);
+    document.getElementById('createProposalBtn').addEventListener('click', openProposalModal);
+    document.getElementById('proposalForm').addEventListener('submit', submitProposal);
+    document.getElementById('confirmVote').addEventListener('click', confirmVote);
+    document.getElementById('refreshProposals').addEventListener('click', loadProposals);
+    
+    // 模态框关闭事件
+    document.getElementById('closeModal').addEventListener('click', () => {
+      document.getElementById('proposalModal').classList.add('hidden');
+    });
+    
+    document.getElementById('cancelProposal').addEventListener('click', () => {
+      document.getElementById('proposalModal').classList.add('hidden');
+    });
+    
+    document.getElementById('closeVoteModal').addEventListener('click', () => {
+      document.getElementById('voteModal').classList.add('hidden');
+    });
+    
+    document.getElementById('cancelVote').addEventListener('click', () => {
+      document.getElementById('voteModal').classList.add('hidden');
+    });
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 检查是否已连接钱包
+      if (window.ethereum) {
+        window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
+          if (accounts.length > 0) {
+            // 自动连接已授权的钱包
+            connectWallet();
+          } else {
+            // 加载未连接状态的数据
+            loadUserStats();
+            loadGovernanceStats();
+            loadProposals();
+            loadVotingHistory();
+          }
+        }).catch(error => {
+          console.error('检查钱包状态失败:', error);
+          loadUserStats();
+          loadGovernanceStats();
+          loadProposals();
+          loadVotingHistory();
+        });
+      } else {
+        // 没有钱包，加载未连接状态的数据
+        loadUserStats();
+        loadGovernanceStats();
+        loadProposals();
+        loadVotingHistory();
+      }
+    });
+  </script>
+</body>
+</html>

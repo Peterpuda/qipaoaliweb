@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>活动签到 · 宋锦DAO</title>
+<style>body{font-family:system-ui;margin:0;background:#FAF8F3;color:#111} .box{max-width:680px;margin:0 auto;padding:20px} input,button{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:8px 0} .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.06);} .muted{color:#666}</style>
+<script type="module">
+const API = (localStorage.getItem('API_BASE') || '').trim() || location.origin;
+async function post(path, data){ const r=await fetch(API+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)}); return r.json(); }
+window.addEventListener('DOMContentLoaded',()=>{
+  const url = new URL(location.href);
+  const eventId = url.searchParams.get('event') || '';
+  const nonce = url.searchParams.get('nonce') || '';
+  document.getElementById('eventId').value = eventId;
+  document.getElementById('nonce').value = nonce;
+
+  document.getElementById('btn').onclick = async ()=>{
+    const wallet = document.getElementById('wallet').value.trim();
+    const tokenId = document.getElementById('tokenId').value.trim();
+    const res = await post('/attend', { eventId, wallet, tokenId, nonce });
+    document.getElementById('out').textContent = JSON.stringify(res, null, 2);
+  };
+});
+</script>
+</head>
+<body>
+<div class="box">
+  <h1>活动签到</h1>
+  <div class="card">
+    <label>活动ID</label><input id="eventId" readonly />
+    <label>一次性码</label><input id="nonce" readonly />
+    <label>钱包地址</label><input id="wallet" placeholder="0x..." />
+    <label>（可选）Token ID</label><input id="tokenId" placeholder="如持有某件作品，可填其ID" />
+    <button id="btn">提交签到</button>
+    <pre id="out" class="muted"></pre>
+  </div>
+</div>
+</body>
+</html>

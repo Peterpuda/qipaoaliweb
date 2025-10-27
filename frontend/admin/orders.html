@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>订单管理 - 旗袍DAO管理后台</title>
+  <link rel="stylesheet" href="/styles/app.css"/>
+  <link rel="stylesheet" href="common/admin-common.css"/>
+  <script src="/poap.config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <!-- 导航栏 -->
+  <nav class="admin-nav">
+    <div class="nav-brand">订单管理</div>
+    <button class="hamburger">☰</button>
+    <div class="nav-user">
+      <span id="authState" class="pill">未登录</span>
+    </div>
+  </nav>
+
+  <!-- 移动端侧边栏 -->
+  <div class="sidebar-overlay"></div>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div>导航菜单</div>
+      <button class="sidebar-close">×</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/admin/index.html" class="nav-item">
+        <i>📊</i> 仪表板
+      </a>
+      <a href="/admin/events.html" class="nav-item">
+        <i>🎪</i> 活动管理
+      </a>
+      <a href="/admin/artisans.html" class="nav-item">
+        <i>👨‍🎨</i> 传承人管理
+      </a>
+      <a href="/admin/products.html" class="nav-item">
+        <i>🛍️</i> 商品管理
+      </a>
+      <a href="/admin/orders.html" class="nav-item">
+        <i>📦</i> 订单管理
+      </a>
+      <a href="../profile/" class="nav-item">
+        <i>👤</i> 个人中心
+      </a>
+      <a href="javascript:logout()" class="nav-item">
+        <i>🚪</i> 退出登录
+      </a>
+    </nav>
+  </div>
+
+  <!-- 订单状态更新 -->
+  <div class="card">
+    <h2 class="card-title">订单状态更新</h2>
+    
+    <form id="orderUpdateForm">
+      <div class="field">
+        <label>订单ID *</label>
+        <input id="order_update_id" name="order_id" placeholder="输入订单ID" required/>
+      </div>
+      
+      <div class="field">
+        <label>新状态 *</label>
+        <select id="order_update_status" name="status" required>
+          <option value="">请选择状态</option>
+          <option value="pending">待付款</option>
+          <option value="paid">已付款</option>
+          <option value="shipped">已发货</option>
+          <option value="delivered">已送达</option>
+          <option value="cancelled">已取消</option>
+        </select>
+      </div>
+      
+      <div class="field">
+        <label>交易哈希（可选）</label>
+        <input id="order_update_txhash" name="tx_hash" placeholder="0x... 用于记录链上交易"/>
+      </div>
+      
+      <div class="row">
+        <button type="button" id="btnUpdateOrder" class="btn btn-primary btn-block">
+          更新订单状态
+        </button>
+        <button type="button" id="btnClearOrderForm" class="btn btn-secondary btn-block">
+          清空表单
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 订单列表 -->
+  <div class="card">
+    <h2 class="card-title">订单列表</h2>
+    
+    <div class="row" style="justify-content: space-between; align-items: center;">
+      <div>当前订单</div>
+      <button id="btnRefreshOrders" class="btn btn-sm btn-secondary">
+        刷新
+      </button>
+    </div>
+    
+    <div id="order_list" class="list" style="margin-top: 12px;">
+      <div class="list-item text-center">
+        <div class="loading"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="common/admin-common.js"></script>
+<script>
+// 订单管理特定功能
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+  loadOrdersAdmin();
+});
+
+// 更新订单状态
+$('#btnUpdateOrder').addEventListener('click', async () => {
+  if (!ensureAuth()) return;
+  
+  const formData = getFormData('orderUpdateForm');
+  const errors = validateForm(formData, ['order_id', 'status']);
+  
+  if (errors.length > 0) {
+    toast(errors.join(', '), 'error');
+    return;
+  }
+  
+  const btn = $('#btnUpdateOrder');
+  const originalText = btn.textContent;
+  showLoading(btn);
+  
+  try {
+    const payload = {
+      order_id: formData.order_id.trim(),
+      status: formData.status,
+      tx_hash: formData.tx_hash.trim() || undefined
+    };
+    
+    const result = await apiJSONmulti(['/admin/order-update'], {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    
+    if (result.ok) {
+      toast('订单状态已更新');
+      clearOrderForm();
+      loadOrdersAdmin();
+    } else {
+      toast('更新失败: ' + (result.error || 'unknown'), 'error');
+    }
+    
+  } catch (error) {
+    console.error('更新订单状态失败:', error);
+    toast('更新失败: ' + error.message, 'error');
+  } finally {
+    hideLoading(btn, originalText);
+  }
+});
+
+// 清空订单表单
+$('#btnClearOrderForm').addEventListener('click', clearOrderForm);
+
+// 刷新订单列表
+$('#btnRefreshOrders').addEventListener('click', loadOrdersAdmin);
+
+// 加载订单列表（管理员视图）
+async function loadOrdersAdmin() {
+  if (!ensureAuth()) return;
+  
+  try {
+    const result = await apiJSONmulti(['/orders']);
+    displayOrders(result.orders || []);
+  } catch (error) {
+    console.error('加载订单列表失败:', error);
+    $('#order_list').innerHTML = '<div class="list-item text-center">加载失败</div>';
+  }
+}
+
+// 显示订单列表
+function displayOrders(orders) {
+  const container = $('#order_list');
+  
+  if (!orders || orders.length === 0) {
+    container.innerHTML = '<div class="list-item text-center">暂无订单</div>';
+    return;
+  }
+  
+  container.innerHTML = orders.map(order => {
+    const statusClass = getStatusClass(order.status);
+    const statusText = getStatusText(order.status);
+    const priceText = `${order.price_native} ${order.price_currency}`;
+    const pointsText = order.price_points ? ` / ${order.price_points} 积分` : '';
+    
+    return `
+      <div class="list-item">
+        <div style="flex: 1;">
+          <div style="font-weight: 600;">订单 #${order.id}</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+            ${order.buyer_wallet ? order.buyer_wallet.slice(0, 6) + '...' + order.buyer_wallet.slice(-4) : '未知买家'}
+          </div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">
+            ${priceText}${pointsText} | 商品: ${order.product_title_zh || order.product_slug || '未知商品'}
+          </div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">
+            创建时间: ${order.created_at ? formatDate(order.created_at) : '未知'}
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div class="pill ${statusClass} mb-1">${statusText}</div>
+          <button onclick="prefillOrderStatus('${order.id}', '${order.status}')" class="btn btn-sm btn-secondary">
+            编辑
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 获取状态样式类
+function getStatusClass(status) {
+  switch (status) {
+    case 'pending': return 'pill-warning';
+    case 'paid': return 'pill-ok';
+    case 'shipped': return 'pill-ok';
+    case 'delivered': return 'pill-ok';
+    case 'cancelled': return 'pill-error';
+    default: return 'pill';
+  }
+}
+
+// 获取状态文本
+function getStatusText(status) {
+  switch (status) {
+    case 'pending': return '待付款';
+    case 'paid': return '已付款';
+    case 'shipped': return '已发货';
+    case 'delivered': return '已送达';
+    case 'cancelled': return '已取消';
+    default: return status;
+  }
+}
+
+// 预填充订单状态表单
+function prefillOrderStatus(orderId, currentStatus) {
+  $('#order_update_id').value = orderId;
+  $('#order_update_status').value = currentStatus;
+  $('#order_update_txhash').value = '';
+  
+  // 滚动到表单
+  document.querySelector('#orderUpdateForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+// 清空订单表单
+function clearOrderForm() {
+  clearForm('orderUpdateForm');
+}
+
+// 将函数暴露到全局作用域
+window.prefillOrderStatus = prefillOrderStatus;
+window.clearOrderForm = clearOrderForm;
+</script>
+</body>
+</html>

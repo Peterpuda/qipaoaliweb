@@ -1,34 +1,3 @@
--- D1 schema for POAP/签到
-CREATE TABLE IF NOT EXISTS events (
-  id TEXT PRIMARY KEY,
-  name TEXT,
-  start_at TEXT,
-  end_at TEXT,
-  poap_contract TEXT,
-  chain_id INTEGER,
-  created_by TEXT
-);
-
-CREATE TABLE IF NOT EXISTS checkin_tokens (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  event_id TEXT,
-  code TEXT,
-  nonce TEXT,
-  expires_at TEXT,
-  used INTEGER DEFAULT 0
-);
-
--- 第一个checkins表定义已删除，使用下面完整的定义
-
-CREATE TABLE IF NOT EXISTS audit_logs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  ts DATETIME DEFAULT CURRENT_TIMESTAMP,
-  actor TEXT,
-  action TEXT,
-  target TEXT,
-  meta_json TEXT,
-  tx_hash TEXT
-);
 
 -- D1 schema for Songbrocade Phase 2
 CREATE TABLE IF NOT EXISTS members (
@@ -51,12 +20,9 @@ CREATE TABLE IF NOT EXISTS checkins (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   event_id TEXT NOT NULL,
   wallet TEXT NOT NULL,
-  code TEXT,
   token_id INTEGER,
   ts INTEGER NOT NULL,
   sig TEXT,
-  tx_hash TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(event_id, wallet)
 );
 

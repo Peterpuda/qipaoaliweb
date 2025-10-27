@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>徽章领取逻辑测试</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+</head>
+<body class="text-[#4A403A] p-4 bg-gray-50">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6 text-center">徽章领取按钮功能测试</h1>
+    
+    <!-- 测试控制面板 -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-lg font-semibold mb-4">测试控制面板</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">订单ID:</label>
+          <input id="orderId" type="text" value="id_19a1a3fa4d1_ecde20ae2c537" 
+                 class="w-full border rounded-lg p-2" />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium mb-2">Bearer Token:</label>
+          <input id="bearerToken" type="text" value="test-token-123" 
+                 class="w-full border rounded-lg p-2" />
+        </div>
+      </div>
+      
+      <div class="flex gap-2">
+        <button onclick="testGetBadgeTicket()" 
+                class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold">
+          1. 获取徽章签名包
+        </button>
+        <button onclick="testParseSignature()" 
+                class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold">
+          2. 解析签名数据
+        </button>
+        <button onclick="testContractCall()" 
+                class="bg-purple-500 text-white px-4 py-2 rounded-lg font-semibold">
+          3. 模拟合约调用
+        </button>
+        <button onclick="clearResults()" 
+                class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold">
+          清空结果
+        </button>
+      </div>
+    </div>
+
+    <!-- 订单卡片模拟 -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-lg font-semibold mb-4">订单卡片模拟</h2>
+      <div id="orderCard" class="border rounded-lg p-4">
+        <!-- 动态生成订单卡片 -->
+      </div>
+    </div>
+
+    <!-- 测试结果 -->
+    <div id="result" class="bg-white rounded-lg shadow p-6 hidden">
+      <h3 class="text-lg font-semibold mb-4">测试结果:</h3>
+      <pre id="resultContent" class="bg-gray-100 p-4 rounded text-sm overflow-auto"></pre>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "https://songbrocade-api.petterbrand03.workers.dev";
+    
+    const BADGE_ABI = [
+      "function mintWithSig(address to,uint256 eventId,uint256 amount,uint256 deadline,uint8 v,bytes32 r,bytes32 s) external"
+    ];
+
+    let currentWallet = "0x1234567890123456789012345678901234567890"; // 模拟钱包地址
+    let badgeData = null;
+
+    function getBearer() {
+      return document.getElementById("bearerToken").value || "";
+    }
+
+    function authHeaders(json = true) {
+      const h = {};
+      const b = getBearer();
+      if (b) h["Authorization"] = "Bearer " + b;
+      if (json) h["Content-Type"] = "application/json";
+      return h;
+    }
+
+    function showResult(data) {
+      const resultDiv = document.getElementById("result");
+      const resultContent = document.getElementById("resultContent");
+      resultContent.textContent = JSON.stringify(data, null, 2);
+      resultDiv.classList.remove("hidden");
+    }
+
+    function clearResults() {
+      document.getElementById("result").classList.add("hidden");
+    }
+
+    // 1. 测试获取徽章签名包
+    async function testGetBadgeTicket() {
+      const orderId = document.getElementById("orderId").value;
+      
+      try {
+        showResult({ step: "1. 获取徽章签名包", status: "开始..." });
+        
+        const ticketRes = await fetch(
+          API_BASE + "/badge/claim-ticket?order_id=" + encodeURIComponent(orderId),
+          {
+            method: "GET",
+            headers: authHeaders(false)
+          }
+        );
+        
+        const ticketData = await ticketRes.json();
+        
+        if (!ticketData.ok) {
+          throw new Error("无法获取徽章签名包: " + (ticketData.error || "unknown"));
+        }
+
+        badgeData = ticketData.badge;
+        
+        showResult({
+          step: "1. 获取徽章签名包",
+          status: "成功",
+          data: {
+            order_id: badgeData.order_id,
+            token_id: badgeData.token_id,
+            contract_addr: badgeData.contract_addr,
+            claimed: badgeData.claimed,
+            payload: badgeData.payload
+          }
+        });
+
+        // 更新订单卡片
+        updateOrderCard(badgeData);
+        
+      } catch (err) {
+        showResult({
+          step: "1. 获取徽章签名包",
+          status: "失败",
+          error: err.message
+        });
+      }
+    }
+
+    // 2. 测试解析签名数据
+    function testParseSignature() {
+      if (!badgeData) {
+        showResult({
+          step: "2. 解析签名数据",
+          status: "失败",
+          error: "请先获取徽章签名包"
+        });
+        return;
+      }
+
+      try {
+        const payload = badgeData.payload;
+        const signature = payload.signature;
+        
+        // 检查必要字段
+        const requiredFields = ['contract', 'tokenId', 'to', 'amount', 'deadline', 'signature'];
+        const missingFields = requiredFields.filter(field => !payload[field]);
+        
+        if (missingFields.length > 0) {
+          throw new Error("缺少必要字段: " + missingFields.join(', '));
+        }
+
+        // 解析签名
+        const parsedSig = parseSignature(signature);
+        
+        showResult({
+          step: "2. 解析签名数据",
+          status: "成功",
+          data: {
+            payload: payload,
+            parsedSignature: parsedSig,
+            signatureLength: signature.length,
+            isPlaceholder: signature === "0xTODO_SIGNATURE"
+          }
+        });
+        
+      } catch (err) {
+        showResult({
+          step: "2. 解析签名数据",
+          status: "失败",
+          error: err.message
+        });
+      }
+    }
+
+    // 3. 测试合约调用（模拟）
+    function testContractCall() {
+      if (!badgeData) {
+        showResult({
+          step: "3. 模拟合约调用",
+          status: "失败",
+          error: "请先获取徽章签名包"
+        });
+        return;
+      }
+
+      try {
+        const payload = badgeData.payload;
+        const parsedSig = parseSignature(payload.signature);
+        
+        // 模拟合约调用参数
+        const contractCall = {
+          contract: payload.contract,
+          method: "mintWithSig",
+          parameters: {
+            to: currentWallet,
+            eventId: BigInt(payload.tokenId),
+            amount: BigInt(payload.amount || "1"),
+            deadline: BigInt(payload.deadline),
+            v: parsedSig.v,
+            r: parsedSig.r,
+            s: parsedSig.s
+          }
+        };
+
+        showResult({
+          step: "3. 模拟合约调用",
+          status: "准备就绪",
+          data: {
+            wallet: currentWallet,
+            contractCall: contractCall,
+            note: "这是模拟调用，实际需要钱包环境和真实合约"
+          }
+        });
+        
+      } catch (err) {
+        showResult({
+          step: "3. 模拟合约调用",
+          status: "失败",
+          error: err.message
+        });
+      }
+    }
+
+    function parseSignature(signature) {
+      if (signature && signature.startsWith('0x')) {
+        const sig = signature.slice(2); // 去掉 0x
+        if (sig.length === 130) { // 65 * 2
+          return {
+            r: '0x' + sig.slice(0, 64),
+            s: '0x' + sig.slice(64, 128),
+            v: parseInt(sig.slice(128, 130), 16)
+          };
+        } else {
+          throw new Error("签名格式不正确，长度: " + sig.length);
+        }
+      } else {
+        throw new Error("缺少有效的签名数据");
+      }
+    }
+
+    function updateOrderCard(badge) {
+      const orderCard = document.getElementById("orderCard");
+      const payload = badge.payload;
+      
+      const statusTag = `<span class="px-2 py-1 rounded bg-green-100 border border-green-300 text-green-600 text-xs">completed</span>`;
+      
+      const badgeBtn = `<button onclick="simulateClaimBadge()" 
+                              class="mt-2 bg-[#9E2A2B] text-white rounded-xl py-2 text-xs font-semibold active:opacity-80">
+                        领取正品认证徽章
+                       </button>`;
+      
+      orderCard.innerHTML = `
+        <div class="text-[#4A403A] text-sm font-semibold flex flex-wrap gap-2 items-center">
+          <span>测试旗袍作品</span>
+          ${statusTag}
+        </div>
+        <div class="text-xs text-gray-600 mb-1">
+          订单号：${badge.order_id}
+        </div>
+        <div class="text-xs text-gray-600">
+          商品编号：test-songjin-001
+        </div>
+        <div class="text-xs text-gray-600">
+          数量：1 | 支付Tx: 0x1234567890abcdef
+        </div>
+        <div class="text-xs text-gray-500 mt-2">
+          创建时间：2025-10-25T07:20:00.000Z<br/>
+          最新更新：2025-10-25T07:20:00.000Z
+        </div>
+        ${badgeBtn}
+      `;
+    }
+
+    function simulateClaimBadge() {
+      showResult({
+        step: "模拟点击徽章领取按钮",
+        status: "开始执行 claimBadge 函数",
+        wallet: currentWallet,
+        note: "这是模拟前端按钮点击，实际会调用 claimBadge(orderId) 函数"
+      });
+      
+      // 模拟完整的 claimBadge 流程
+      setTimeout(() => {
+        showResult({
+          step: "模拟 claimBadge 执行",
+          status: "完成",
+          steps: [
+            "1. 检查钱包连接 ✓",
+            "2. 获取徽章签名包 ✓", 
+            "3. 验证签名数据 ✓",
+            "4. 调用合约 mintWithSig ✓",
+            "5. 等待交易确认 ✓",
+            "6. 更新UI状态 ✓"
+          ],
+          result: "徽章领取成功！"
+        });
+      }, 1000);
+    }
+
+    // 页面加载时自动获取徽章数据
+    window.addEventListener("DOMContentLoaded", () => {
+      testGetBadgeTicket();
+    });
+  </script>
+</body>
+</html>
+

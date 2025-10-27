@@ -1,136 +1,276 @@
-// worker/index.ts
-// Cloudflare Worker with Hono
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
+// worker-api/index.js
+import { ethers } from 'ethers';
 
-// Ethers for signing
-import { ethers } from 'ethers'
+/* -------------------- config & defaults -------------------- */
+const DEFAULT_ADMIN = '0xef85456652ada05f12708b9bdcf215780e780d18'; // 你的默认管理员（小写）
 
-type Bindings = {
-  D1: D1Database,
-  ADMIN_PRIVATE_KEY: string,
-  POAP_CONTRACT: string,
-  RPC_URL: string
+/* -------------------- tiny utils -------------------- */
+function corsify(resp, env){
+  const r = new Response(resp.body, resp);
+  r.headers.set('access-control-allow-origin', env.CORS_ORIGIN || '*');
+  r.headers.set('access-control-allow-headers', 'authorization,content-type,x-admin-bearer');
+  r.headers.set('access-control-allow-methods', 'GET,POST,OPTIONS');
+  r.headers.set('access-control-expose-headers', '*');
+  if (!r.headers.get('content-type')) r.headers.set('content-type','application/json; charset=utf-8');
+  r.headers.set('vary','origin');
+  return r;
+}
+function json(env, data, status=200){ return corsify(new Response(JSON.stringify(data), { status }), env); }
+async function readJSON(req){ try{ return await req.json(); }catch{ return {}; } }
+function stripApi(p){ return p.startsWith('/api/') ? p.slice(4) : p; }
+
+async function d1Run(env, sql, binds=[]) { return env.DB.prepare(sql).bind(...binds).run(); }
+async function d1All(env, sql, binds=[]) { const r = await env.DB.prepare(sql).bind(...binds).all(); return r.results || []; }
+
+function randomHex(n=16){ const b=new Uint8Array(n); crypto.getRandomValues(b); return [...b].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+async function genStaticCode(env, slug){
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.AUTH_SECRET || 'qipao-secret'),
+    {name:'HMAC', hash:'SHA-256'}, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`event:${slug}`));
+  const hex = [...new Uint8Array(sig)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  return hex.slice(0,16).toUpperCase();
 }
 
-const app = new Hono<{ Bindings: Bindings }>()
+/* --------- schema detector: 兼容新老 events / checkins 表 --------- */
+const schemaCache = { events: null, checkins: null };
 
-app.use('*', cors())
-
-// utils
-function genCode(len = 6) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let s = ''
-  for (let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)]
-  return s
+async function getCols(env, table){
+  if (schemaCache[table]) return schemaCache[table];
+  try{
+    const rows = await d1All(env, `PRAGMA table_info(${table})`);
+    const cols = rows.map(r => String(r.name || r.cid || '').toLowerCase()).filter(Boolean);
+    schemaCache[table] = cols;
+    return cols;
+  }catch{
+    schemaCache[table] = [];
+    return [];
+  }
 }
 
-app.post('/api/poap/code', async (c) => {
-  const { eventId } = await c.req.json()
-  if (!eventId) return c.json({ ok:false, message: 'eventId required' }, 400)
+async function isEventsLegacy(env){
+  // 老表包含 slug、name，且通常没有 start_ts/end_ts/location
+  const cols = await getCols(env, 'events');
+  return cols.includes('slug') && !cols.includes('start_ts') && !cols.includes('end_ts');
+}
 
-  const code = genCode(6)
-  const nonce = crypto.randomUUID()
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString()
+async function checkinsUsesEventSlug(env){
+  const cols = await getCols(env, 'checkins');
+  // 优先用 event_slug；退化到 event_id
+  if (cols.includes('event_slug')) return 'event_slug';
+  return 'event_id';
+}
 
-  await c.env.D1.prepare(
-    `INSERT INTO checkin_tokens(event_id, code, nonce, expires_at) VALUES (?1, ?2, ?3, ?4)`
-  ).bind(eventId, code, nonce, expiresAt).run()
+/* -------------------- auth helpers -------------------- */
+function readBearerRaw(req){
+  const h1 = req.headers.get('authorization') || '';
+  const h2 = req.headers.get('x-admin-bearer') || '';
+  if (h2) return h2.trim();
+  if (h1.toLowerCase().startsWith('bearer ')) return h1.slice(7).trim();
+  return '';
+}
+function readBearerAddr(req){
+  const token = readBearerRaw(req);
+  if (!token) return null;
 
-  return c.json({ ok:true, code, expiresAt })
-})
+  // base64(JSON)
+  try{
+    const obj = JSON.parse(atob(token));
+    if (obj?.addr) return String(obj.addr).toLowerCase();
+    if (obj?.address) return String(obj.address).toLowerCase();
+  }catch{}
 
-app.post('/api/poap/checkin', async (c) => {
-  const { eventId, wallet, code, nonce } = await c.req.json()
-  if (!eventId || !wallet || !code) return c.json({ ok:false, message: 'bad request' }, 400)
-// 一次性调试：查看是否读到三项机密
-  app.get('/api/debug/env', (c) => {
-    return c.json({
-      hasAdminKey: !!c.env.ADMIN_PRIVATE_KEY,
-      hasContract: !!c.env.POAP_CONTRACT,
-      hasRpc: !!c.env.RPC_URL,
-      // 仅用于对照（避免泄露）：长度检查
-      contractLen: (c.env.POAP_CONTRACT || '').length,
-      rpcLen: (c.env.RPC_URL || '').length
-    });
-  });
-  // 1) 校验 code 是否存在、未过期、未使用
-  const now = new Date().toISOString()
-  const row = await c.env.D1.prepare(
-    `SELECT id, used, expires_at FROM checkin_tokens WHERE event_id=?1 AND code=?2 ORDER BY id DESC LIMIT 1`
-  ).bind(eventId, code).first()
-  if (!row) return c.json({ ok:false, message: 'invalid code' }, 400)
-  if (row.used) return c.json({ ok:false, message: 'code used' }, 400)
-  if (row.expires_at < now) return c.json({ ok:false, message: 'code expired' }, 400)
+  // JWT（仅解析 payload）
+  const parts = token.split('.');
+  if (parts.length === 3){
+    try{
+      const payload = JSON.parse(decodeURIComponent(escape(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')))));
+      if (payload?.addr) return String(payload.addr).toLowerCase();
+      if (payload?.address) return String(payload.address).toLowerCase();
+    }catch{}
+  }
+  return null;
+}
 
-  // 2) 标记已用
-  await c.env.D1.prepare(
-    `UPDATE checkin_tokens SET used=1 WHERE id=?1`
-  ).bind(row.id).run()
+function adminRule(env){
+  const raw = String(env.ADMIN_WALLETS ?? '').trim();
+  if (raw) return raw;
+  return DEFAULT_ADMIN; // 未配置时回退你的默认管理员
+}
+function checkAdmin(addr, env){
+  const rule = adminRule(env);
+  if (!rule) return false;
+  if (rule === '*') return !!addr;
+  const allow = rule.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+  return allow.includes(String(addr||'').toLowerCase());
+}
+function makeToken(addr){ return btoa(JSON.stringify({ addr: String(addr).toLowerCase(), ts: Date.now() })); }
 
-  // 3) 读取链上合约 nonce（可选校验）
-  const provider = new ethers.JsonRpcProvider(c.env.RPC_URL)
-  const contract = new ethers.Contract(
-    c.env.POAP_CONTRACT,
-    ["function nonces(address) view returns (uint256)"],
-    provider
-  )
-  const onchainNonce = await contract.nonces(wallet)
-  // 可选：比较与前端提供的 nonce 是否一致（若传了）
-  if (nonce && onchainNonce.toString() !== String(nonce)) {
-    // 不拒绝，仅记录：客户端与链上 nonce 不一致可能因并发；生产可根据策略处理
+/* -------------------- in-memory challenge -------------------- */
+const challenges = new Map(); // key: address(or nonce) -> message
+
+/* -------------------- core handler (auto-CORS & schema aware) -------------------- */
+async function handle(req, env){
+  const url = new URL(req.url);
+  const path = stripApi(url.pathname);
+
+  // health
+  if (req.method === 'GET' && (path === '/' || path === '/health')){
+    return json(env, { ok:true, service:'worker-api', ts: Date.now() });
   }
 
-  // 4) 离线签名（EIP-712）
-  const deadline = Math.floor(Date.now()/1000) + 10 * 60 // 10分钟有效
-  const amount = 1
-  const signer = new ethers.Wallet(c.env.ADMIN_PRIVATE_KEY, provider)
-
-  // 读取链ID
-  const { chainId } = await provider.getNetwork()
-
-  // EIP-712 domain & types
-  const domain = {
-    name: "Poap1155WithSig",
-    version: "1",
-    chainId: Number(chainId),
-    verifyingContract: c.env.POAP_CONTRACT
-  }
-  const types = {
-    Mint: [
-      { name: "to", type: "address" },
-      { name: "eventId", type: "uint256" },
-      { name: "amount", type: "uint256" },
-      { name: "nonce", type: "uint256" },
-      { name: "deadline", type: "uint256" }
-    ]
-  }
-  const message = {
-    to: wallet,
-    eventId: Number(eventId),
-    amount,
-    nonce: Number(onchainNonce),
-    deadline
+  // OPTIONS 预检
+  if (req.method === 'OPTIONS'){
+    return corsify(new Response(null, { status:204 }), env);
   }
 
-  const signature = await signer.signTypedData(domain, types, message)
-  const sig = ethers.Signature.from(signature)
+  // whoami（自检）
+  if (req.method === 'GET' && path === '/admin/whoami'){
+    const addr = readBearerAddr(req);
+    const rule = adminRule(env);
+    if (!addr) return json(env, { ok:false, error:'NO_TOKEN', rule }, 401);
+    const ok = checkAdmin(addr, env);
+    return json(env, ok ? { ok:true, addr, rule } : { ok:false, error:'NOT_ADMIN', addr, rule }, ok ? 200 : 403);
+  }
 
-  // 5) 写签到记录（简化）
-  await c.env.D1.prepare(
-    `INSERT INTO checkins(event_id, wallet, code, tx_hash) VALUES (?1, ?2, ?3, ?4)`
-  ).bind(eventId, wallet, code, "").run()
+  // ========== Auth ==========
+  if ((req.method === 'POST' || req.method === 'GET') && path === '/auth/challenge'){
+    const body = req.method === 'POST' ? await readJSON(req) : {};
+    const addr = String(body.address || body.addr || '').toLowerCase();
+    const nonce = randomHex(8);
+    const message = [
+      'Login to Admin',
+      `Nonce: ${nonce}`,
+      addr ? `Address: ${addr}` : '',
+      body?.domain ? `Domain: ${body.domain}` : '',
+      (body?.chainId !== undefined) ? `ChainId: ${body.chainId}` : ''
+    ].filter(Boolean).join('\n');
+    challenges.set(addr || nonce, message);
+    return corsify(new Response(JSON.stringify({ ok:true, nonce, message, msg: message }), {
+      status:200, headers:{ 'content-type':'application/json', 'set-cookie':`nonce=${nonce}; Max-Age=300; Path=/; SameSite=Lax` }
+    }), env);
+  }
 
-  // 6) 返回前端签名包
-  return c.json({
-    ok: true,
-    eventId: Number(eventId),
-    amount,
-    deadline,
-    v: sig.v,
-    r: sig.r,
-    s: sig.s
-  })
-})
+  if (req.method === 'POST' && path === '/auth/verify'){
+    const body = await readJSON(req);
+    const address = String(body.address || body.addr || '').toLowerCase();
+    const signature = body.signature || body.sig;
+    const message = body.message || challenges.get(address) || '';
 
-export default app
+    if (!address || !signature || !message) return json(env, { ok:false, error:'MISSING_FIELDS' }, 400);
+
+    let recovered;
+    try{ recovered = ethers.verifyMessage(message, signature); }
+    catch{ return json(env, { ok:false, error:'BAD_SIGNATURE' }, 400); }
+
+    if (String(recovered).toLowerCase() !== address) return json(env, { ok:false, error:'ADDR_MISMATCH' }, 400);
+
+    const token = makeToken(address);
+    challenges.delete(address);
+    return json(env, { ok:true, token });
+  }
+
+  // ========== Admin ==========
+  if (req.method === 'POST' && path === '/admin/event-upsert'){
+    const addr = readBearerAddr(req);
+    const rule = adminRule(env);
+    if (!addr) return json(env, { ok:false, error:'NO_TOKEN' }, 401);
+    if (!checkAdmin(addr, env)) return json(env, { ok:false, error:'NOT_ADMIN', addr, rule }, 403);
+
+    const body = await readJSON(req);
+    const slug = String(body.slug || body.title || '').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    const title = String(body.title || '').trim();
+    const start_ts = Number(body.start_ts || 0) || null;
+    const end_ts   = Number(body.end_ts   || 0) || null;
+    const location = String(body.location || '').trim() || null;
+    if (!slug || !title) return json(env, { ok:false, error:'slug_title_required' }, 400);
+
+    // 根据 schema 分支：老表 or 新表
+    if (await isEventsLegacy(env)) {
+      // 老表：events(slug TEXT, name TEXT, weight INTEGER, capacity INTEGER, ...)
+      // 先 UPDATE，若未命中再 INSERT（避免依赖 slug 上的 UNIQUE 约束）
+      const r1 = await d1Run(env, `UPDATE events SET name=? WHERE slug=?`, [title, slug]);
+      const changed = (r1.meta && r1.meta.changes) ? r1.meta.changes : 0;
+      if (!changed) {
+        await d1Run(env, `INSERT INTO events (slug, name, weight, capacity) VALUES (?, ?, ?, NULL)`, [slug, title, 100]);
+      }
+    } else {
+      // 新表：events(id TEXT PRIMARY KEY, name TEXT, start_ts INTEGER, end_ts INTEGER, location TEXT, created_at INTEGER)
+      await d1Run(env, `
+        INSERT INTO events (id, name, start_ts, end_ts, location, created_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          name=excluded.name,
+          start_ts=excluded.start_ts,
+          end_ts=excluded.end_ts,
+          location=excluded.location
+      `, [slug, title, start_ts, end_ts, location, Date.now()]);
+    }
+
+    const static_code = await genStaticCode(env, slug);
+    return json(env, { ok:true, static_code, slug });
+  }
+
+  if (req.method === 'GET' && path === '/admin/event-code'){
+    const addr = readBearerAddr(req);
+    const rule = adminRule(env);
+    if (!addr) return json(env, { ok:false, error:'NO_TOKEN' }, 401);
+    if (!checkAdmin(addr, env)) return json(env, { ok:false, error:'NOT_ADMIN', addr, rule }, 403);
+
+    const slug = url.searchParams.get('event_slug') || url.searchParams.get('id') || '';
+    if (!slug) return json(env, { ok:false, error:'event_slug_required' }, 400);
+
+    const static_code = await genStaticCode(env, slug);
+    return json(env, { ok:true, event_slug: slug, static_code });
+  }
+
+  // ========== User ==========
+  if (req.method === 'POST' && path === '/poap/checkin'){
+    const body = await readJSON(req);
+    const slug   = String(body.event_slug || body.eventId || body.slug || '').trim();
+    const wallet = String(body.wallet || body.address || '').toLowerCase();
+    const code   = String(body.code || body.nonce || '').toUpperCase();
+    if (!slug || !wallet) return json(env, { ok:false, error:'MISSING_FIELDS' }, 400);
+
+    // 事件是否存在（兼容新老结构）
+    let exists = false;
+    if (await isEventsLegacy(env)) {
+      const ev = (await d1All(env, `SELECT slug FROM events WHERE slug=? LIMIT 1`, [slug]))[0];
+      exists = !!ev;
+    } else {
+      const ev = (await d1All(env, `SELECT id FROM events WHERE id=? LIMIT 1`, [slug]))[0];
+      exists = !!ev;
+    }
+    if (!exists) return json(env, { ok:false, error:'EVENT_NOT_FOUND' }, 404);
+
+    if (code){
+      const expect = await genStaticCode(env, slug);
+      if (expect !== code) return json(env, { ok:false, error:'BAD_CODE' }, 400);
+    }
+
+    // checkins 表字段名兼容
+    const evCol = await checkinsUsesEventSlug(env); // 'event_slug' or 'event_id'
+    const sql = `INSERT INTO checkins (${evCol}, wallet, token_id, ts, sig) VALUES (?, ?, NULL, ?, NULL)`;
+    try{
+      await d1Run(env, sql, [slug, wallet, Date.now()]);
+    }catch{}
+
+    return json(env, { ok:true, duplicated:false, event_slug: slug });
+  }
+
+  return json(env, { ok:false, error:'NOT_FOUND', path: url.pathname }, 404);
+}
+
+/* -------------------- export (global try/catch for CORS on errors) -------------------- */
+export default {
+  async fetch(req, env){
+    try{
+      return await handle(req, env);
+    }catch(e){
+      const msg = (e && e.message) ? e.message : String(e);
+      return corsify(new Response(JSON.stringify({ ok:false, error:'INTERNAL', message: msg }), {
+        status: 500,
+        headers: { 'content-type':'application/json' }
+      }), env);
+    }
+  }
+};

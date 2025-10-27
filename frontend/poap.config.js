@@ -1,11 +1,16 @@
-// 前端配置：把这里改成你的 Worker 地址（结尾不要带斜杠）
-// 例：'http://localhost:8787' 或 'https://poap-checkin-worker.yourname.workers.dev'
+// frontend/poap.config.js
+// 注意：这是前端读取后端 Worker 的“唯一配置文件”，必须能从站点根路径加载：/poap.config.js
+
 window.POAP_CONFIG = {
-  WORKER_BASE_URL: "https://poap-checkin-worker.petterbrand03.workers.dev"
-};
-// 前端配置：把这里改成你的 Worker 地址（结尾不要带斜杠）
-window.POAP_CONFIG = {
-  WORKER_BASE_URL: "https://poap-checkin-worker.petterbrand03.workers.dev",
-  // 可选：如果你想支持 WalletConnect，请到 https://cloud.walletconnect.com 申请 projectId
-  WALLETCONNECT_PROJECT_ID: ""   // 例如 "abc123..."，留空则不显示“WalletConnect (QR)”
+  // 后端 API 根地址（你的 Cloudflare Worker 域名，HTTPS，末尾不要带 /）
+  WORKER_BASE_URL: "https://songbrocade-api.petterbrand03.workers.dev",
+
+  // 链路配置（Base Sepolia）
+  CHAIN_ID_HEX: "0x14A34",
+  RPC_URL: "https://sepolia.base.org",
+  EXPLORER: "https://sepolia.basescan.org",
+
+  // 可选的前端预填（不写也行）
+  DEFAULT_EVENT_ID: "",
+  DEFAULT_POAP_CONTRACT: "",
 };

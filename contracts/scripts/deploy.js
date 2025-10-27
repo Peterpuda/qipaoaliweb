@@ -4,7 +4,8 @@ require('dotenv').config();
 async function main() {
   const root = process.env.MERKLE_ROOT || "0x" + "00".repeat(32);
   const Distributor = await hre.ethers.getContractFactory("Sha256MerkleDistributor");
-  const c = await Distributor.deploy(root, { value: hre.ethers.parseEther("0.1") }); // 预存一点原生币用于演示
+  // 预存少量原生币用于演示（领取时合约支付）
+  const c = await Distributor.deploy(root, { value: hre.ethers.parseEther("0.05") });
   await c.waitForDeployment();
   console.log("Distributor:", await c.getAddress());
   console.log("Root:", root);

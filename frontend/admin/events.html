@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>活动管理 - 旗袍DAO管理后台</title>
+  <link rel="stylesheet" href="/styles/app.css"/>
+  <link rel="stylesheet" href="common/admin-common.css"/>
+  <script src="/poap.config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <!-- 导航栏 -->
+  <nav class="admin-nav">
+    <div class="nav-brand">活动管理</div>
+    <button class="hamburger">☰</button>
+    <div class="nav-user">
+      <span id="authState" class="pill">未登录</span>
+    </div>
+  </nav>
+
+  <!-- 移动端侧边栏 -->
+  <div class="sidebar-overlay"></div>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div>导航菜单</div>
+      <button class="sidebar-close">×</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/admin/index.html" class="nav-item">
+        <i>📊</i> 仪表板
+      </a>
+      <a href="/admin/events.html" class="nav-item">
+        <i>🎪</i> 活动管理
+      </a>
+      <a href="/admin/artisans.html" class="nav-item">
+        <i>👨‍🎨</i> 传承人管理
+      </a>
+      <a href="/admin/products.html" class="nav-item">
+        <i>🛍️</i> 商品管理
+      </a>
+      <a href="/admin/orders.html" class="nav-item">
+        <i>📦</i> 订单管理
+      </a>
+      <a href="../profile/" class="nav-item">
+        <i>👤</i> 个人中心
+      </a>
+      <a href="javascript:logout()" class="nav-item">
+        <i>🚪</i> 退出登录
+      </a>
+    </nav>
+  </div>
+
+  <!-- 活动创建/编辑 -->
+  <div class="card">
+    <h2 class="card-title">活动维护</h2>
+    
+    <form id="eventForm">
+      <div class="grid grid-2">
+        <div class="field">
+          <label>活动 slug</label>
+          <input id="evSlug" name="slug" placeholder="如：qipao-20251208" required/>
+        </div>
+        <div class="field">
+          <label>标题</label>
+          <input id="evTitle" name="title" placeholder="活动标题" required/>
+        </div>
+        <div class="field">
+          <label>开始时间</label>
+          <input id="evStart" name="start_ts" type="number" placeholder="留空=now"/>
+        </div>
+        <div class="field">
+          <label>结束时间</label>
+          <input id="evEnd" name="end_ts" type="number" placeholder="留空=+1天"/>
+        </div>
+      </div>
+      
+      <div class="row">
+        <button type="button" id="btnSave" class="btn btn-primary btn-block">
+          保存 / 更新活动
+        </button>
+        <button type="button" id="btnGetCode" class="btn btn-secondary btn-block">
+          获取固定签到码
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 二维码生成 -->
+  <div class="card">
+    <h2 class="card-title">签到二维码</h2>
+    
+    <div class="row" style="align-items: flex-start;">
+      <div class="qr" id="qrBox" style="position: relative; margin-right: 16px;">
+        <img id="qrImg" alt="签到二维码" style="width: 200px; height: 200px; border-radius: 12px;"/>
+      </div>
+      <div style="flex: 1; min-width: 0;">
+        <div class="mb-2">
+          <strong>固定码：</strong><span id="staticCode">（未获取）</span>
+        </div>
+        <div class="mb-2">
+          <label>扫码 URL：</label>
+          <pre id="qrUrl" class="mono" style="font-size: 11px; word-break: break-all;"></pre>
+        </div>
+        <div class="row">
+          <button id="qrCopy" class="btn btn-sm btn-primary" style="flex: 1;">
+            复制签到链接
+          </button>
+          <a id="qrDownload" class="btn btn-sm btn-secondary" download style="flex: 1; text-align: center;">
+            下载二维码
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 数据导出 -->
+  <div class="card">
+    <h2 class="card-title">导出数据</h2>
+    
+    <div class="row">
+      <div class="field" style="flex: 1;">
+        <input id="exportSlug" placeholder="活动 slug"/>
+      </div>
+      <button id="btnExport" class="btn btn-secondary">
+        导出投票 CSV
+      </button>
+    </div>
+    
+    <pre id="exportCmd" class="mono" style="margin-top: 12px; font-size: 11px;"></pre>
+  </div>
+
+  <!-- 活动列表 -->
+  <div class="card">
+    <h2 class="card-title">活动列表</h2>
+    <div class="row" style="justify-content: space-between; align-items: center;">
+      <div>当前活动</div>
+      <button id="btnRefreshEvents" class="btn btn-sm btn-secondary">
+        刷新
+      </button>
+    </div>
+    <div id="eventsList" class="list" style="margin-top: 12px;">
+      <div class="list-item text-center">
+        <div class="loading"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="common/admin-common.js"></script>
+<script>
+// 活动管理特定功能
+let currentEventSlug = '';
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+  // 从URL参数获取活动slug
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventSlug = urlParams.get('event') || urlParams.get('slug');
+  if (eventSlug) {
+    $('#evSlug').value = eventSlug;
+    currentEventSlug = eventSlug;
+    setQRAndLinks(eventSlug, '');
+  }
+  
+  // 加载活动列表
+  loadEvents();
+  
+  // ✅ 绑定所有按钮事件
+  const btnRefresh = $('#btnRefreshEvents');
+  if (btnRefresh) {
+    btnRefresh.addEventListener('click', loadEvents);
+  }
+  
+  $('#btnSave')?.addEventListener('click', handleSaveEvent);
+  $('#btnGetCode')?.addEventListener('click', handleGetCode);
+  $('#btnExport')?.addEventListener('click', handleExport);
+});
+
+// 定义按钮事件处理函数
+async function handleSaveEvent() {
+  if (!ensureAuth()) return;
+  
+  const formData = getFormData('eventForm');
+  const errors = validateForm(formData, ['slug', 'title']);
+  
+  if (errors.length > 0) {
+    toast(errors.join(', '), 'error');
+    return;
+  }
+  
+  const btn = $('#btnSave');
+  const originalText = btn.textContent;
+  showLoading(btn);
+  
+  try {
+    const payload = {
+      slug: formData.slug.trim(),
+      title: formData.title.trim(),
+      start_ts: formData.start_ts ? Number(formData.start_ts) : null,
+      end_ts: formData.end_ts ? Number(formData.end_ts) : null
+    };
+    
+    const result = await apiJSONmulti(['/admin/event-upsert'], {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    
+    toast('保存成功');
+    currentEventSlug = payload.slug;
+    
+    if (result.static_code) {
+      $('#staticCode').textContent = result.static_code;
+      setQRAndLinks(payload.slug, result.static_code);
+    }
+    
+    // 刷新活动列表
+    loadEvents();
+    
+  } catch (error) {
+    console.error('保存活动失败:', error);
+    toast('保存失败：' + error.message, 'error');
+  } finally {
+    hideLoading(btn, originalText);
+  }
+}
+
+async function handleGetCode() {
+  if (!ensureAuth()) return;
+  
+  const slug = $('#evSlug').value.trim();
+  if (!slug) {
+    toast('请先填写活动 slug', 'error');
+    return;
+  }
+  
+  const btn = $('#btnGetCode');
+  const originalText = btn.textContent;
+  showLoading(btn);
+  
+  try {
+    const result = await apiJSONmulti([
+      `/admin/event-code?event_slug=${encodeURIComponent(slug)}`
+    ], { method: 'GET' });
+    
+    $('#staticCode').textContent = result.static_code || '（无）';
+    setQRAndLinks(slug, result.static_code || '');
+    currentEventSlug = slug;
+    
+  } catch (error) {
+    console.error('获取签到码失败:', error);
+    toast('获取失败：' + error.message, 'error');
+  } finally {
+    hideLoading(btn, originalText);
+  }
+}
+
+function handleExport() {
+  if (!ensureAuth()) return;
+  
+  const slug = $('#exportSlug').value.trim();
+  if (!slug) {
+    toast('请先填写活动 slug', 'error');
+    return;
+  }
+  
+  const token = getBearer();
+  const url1 = `${ADMIN_CONFIG.API_BASE}/admin/export/votes?event_slug=${encodeURIComponent(slug)}`;
+  const url2 = `${ADMIN_CONFIG.API_BASE}/admin/export/votes?event_slug=${encodeURIComponent(slug)}`;
+  
+  const cmd = `# 任选其一（根据你的 Worker 路由）
+curl -H "Authorization: Bearer ${token}" "${url1}" -o votes_${slug}.csv
+curl -H "Authorization: Bearer ${token}" "${url2}" -o votes_${slug}.csv`;
+  
+  $('#exportCmd').textContent = cmd;
+  toast('已生成导出命令，复制到终端执行即可');
+}
+
+
+// 加载活动列表
+async function loadEvents() {
+  if (!ensureAuth()) return;
+  
+  try {
+    const result = await apiJSONmulti(['/poap/events']);
+    displayEvents(result.events || []);
+  } catch (error) {
+    console.error('加载活动列表失败:', error);
+    $('#eventsList').innerHTML = '<div class="list-item text-center">加载失败</div>';
+  }
+}
+
+// 显示活动列表
+function displayEvents(events) {
+  const container = $('#eventsList');
+  
+  if (!events || events.length === 0) {
+    container.innerHTML = '<div class="list-item text-center">暂无活动</div>';
+    return;
+  }
+  
+  container.innerHTML = events.map(event => {
+    const isActive = event.start_ts && event.start_ts > Date.now() / 1000;
+    const statusClass = isActive ? 'pill-ok' : 'pill-warning';
+    const statusText = isActive ? '进行中' : '已结束';
+    
+    return `
+      <div class="list-item">
+        <div>
+          <div style="font-weight: 600;">${event.name || '未命名活动'}</div>
+          <div style="font-size: 12px; color: var(--muted);">
+            ID: ${event.id} | 创建时间: ${event.created_at ? formatDate(event.created_at) : '未知'}
+          </div>
+        </div>
+        <div>
+          <span class="pill ${statusClass}">${statusText}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 刷新按钮事件已在 DOMContentLoaded 回调中绑定
+</script>
+</body>
+</html>

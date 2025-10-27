@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员登录测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold text-center mb-6">管理员登录测试</h1>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">当前钱包地址</label>
+                <input type="text" id="walletAddress" readonly 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">登录状态</label>
+                <div id="loginStatus" class="px-3 py-2 border rounded-md bg-gray-50">
+                    未登录
+                </div>
+            </div>
+            
+            <div class="flex space-x-2">
+                <button id="connectBtn" 
+                        class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                    连接钱包
+                </button>
+                <button id="loginBtn" 
+                        class="flex-1 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+                        style="display:none;">
+                    管理员登录
+                </button>
+                <button id="logoutBtn" 
+                        class="flex-1 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                        style="display:none;">
+                    登出
+                </button>
+            </div>
+            
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold mb-2">测试结果</h3>
+                <div id="testResults" class="text-sm text-gray-600">
+                    等待测试...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API配置
+        const API_BASE = 'https://songbrocade-api.petterbrand03.workers.dev';
+        let currentWallet = '';
+
+        // 获取 Bearer Token
+        function getBearer() {
+            return localStorage.getItem("bearer_token") || "";
+        }
+
+        // 设置 Bearer Token
+        function setBearer(token) {
+            localStorage.setItem("bearer_token", token);
+        }
+
+        // 清除 Bearer Token
+        function clearBearer() {
+            localStorage.removeItem("bearer_token");
+        }
+
+        // 获取认证头
+        function authHeaders(json = false) {
+            const h = {};
+            const b = getBearer();
+            if (b) h["Authorization"] = "Bearer " + b;
+            if (json) h["Content-Type"] = "application/json";
+            return h;
+        }
+
+        // 通用 API 请求函数
+        async function apiFetch(endpoint, options = {}) {
+            const url = API_BASE + endpoint;
+            const defaultOptions = {
+                headers: authHeaders(true),
+                method: 'GET',
+            };
+            const finalOptions = { ...defaultOptions, ...options };
+            
+            try {
+                const response = await fetch(url, finalOptions);
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('API请求失败:', error);
+                return { ok: false, error: error.message };
+            }
+        }
+
+        // 连接钱包
+        async function connectWallet() {
+            if (typeof window.ethereum === 'undefined') {
+                alert('请安装 MetaMask 钱包');
+                return false;
+            }
+
+            try {
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+                
+                if (accounts.length > 0) {
+                    currentWallet = accounts[0];
+                    document.getElementById('walletAddress').value = currentWallet;
+                    updateUI();
+                    return true;
+                } else {
+                    alert('未获取到钱包地址');
+                    return false;
+                }
+            } catch (error) {
+                console.error('钱包连接失败:', error);
+                alert('钱包连接失败: ' + error.message);
+                return false;
+            }
+        }
+
+        // 管理员登录
+        async function adminLogin() {
+            if (!currentWallet) {
+                alert('请先连接钱包');
+                return;
+            }
+            
+            try {
+                // 获取挑战
+                const challengeData = await apiFetch("/auth/challenge", {
+                    method: "POST",
+                    body: JSON.stringify({ address: currentWallet })
+                });
+                
+                if (!challengeData.ok) {
+                    throw new Error(challengeData.error || "获取挑战失败");
+                }
+                
+                // 签名挑战
+                const message = challengeData.message;
+                const signature = await window.ethereum.request({
+                    method: "personal_sign",
+                    params: [message, currentWallet]
+                });
+                
+                // 提交签名
+                const loginData = await apiFetch("/auth/verify", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        address: currentWallet,
+                        signature: signature,
+                        message: message
+                    })
+                });
+                
+                if (loginData.ok) {
+                    setBearer(loginData.token);
+                    updateUI();
+                    document.getElementById('testResults').innerHTML = 
+                        '<div class="text-green-600">✅ 管理员登录成功！</div>';
+                } else {
+                    throw new Error(loginData.error || "登录失败");
+                }
+            } catch (error) {
+                console.error("管理员登录失败:", error);
+                document.getElementById('testResults').innerHTML = 
+                    '<div class="text-red-600">❌ 登录失败: ' + error.message + '</div>';
+            }
+        }
+
+        // 管理员登出
+        function adminLogout() {
+            clearBearer();
+            updateUI();
+            document.getElementById('testResults').innerHTML = 
+                '<div class="text-blue-600">ℹ️ 已登出</div>';
+        }
+
+        // 更新UI
+        function updateUI() {
+            const token = getBearer();
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const statusDiv = document.getElementById('loginStatus');
+            
+            if (token) {
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'block';
+                statusDiv.innerHTML = '<span class="text-green-600">✅ 已登录</span>';
+            } else {
+                loginBtn.style.display = currentWallet ? 'block' : 'none';
+                logoutBtn.style.display = 'none';
+                statusDiv.innerHTML = '<span class="text-gray-500">❌ 未登录</span>';
+            }
+        }
+
+        // 绑定事件
+        document.getElementById('connectBtn').addEventListener('click', connectWallet);
+        document.getElementById('loginBtn').addEventListener('click', adminLogin);
+        document.getElementById('logoutBtn').addEventListener('click', adminLogout);
+
+        // 页面加载时更新UI
+        document.addEventListener('DOMContentLoaded', updateUI);
+    </script>
+</body>
+</html>

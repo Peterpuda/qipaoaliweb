@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>关于平台 - 非遗上链平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/poap.config.js"></script>
+  <style>
+    :root {
+      --primary: #9E2A2B;
+      --secondary: #4A403A;
+      --accent: #D5BDAF;
+      --gold: #D4AF37;
+      --ink: #2D2A26;
+      --paper: #F9F6F0;
+      --line: #D5BDAF;
+      --muted: #9E2A2B;
+    }
+    
+    body {
+      font-family: "Noto Serif SC", serif;
+      background-color: var(--paper);
+      color: var(--ink);
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      color: var(--paper);
+      box-shadow: 0 3px 14px rgba(158, 42, 43, 0.6);
+    }
+    
+    .btn-primary:hover {
+      background: #7a1b1c;
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: var(--paper);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--accent);
+      color: var(--ink);
+    }
+    
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(213, 189, 175, 0.4);
+      padding: 20px;
+      margin: 16px 0;
+    }
+    
+    .feature-card {
+      text-align: center;
+      padding: 24px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--paper) 0%, var(--accent)/10 100%);
+      border: 1px solid var(--line);
+    }
+    
+    .feature-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--paper);
+      font-size: 24px;
+    }
+    
+    .verification-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .verification-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--primary)/10;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      margin-right: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen max-w-[600px] mx-auto px-4 py-4">
+    <!-- 导航栏 -->
+    <header class="flex items-center justify-between py-4 mb-4">
+      <a href="./index.html" class="flex items-center">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-paper mr-3">
+          <i class="fas fa-chess-rook text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-primary">关于平台</h1>
+          <p class="text-xs text-secondary">了解我们</p>
+        </div>
+      </a>
+      <button id="connectWallet" class="btn btn-primary">
+        <i class="fab fa-ethereum mr-2"></i>连接钱包
+      </button>
+    </header>
+
+    <!-- 平台介绍 -->
+    <div class="card">
+      <h2 class="text-2xl font-bold text-ink mb-4">非遗上链平台</h2>
+      <p class="text-secondary leading-relaxed mb-6">
+        非遗上链是全球首个专注于非物质文化遗产数字保护的Web3平台。我们通过区块链技术、NFT认证和DAO治理，构建了一个完整的非遗文化数字生态，让传统文化在数字世界中焕发新的生命力。
+      </p>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h3 class="text-lg font-bold text-ink mb-2">数字确权</h3>
+          <p class="text-sm text-secondary">通过区块链技术确保非遗作品的唯一性和真实性</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <h3 class="text-lg font-bold text-ink mb-2">社区治理</h3>
+          <p class="text-sm text-secondary">DAO治理模式让社区成员共同参与平台决策</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-certificate"></i>
+          </div>
+          <h3 class="text-lg font-bold text-ink mb-2">认证体系</h3>
+          <p class="text-sm text-secondary">建立完善的匠人认证和作品认证体系</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-globe"></i>
+          </div>
+          <h3 class="text-lg font-bold text-ink mb-2">全球视野</h3>
+          <p class="text-sm text-secondary">连接全球非遗文化，促进国际文化交流</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RWA认证机制 -->
+    <div class="card">
+      <h3 class="text-xl font-bold text-ink mb-4">RWA认证机制</h3>
+      <p class="text-secondary leading-relaxed mb-6">
+        我们采用RWA（Real World Asset）认证机制，将现实世界的非遗作品与数字资产相结合，确保每一件作品都有唯一的链上身份和可验证的认证信息。
+      </p>
+      
+      <div class="space-y-4">
+        <div class="verification-item">
+          <div class="verification-icon">
+            <i class="fas fa-fingerprint"></i>
+          </div>
+          <div>
+            <h4 class="font-semibold text-ink">唯一标识</h4>
+            <p class="text-sm text-secondary">每个作品都有独特的数字指纹和链上ID</p>
+          </div>
+        </div>
+        
+        <div class="verification-item">
+          <div class="verification-icon">
+            <i class="fas fa-user-check"></i>
+          </div>
+          <div>
+            <h4 class="font-semibold text-ink">匠人认证</h4>
+            <p class="text-sm text-secondary">严格的匠人身份验证和技能认证流程</p>
+          </div>
+        </div>
+        
+        <div class="verification-item">
+          <div class="verification-icon">
+            <i class="fas fa-history"></i>
+          </div>
+          <div>
+            <h4 class="font-semibold text-ink">传承记录</h4>
+            <p class="text-sm text-secondary">完整的作品制作过程和传承历史记录</p>
+          </div>
+        </div>
+        
+        <div class="verification-item">
+          <div class="verification-icon">
+            <i class="fas fa-shield-check"></i>
+          </div>
+          <div>
+            <h4 class="font-semibold text-ink">防伪保护</h4>
+            <p class="text-sm text-secondary">多重防伪技术确保作品真实性和唯一性</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 链上验证信息 -->
+    <div class="card">
+      <h3 class="text-xl font-bold text-ink mb-4">链上验证信息</h3>
+      <p class="text-secondary leading-relaxed mb-6">
+        所有认证信息都存储在区块链上，确保透明、不可篡改和可验证。您可以通过以下链接查看链上数据：
+      </p>
+      
+      <div class="space-y-3">
+        <div class="verification-item">
+          <div class="verification-icon">
+            <i class="fab fa-ethereum"></i>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-semibold text-ink">以太坊主网</h4>
+            <p class="text-sm text-secondary">合约地址: 0x1234...5678</p>
+            <a href="https://etherscan.io/address/0x1234...5678" target="_blank" class="text-primary text-sm hover:underline">
+              在 Etherscan 上查看 <i class="fas fa-external-link-alt ml-1"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="verification-item">
+          <div class="verification-icon">
+            <i class="fas fa-layer-group"></i>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-semibold text-ink">Base Layer 2</h4>
+            <p class="text-sm text-secondary">合约地址: 0x2345...6789</p>
+            <a href="https://basescan.org/address/0x2345...6789" target="_blank" class="text-primary text-sm hover:underline">
+              在 Basescan 上查看 <i class="fas fa-external-link-alt ml-1"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="verification-item">
+          <div class="verification-icon">
+            <i class="fas fa-network-wired"></i>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-semibold text-ink">Sepolia 测试网</h4>
+            <p class="text-sm text-secondary">合约地址: 0x3456...7890</p>
+            <a href="https://sepolia.etherscan.io/address/0x3456...7890" target="_blank" class="text-primary text-sm hover:underline">
+              在 Sepolia Etherscan 上查看 <i class="fas fa-external-link-alt ml-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 技术架构 -->
+    <div class="card">
+      <h3 class="text-xl font-bold text-ink mb-4">技术架构</h3>
+      <div class="space-y-4">
+        <div class="verification-item">
+          <div class="verification-icon">
+            <i class="fas fa-cube"></i>
+          </div>
+          <div>
+            <h4 class="font-semibold text-ink">智能合约</h4>
+            <p class="text-sm text-secondary">基于 Solidity 开发的 ERC-1155 和 ERC-721 标准合约</p>
+          </div>
+        </div>
+        
+        <div class="verification-item">
+          <div class="verification-icon">
+            <i class="fas fa-database"></i>
+          </div>
+          <div>
+            <h4 class="font-semibold text-ink">数据存储</h4>
+            <p class="text-sm text-secondary">IPFS 分布式存储 + Cloudflare D1 数据库</p>
+          </div>
+        </div>
+        
+        <div class="verification-item">
+          <div class="verification-icon">
+            <i class="fas fa-cloud"></i>
+          </div>
+          <div>
+            <h4 class="font-semibold text-ink">云服务</h4>
+            <p class="text-sm text-secondary">Cloudflare Workers + Pages 全球加速</p>
+          </div>
+        </div>
+        
+        <div class="verification-item">
+          <div class="verification-icon">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <div>
+            <h4 class="font-semibold text-ink">前端技术</h4>
+            <p class="text-sm text-secondary">响应式设计 + PWA 支持 + Web3 集成</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 联系我们 -->
+    <div class="card">
+      <h3 class="text-xl font-bold text-ink mb-4">联系我们</h3>
+      <div class="space-y-3">
+        <div class="flex items-center">
+          <i class="fas fa-envelope w-5 mr-3 text-primary"></i>
+          <span class="text-secondary">contact@heritage-chain.org</span>
+        </div>
+        <div class="flex items-center">
+          <i class="fab fa-telegram w-5 mr-3 text-primary"></i>
+          <span class="text-secondary">@HeritageChain</span>
+        </div>
+        <div class="flex items-center">
+          <i class="fab fa-discord w-5 mr-3 text-primary"></i>
+          <span class="text-secondary">Heritage Chain Community</span>
+        </div>
+        <div class="flex items-center">
+          <i class="fab fa-twitter w-5 mr-3 text-primary"></i>
+          <span class="text-secondary">@HeritageChain</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 版权信息 -->
+    <div class="text-center py-8 text-sm text-secondary">
+      <p>&copy; 2024 非遗上链平台. 保留所有权利.</p>
+      <p class="mt-2">让传统文化在数字世界中永续传承</p>
+    </div>
+  </div>
+
+  <script>
+    // 钱包连接事件
+    document.getElementById('connectWallet').addEventListener('click', function() {
+      alert('钱包连接功能开发中...');
+    });
+  </script>
+</body>
+</html>

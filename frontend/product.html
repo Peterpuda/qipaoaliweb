@@ -1,0 +1,930 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>商品详情 - 非遗上链平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/poap.config.js"></script>
+  <style>
+    :root {
+      --primary: #9E2A2B;
+      --secondary: #4A403A;
+      --accent: #D5BDAF;
+      --gold: #D4AF37;
+      --ink: #2D2A26;
+      --paper: #F9F6F0;
+      --line: #D5BDAF;
+      --muted: #9E2A2B;
+    }
+    
+    body {
+      font-family: "Noto Serif SC", serif;
+      background-color: var(--paper);
+      color: var(--ink);
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      color: var(--paper);
+      box-shadow: 0 3px 14px rgba(158, 42, 43, 0.6);
+    }
+    
+    .btn-primary:hover {
+      background: #7a1b1c;
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: var(--paper);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--accent);
+      color: var(--ink);
+    }
+    
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(213, 189, 175, 0.4);
+      padding: 20px;
+      margin: 16px 0;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid var(--line);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen max-w-[600px] mx-auto px-4 py-4">
+    <!-- 导航栏 -->
+    <header class="flex items-center justify-between py-4 mb-4">
+      <a href="./index.html" class="flex items-center">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-paper mr-3">
+          <i class="fas fa-chess-rook text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-primary">非遗上链</h1>
+          <p class="text-xs text-secondary">商品详情</p>
+        </div>
+      </a>
+      <button id="connectWallet" class="btn btn-primary">
+        <i class="fab fa-ethereum mr-2"></i>连接钱包
+      </button>
+    </header>
+
+    <!-- 商品详情 -->
+    <div id="productDetail" class="card">
+      <div class="text-center py-8">
+        <div class="loading"></div>
+        <p class="text-secondary mt-4">加载中...</p>
+      </div>
+    </div>
+
+    <!-- 匠人信息 -->
+    <div id="artisanInfo" class="card">
+      <div class="text-center py-8">
+        <div class="loading"></div>
+        <p class="text-secondary mt-4">加载匠人信息...</p>
+      </div>
+    </div>
+
+    <!-- 链上认证信息 -->
+    <div id="blockchainInfo" class="card">
+      <h3 class="text-lg font-bold text-ink mb-4">链上认证</h3>
+      <div id="certificationStatus" class="text-center py-8">
+        <div class="loading"></div>
+        <p class="text-secondary mt-4">检查认证状态...</p>
+      </div>
+    </div>
+
+    <!-- 购买按钮 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-paper border-t border-line p-4 max-w-[600px] mx-auto">
+      <button id="buyButton" class="btn btn-primary w-full" disabled>
+        <i class="fas fa-shopping-cart mr-2"></i>立即购买
+      </button>
+    </div>
+  </div>
+
+  <script src="./common/auth.js"></script>
+  <script>
+    // 全局变量
+    let currentWallet = '';
+    let currentProduct = null;
+    
+    // 使用通用认证模块
+    const auth = window.authModule;
+    // 直接使用全局的 API_BASE（来自 auth.js）
+    
+    // 获取URL参数
+    function getUrlParameter(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+    
+    // 加载商品详情
+    async function loadProductDetail() {
+        const productId = getUrlParameter('id');
+        if (!productId) {
+          document.getElementById('productDetail').innerHTML = `
+            <div class="text-center py-8">
+              <i class="fas fa-exclamation-triangle text-4xl text-secondary mb-4"></i>
+              <h3 class="text-lg font-bold text-ink mb-2">商品不存在</h3>
+              <p class="text-secondary mb-4">请检查商品ID是否正确</p>
+              <a href="./market/" class="btn btn-primary">返回商城</a>
+            </div>
+          `;
+          return;
+        }
+        
+        try {
+          const response = await fetch(`${API_BASE}/products`);
+          const data = await response.json();
+        
+        if (data.products && data.products.length > 0) {
+          const product = data.products.find(p => p.id === productId);
+          if (product) {
+            currentProduct = product; // 保存当前商品信息
+            displayProductDetail(product);
+            loadArtisanInfo(product.artisan_id);
+            checkCertificationStatus(product);
+          } else {
+            throw new Error('商品未找到');
+          }
+        } else {
+          throw new Error('商品数据加载失败');
+        }
+      } catch (error) {
+        console.error('加载商品详情失败:', error);
+        document.getElementById('productDetail').innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-exclamation-triangle text-4xl text-secondary mb-4"></i>
+            <h3 class="text-lg font-bold text-ink mb-2">加载失败</h3>
+            <p class="text-secondary mb-4">${error.message}</p>
+            <a href="./market/" class="btn btn-primary">返回商城</a>
+          </div>
+        `;
+      }
+    }
+    
+    // 显示商品详情
+    function displayProductDetail(product) {
+      // 商品图像处理
+      const productImage = product.image_key ? 
+        `<img src="${product.image_key}" alt="${product.title_zh}" class="w-full h-80 object-cover rounded-xl mb-4">` :
+        `<div class="aspect-square bg-gradient-to-br from-primary/10 to-accent/20 rounded-xl flex items-center justify-center mb-4">
+          <div class="text-center">
+            <i class="fas fa-image text-6xl text-primary/40 mb-2"></i>
+            <p class="text-sm text-secondary">商品图片</p>
+          </div>
+        </div>`;
+
+      // 认证标识
+      const certificationBadge = product.badge_contract ? `
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center text-green-600">
+            <i class="fas fa-certificate mr-2"></i>
+            <span class="text-sm font-medium">已认证 RWA 数字资产</span>
+          </div>
+          <div class="flex items-center text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+            <i class="fas fa-shield-alt mr-1"></i>
+            <span>链上验证</span>
+          </div>
+        </div>
+      ` : `
+        <div class="flex items-center text-gray-400 mb-4">
+          <i class="fas fa-clock mr-2"></i>
+          <span class="text-sm">待认证</span>
+        </div>
+      `;
+
+      // 价格信息
+      const priceInfo = `
+        <div class="bg-gradient-to-r from-primary/5 to-accent/5 rounded-xl p-4 mb-4">
+          <div class="text-3xl font-bold text-primary mb-2">
+            ${product.price_native} ${product.price_currency}
+          </div>
+          ${product.price_points ? `
+            <div class="text-sm text-secondary">
+              <i class="fas fa-coins mr-1"></i>
+              可抵 ${product.price_points} 积分
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      // 商品标签
+      const productTags = `
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+            <i class="fas fa-box mr-1"></i>
+            库存: ${product.stock || 0}
+          </span>
+          <span class="px-3 py-1 bg-accent/20 text-ink rounded-full text-sm">
+            <i class="fas fa-hashtag mr-1"></i>
+            ID: ${product.id}
+          </span>
+          ${product.slug ? `
+            <span class="px-3 py-1 bg-secondary/10 text-secondary rounded-full text-sm">
+              <i class="fas fa-tag mr-1"></i>
+              ${product.slug}
+            </span>
+          ` : ''}
+        </div>
+      `;
+
+      document.getElementById('productDetail').innerHTML = `
+        <div class="mb-6">
+          ${productImage}
+          <h1 class="text-2xl font-bold text-ink mb-2">${product.title_zh || '未知商品'}</h1>
+          ${product.title_en ? `<p class="text-sm text-secondary mb-4">${product.title_en}</p>` : ''}
+          ${certificationBadge}
+          ${priceInfo}
+          ${productTags}
+        </div>
+        <div class="border-t border-line pt-4">
+          <h3 class="text-lg font-bold text-ink mb-3">
+            <i class="fas fa-info-circle mr-2"></i>
+            商品描述
+          </h3>
+          <div class="text-secondary leading-relaxed">
+            ${product.desc_md || '这件作品背后有完整的手工工序与文化故事，每一道工序都承载着深厚的文化内涵。'}
+          </div>
+        </div>
+      `;
+      
+      // 启用购买按钮
+      document.getElementById('buyButton').disabled = false;
+    }
+    
+    // 加载匠人信息
+    async function loadArtisanInfo(artisanId) {
+      if (!artisanId) {
+        document.getElementById('artisanInfo').innerHTML = `
+          <div class="text-center py-8">
+            <p class="text-secondary">暂无匠人信息</p>
+          </div>
+        `;
+        return;
+      }
+      
+      try {
+        // 使用公开的匠人API端点
+        const response = await fetch(`${API_BASE}/artisans`);
+        const data = await response.json();
+        
+        if (data.artisans && data.artisans.length > 0) {
+          const artisan = data.artisans.find(a => a.id === artisanId);
+          if (artisan) {
+            displayArtisanInfo(artisan);
+          } else {
+            // 如果没找到具体匠人，显示通用匠人信息
+            displayGenericArtisanInfo();
+          }
+        } else {
+          throw new Error('匠人数据加载失败');
+        }
+      } catch (error) {
+        console.error('加载匠人信息失败:', error);
+        // 显示通用匠人信息作为备选
+        displayGenericArtisanInfo();
+      }
+    }
+
+    // 显示通用匠人信息
+    function displayGenericArtisanInfo() {
+      document.getElementById('artisanInfo').innerHTML = `
+        <h3 class="text-lg font-bold text-ink mb-4">
+          <i class="fas fa-user-tie mr-2"></i>
+          匠人信息
+        </h3>
+        <div class="flex items-center mb-4">
+          <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
+            <i class="fas fa-user-tie text-2xl"></i>
+          </div>
+          <div>
+            <h4 class="text-lg font-semibold text-ink">传统匠人</h4>
+            <p class="text-sm text-secondary">非遗传承人</p>
+            <span class="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">
+              认证匠人
+            </span>
+          </div>
+        </div>
+        <div class="text-sm text-secondary leading-relaxed">
+          这件作品由经验丰富的传统匠人精心制作，每一道工序都遵循古法工艺，承载着深厚的文化内涵和艺术价值。
+        </div>
+      `;
+    }
+    
+    // 显示匠人信息
+    function displayArtisanInfo(artisan) {
+      // 匠人认证状态
+      const verificationStatus = artisan.verified ? `
+        <div class="flex items-center text-green-600 mb-2">
+          <i class="fas fa-user-check mr-1"></i>
+          <span class="text-xs font-medium">认证匠人</span>
+        </div>
+      ` : `
+        <div class="flex items-center text-gray-400 mb-2">
+          <i class="fas fa-clock mr-1"></i>
+          <span class="text-xs">待认证</span>
+        </div>
+      `;
+
+      // 匠人技能标签
+      const skillTags = artisan.skills ? artisan.skills.split(',').map(skill => 
+        `<span class="px-2 py-1 bg-accent/20 text-ink rounded-full text-xs mr-1">${skill.trim()}</span>`
+      ).join('') : '';
+
+      document.getElementById('artisanInfo').innerHTML = `
+        <h3 class="text-lg font-bold text-ink mb-4">
+          <i class="fas fa-user-tie mr-2"></i>
+          匠人信息
+        </h3>
+        <div class="flex items-start mb-4">
+          <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4 flex-shrink-0">
+            <i class="fas fa-user-tie text-2xl"></i>
+          </div>
+          <div class="flex-1">
+            <h4 class="text-lg font-semibold text-ink mb-1">${artisan.name_zh || artisan.name || '传统匠人'}</h4>
+            <p class="text-sm text-secondary mb-2">
+              <i class="fas fa-map-marker-alt mr-1"></i>
+              ${artisan.region || '传统工艺发源地'}
+            </p>
+            ${verificationStatus}
+            ${skillTags ? `
+              <div class="mt-2">
+                <p class="text-xs text-secondary mb-1">擅长技艺：</p>
+                <div class="flex flex-wrap">
+                  ${skillTags}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+        <div class="text-sm text-secondary leading-relaxed">
+          ${artisan.bio || artisan.description || '这件作品由经验丰富的传统匠人精心制作，每一道工序都遵循古法工艺，承载着深厚的文化内涵和艺术价值。'}
+        </div>
+        ${artisan.experience ? `
+          <div class="mt-3 text-xs text-secondary">
+            <i class="fas fa-award mr-1"></i>
+            从业经验：${artisan.experience}
+          </div>
+        ` : ''}
+      `;
+    }
+    
+    // 检查认证状态
+    async function checkCertificationStatus(product) {
+      try {
+        const isCertified = product.badge_contract && product.badge_contract !== '';
+        
+        // 检查NFT领取状态
+        let nftClaimStatus = null;
+        if (isCertified && getWalletStatus()) {
+        try {
+          const data = await auth.apiFetch(`/badge/claim-ticket?product_id=${product.id}&wallet=${getWalletAddress()}`);
+          if (data.ok) {
+            nftClaimStatus = data;
+          } else {
+            console.log('NFT领取状态检查需要登录，跳过');
+            nftClaimStatus = { claimable: false, reason: '需要登录' };
+          }
+        } catch (error) {
+          console.error('检查NFT领取状态失败:', error);
+          nftClaimStatus = { claimable: false, reason: '检查失败' };
+        }
+        }
+
+        // 认证状态显示
+        const certificationStatus = `
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium text-ink">链上认证状态</span>
+            <span class="px-3 py-1 rounded-full text-xs font-medium ${isCertified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+              ${isCertified ? '已认证' : '未认证'}
+            </span>
+          </div>
+        `;
+
+        // 合约信息
+        const contractInfo = `
+          <div class="space-y-3 text-sm text-secondary mb-4">
+            <div class="flex items-center">
+              <i class="fas fa-link w-4 mr-2"></i>
+              <span>合约地址: ${product.badge_contract || '未设置'}</span>
+            </div>
+            <div class="flex items-center">
+              <i class="fas fa-shield-alt w-4 mr-2"></i>
+              <span>认证类型: ${isCertified ? 'RWA 数字资产' : '待认证'}</span>
+            </div>
+            ${isCertified ? `
+              <div class="flex items-center">
+                <i class="fas fa-certificate w-4 mr-2"></i>
+                <span>认证级别: 链上可验证</span>
+              </div>
+            ` : ''}
+          </div>
+        `;
+
+        // NFT领取功能
+        let nftClaimSection = '';
+        if (isCertified) {
+          if (getWalletStatus()) {
+            if (nftClaimStatus && nftClaimStatus.claimable) {
+              nftClaimSection = `
+                <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 mb-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-sm font-semibold text-ink">NFT徽章领取</h4>
+                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">可领取</span>
+                  </div>
+                  <p class="text-xs text-secondary mb-3">
+                    购买此商品后，您将获得专属的链上认证徽章NFT
+                  </p>
+                  <button onclick="claimNFT('${product.id}')" class="w-full bg-primary text-white rounded-lg py-2 text-sm font-medium">
+                    <i class="fas fa-gift mr-1"></i>
+                    领取NFT徽章
+                  </button>
+                </div>
+              `;
+            } else if (nftClaimStatus && nftClaimStatus.claimed) {
+              nftClaimSection = `
+                <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 mb-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-sm font-semibold text-ink">NFT徽章状态</h4>
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">已领取</span>
+                  </div>
+                  <p class="text-xs text-secondary mb-3">
+                    您已成功领取此商品的链上认证徽章
+                  </p>
+                  <button onclick="viewNFT('${nftClaimStatus.token_id}')" class="w-full bg-accent text-ink rounded-lg py-2 text-sm font-medium">
+                    <i class="fas fa-external-link-alt mr-1"></i>
+                    查看NFT
+                  </button>
+                </div>
+              `;
+            } else {
+              nftClaimSection = `
+                <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-sm font-semibold text-ink">NFT徽章</h4>
+                    <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">待购买</span>
+                  </div>
+                  <p class="text-xs text-secondary">
+                    购买此商品后即可领取专属的链上认证徽章NFT
+                  </p>
+                </div>
+              `;
+            }
+          } else {
+            nftClaimSection = `
+              <div class="bg-yellow-50 rounded-xl p-4 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="text-sm font-semibold text-ink">NFT徽章</h4>
+                  <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">需登录</span>
+                </div>
+                <p class="text-xs text-secondary mb-3">
+                  连接钱包后可查看和领取NFT徽章
+                </p>
+                <button onclick="showWalletConnectPrompt()" class="w-full bg-primary text-white rounded-lg py-2 text-sm font-medium">
+                  <i class="fas fa-wallet mr-1"></i>
+                  连接钱包
+                </button>
+              </div>
+            `;
+          }
+        } else {
+          nftClaimSection = `
+            <div class="bg-gray-50 rounded-xl p-4 mb-4">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-ink">NFT徽章</h4>
+                <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">未认证</span>
+              </div>
+              <p class="text-xs text-secondary">
+                此商品尚未完成链上认证，暂不支持NFT徽章
+              </p>
+            </div>
+          `;
+        }
+
+        document.getElementById('certificationStatus').innerHTML = `
+          ${certificationStatus}
+          ${contractInfo}
+          ${nftClaimSection}
+        `;
+      } catch (error) {
+        console.error('检查认证状态失败:', error);
+        document.getElementById('certificationStatus').innerHTML = `
+          <div class="text-center py-4">
+            <p class="text-secondary">认证状态检查失败</p>
+          </div>
+        `;
+      }
+    }
+
+    // 领取NFT
+    async function claimNFT(productId) {
+      if (!getWalletStatus() || !getWalletAddress()) {
+        auth.showToast('请先连接钱包', 'error');
+        return;
+      }
+
+      try {
+        const data = await auth.apiFetch('/badge/claim', {
+          method: 'POST',
+          body: JSON.stringify({
+            product_id: productId,
+            wallet: getWalletAddress()
+          })
+        });
+        
+        if (data.ok) {
+          auth.showToast('NFT徽章领取成功！', 'success');
+          // 重新检查认证状态
+          const product = currentProduct || { id: productId, badge_contract: 'mock_contract' };
+          checkCertificationStatus(product);
+        } else {
+          auth.showToast('NFT领取失败：' + (data.error || '未知错误'), 'error');
+        }
+      } catch (error) {
+        console.error('NFT领取失败:', error);
+        auth.showToast('NFT领取失败', 'error');
+      }
+    }
+
+    // 查看NFT
+    function viewNFT(tokenId) {
+      // 这里应该跳转到NFT查看页面或打开区块链浏览器
+      showToast('正在打开NFT查看页面...', 'info');
+      // 示例：跳转到OpenSea或Etherscan
+      // window.open(`https://opensea.io/assets/ethereum/${contractAddress}/${tokenId}`, '_blank');
+    }
+
+    // 获取钱包连接状态
+    function getWalletStatus() {
+      return auth.isLoggedIn();
+    }
+
+    // 获取钱包地址
+    function getWalletAddress() {
+      return auth.getWalletAddress();
+    }
+
+    // 更新钱包连接状态显示
+    function updateWalletStatus() {
+      const connectBtn = document.getElementById('connectWallet');
+      const buyBtn = document.getElementById('buyButton');
+      
+      if (getWalletStatus() && getWalletAddress()) {
+        currentWallet = getWalletAddress();
+        connectBtn.innerHTML = `<i class="fab fa-ethereum mr-2"></i>${auth.shortAddr(currentWallet)}`;
+        buyBtn.disabled = false;
+        buyBtn.innerHTML = '<i class="fas fa-shopping-cart mr-2"></i>立即购买';
+      } else {
+        connectBtn.innerHTML = '<i class="fab fa-ethereum mr-2"></i>连接钱包';
+        buyBtn.disabled = true;
+        buyBtn.innerHTML = '<i class="fas fa-lock mr-2"></i>请先连接钱包';
+      }
+    }
+
+    // 事件监听器将在DOMContentLoaded中绑定
+
+    // 显示钱包连接提示
+    function showWalletConnectPrompt() {
+      const promptHtml = `
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" id="walletPrompt">
+          <div class="bg-white rounded-2xl p-6 max-w-sm mx-4">
+            <div class="text-center">
+              <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-wallet text-2xl text-primary"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-ink mb-2">需要连接钱包</h3>
+              <p class="text-sm text-secondary mb-6">
+                购买商品需要连接钱包以完成身份验证和支付
+              </p>
+              <div class="flex gap-3">
+                <button onclick="closeWalletPrompt()" class="flex-1 px-4 py-2 border border-line rounded-xl text-sm">
+                  取消
+                </button>
+                <button onclick="connectWallet()" class="flex-1 bg-primary text-white rounded-xl py-2 text-sm font-semibold">
+                  连接钱包
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', promptHtml);
+    }
+
+    function closeWalletPrompt() {
+      const prompt = document.getElementById('walletPrompt');
+      if (prompt) prompt.remove();
+    }
+
+    // 显示订单创建表单
+    function showOrderForm(productId) {
+      const orderFormHtml = `
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" id="orderForm">
+          <div class="bg-white rounded-2xl p-6 max-w-md mx-4 w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-ink">立即下单</h3>
+              <button onclick="closeOrderForm()" class="text-secondary hover:text-ink">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <form id="orderFormContent" onsubmit="submitOrder(event)">
+              <input type="hidden" id="orderProductId" value="${productId}">
+              
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-secondary mb-2">购买数量</label>
+                <input type="number" id="orderQty" min="1" value="1" required 
+                       class="w-full p-3 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+              </div>
+              
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-secondary mb-2">收货人姓名</label>
+                <input type="text" id="orderName" required 
+                       class="w-full p-3 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                       placeholder="请输入收货人姓名">
+              </div>
+              
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-secondary mb-2">联系电话</label>
+                <input type="tel" id="orderPhone" required 
+                       class="w-full p-3 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                       placeholder="请输入联系电话">
+              </div>
+              
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-secondary mb-2">收货地址</label>
+                <textarea id="orderAddress" required rows="3"
+                          class="w-full p-3 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                          placeholder="请输入详细收货地址"></textarea>
+              </div>
+              
+              <div class="flex gap-3">
+                <button type="button" onclick="closeOrderForm()" 
+                        class="flex-1 px-4 py-3 border border-line rounded-xl text-sm font-medium">
+                  取消
+                </button>
+                <button type="submit" id="submitOrderBtn"
+                        class="flex-1 bg-primary text-white rounded-xl py-3 text-sm font-semibold">
+                  <i class="fas fa-shopping-cart mr-2"></i>确认下单
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', orderFormHtml);
+    }
+
+    // 关闭订单表单
+    function closeOrderForm() {
+      const form = document.getElementById('orderForm');
+      if (form) form.remove();
+    }
+
+    // 提交订单
+    async function submitOrder(event) {
+      event.preventDefault();
+      
+      const productId = document.getElementById('orderProductId').value;
+      const qty = parseInt(document.getElementById('orderQty').value);
+      const name = document.getElementById('orderName').value.trim();
+      const phone = document.getElementById('orderPhone').value.trim();
+      const address = document.getElementById('orderAddress').value.trim();
+      
+      // 验证表单
+      if (!productId || !qty || qty < 1 || !name || !phone || !address) {
+        auth.showToast('请填写完整的订单信息', 'error');
+        return;
+      }
+      
+      // 验证手机号格式
+      const phoneRegex = /^1[3-9]\d{9}$/;
+      if (!phoneRegex.test(phone)) {
+        auth.showToast('请输入正确的手机号码', 'error');
+        return;
+      }
+      
+      const submitBtn = document.getElementById('submitOrderBtn');
+      const originalText = submitBtn.textContent;
+      
+      try {
+        // 显示加载状态
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>提交中...';
+        submitBtn.disabled = true;
+        
+        // 准备订单数据
+        const orderData = {
+          product_id: productId,
+          qty: qty,
+          shipping_info: {
+            name: name,
+            phone: phone,
+            address: address
+          }
+        };
+        
+        // 提交订单
+        const result = await auth.apiFetch('/order/create', {
+          method: 'POST',
+          body: JSON.stringify(orderData)
+        });
+        
+        if (result.ok) {
+          // 订单创建成功
+          closeOrderForm();
+          showOrderSuccess(result.order_id, result.order_no);
+        } else if (result.error === 'AUTH_REQUIRED') {
+          // 认证失败，引导用户重新登录
+          closeOrderForm();
+          showWalletConnectPrompt();
+        } else {
+          throw new Error(result.error || '订单创建失败');
+        }
+        
+      } catch (error) {
+        console.error('订单提交失败:', error);
+        auth.showToast('订单提交失败: ' + error.message, 'error');
+      } finally {
+        // 恢复按钮状态
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    }
+
+    // 显示订单成功页面
+    function showOrderSuccess(orderId, orderNo) {
+      const successHtml = `
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" id="orderSuccess">
+          <div class="bg-white rounded-2xl p-6 max-w-sm mx-4 text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-check text-2xl text-green-600"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-ink mb-2">订单提交成功！</h3>
+            <p class="text-sm text-secondary mb-4">
+              订单号：${orderNo}<br>
+              我们将在24小时内处理您的订单
+            </p>
+            <div class="flex gap-3">
+              <button onclick="closeOrderSuccess()" 
+                      class="flex-1 px-4 py-2 border border-line rounded-xl text-sm">
+                继续购物
+              </button>
+              <button onclick="viewOrder(orderId)" 
+                      class="flex-1 bg-primary text-white rounded-xl py-2 text-sm font-semibold">
+                查看订单
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', successHtml);
+    }
+
+    // 关闭订单成功页面
+    function closeOrderSuccess() {
+      const success = document.getElementById('orderSuccess');
+      if (success) success.remove();
+    }
+
+    // 查看订单
+    function viewOrder(orderId) {
+      closeOrderSuccess();
+      window.location.href = `./orders/?id=${orderId}`;
+    }
+
+    // 连接钱包
+    async function connectWallet() {
+      try {
+        const result = await auth.walletLogin();
+        if (result.success) {
+          currentWallet = result.wallet;
+          updateWalletStatus();
+          closeWalletPrompt();
+          auth.showToast('钱包连接成功', 'success');
+        }
+      } catch (error) {
+        console.error('钱包连接失败:', error);
+        auth.showToast('钱包连接失败: ' + error.message, 'error');
+      }
+    }
+
+    // 显示提示消息
+    function showToast(message, type = 'info') {
+      const toastHtml = `
+        <div class="fixed top-4 right-4 bg-white border border-line rounded-xl p-4 shadow-lg z-50 max-w-sm" id="toast">
+          <div class="flex items-center">
+            <i class="fas fa-${type === 'success' ? 'check-circle text-green-600' : type === 'error' ? 'exclamation-circle text-red-600' : 'info-circle text-blue-600'} mr-2"></i>
+            <span class="text-sm text-ink">${message}</span>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', toastHtml);
+      
+      setTimeout(() => {
+        const toast = document.getElementById('toast');
+        if (toast) toast.remove();
+      }, 3000);
+    }
+    
+    // 页面加载完成后加载数据
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化钱包状态
+      updateWalletStatus();
+      
+      // 加载商品详情
+      loadProductDetail();
+      
+      // 绑定事件监听器
+      bindEventListeners();
+    });
+    
+    // 绑定所有事件监听器
+    function bindEventListeners() {
+      // 购买按钮事件
+      const buyButton = document.getElementById('buyButton');
+      if (buyButton) {
+        buyButton.addEventListener('click', function() {
+          const productId = getUrlParameter('id');
+          if (!productId) {
+            auth.showToast('商品ID无效', 'error');
+            return;
+          }
+          
+          // 检查钱包连接状态
+          if (!getWalletStatus() || !getWalletAddress()) {
+            showWalletConnectPrompt();
+            return;
+          }
+          
+          // 显示订单创建表单
+          showOrderForm(productId);
+        });
+      }
+      
+      // 钱包连接事件
+      const connectWalletBtn = document.getElementById('connectWallet');
+      if (connectWalletBtn) {
+        connectWalletBtn.addEventListener('click', function() {
+          if (getWalletStatus() && getWalletAddress()) {
+            // 已连接，显示断开选项
+            if (confirm('是否断开钱包连接？')) {
+              localStorage.removeItem('bearer_token');
+              localStorage.removeItem('wallet_address');
+              currentWallet = '';
+              updateWalletStatus();
+              showToast('钱包已断开连接', 'info');
+            }
+          } else {
+            // 未连接，显示连接提示
+            showWalletConnectPrompt();
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

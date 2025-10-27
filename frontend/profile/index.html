@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>个人中心 · Profile</title>
+  <link rel="stylesheet" href="/styles/app.css"/>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  
+  <script>
+    // profile/common.js - 个人中心通用函数
+
+    // API 基础配置
+    const API_BASE = "https://songbrocade-api.petterbrand03.workers.dev";
+
+    // 获取 Bearer Token
+    function getBearer() {
+      return localStorage.getItem("bearer_token") || "";
+    }
+
+    // 设置 Bearer Token
+    function setBearer(token) {
+      localStorage.setItem("bearer_token", token);
+    }
+
+    // 清除 Bearer Token
+    function clearBearer() {
+      localStorage.removeItem("bearer_token");
+    }
+
+    // 构建认证头
+    function authHeaders(json = true) {
+      const h = {};
+      const b = getBearer();
+      if (b) h["Authorization"] = "Bearer " + b;
+      if (json) h["Content-Type"] = "application/json";
+      return h;
+    }
+
+    // 通用 API 请求函数
+    async function apiFetch(endpoint, options = {}) {
+      const url = API_BASE + endpoint;
+      const defaultOptions = {
+        headers: authHeaders(true),
+        ...options
+      };
+      
+      try {
+        const response = await fetch(url, defaultOptions);
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('API fetch error:', error);
+        throw error;
+      }
+    }
+
+    // 钱包连接相关
+    let currentWallet = "";
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert("未检测到钱包，请在钱包内打开或安装钱包插件");
+        return false;
+      }
+      
+      try {
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+        currentWallet = accounts[0];
+        console.log("钱包已连接:", currentWallet);
+        
+        // 更新UI状态
+        updateWalletStatus();
+        
+        // 加载用户数据
+        loadOrders();
+        loadBadges();
+        loadPoints();
+        
+        return true;
+      } catch (error) {
+        console.error("连接钱包失败:", error);
+        alert("连接钱包失败: " + error.message);
+        return false;
+      }
+    }
+
+    // 管理员登录
+    async function adminLogin() {
+      if (!currentWallet) {
+        const connected = await connectWallet();
+        if (!connected) return;
+      }
+      
+      try {
+        // 获取挑战
+        const challengeData = await apiFetch("/auth/challenge", {
+          method: "POST",
+          body: JSON.stringify({ address: currentWallet })
+        });
+        
+        if (!challengeData.ok) {
+          throw new Error(challengeData.error || "获取挑战失败");
+        }
+        
+        // 签名挑战
+        const message = challengeData.message;
+        const signature = await window.ethereum.request({
+          method: "personal_sign",
+          params: [message, currentWallet]
+        });
+        
+        // 提交签名
+        const loginData = await apiFetch("/auth/verify", {
+          method: "POST",
+          body: JSON.stringify({
+            address: currentWallet,
+            signature: signature,
+            message: message
+          })
+        });
+        
+        if (loginData.ok) {
+          setBearer(loginData.token);
+          checkLoginStatus();
+          alert("管理员登录成功！");
+        } else {
+          throw new Error(loginData.error || "登录失败");
+        }
+      } catch (error) {
+        console.error("管理员登录失败:", error);
+        alert("登录失败: " + error.message);
+      }
+    }
+
+    // 管理员登出
+    function adminLogout() {
+      clearBearer();
+      checkLoginStatus();
+      alert("已登出");
+    }
+
+    // 检查登录状态
+    function checkLoginStatus() {
+      const token = getBearer();
+      const loginBtn = document.getElementById("adminLoginBtn");
+      const logoutBtn = document.getElementById("adminLogoutBtn");
+      
+      if (token) {
+        if (loginBtn) loginBtn.style.display = "none";
+        if (logoutBtn) logoutBtn.style.display = "inline-block";
+      } else {
+        if (loginBtn) loginBtn.style.display = "inline-block";
+        if (logoutBtn) logoutBtn.style.display = "none";
+      }
+    }
+
+    // 加载订单数据
+    async function loadOrders() {
+      if (!currentWallet) {
+        document.getElementById('ordersContainer').innerHTML = `
+          <div class="text-center" style="padding: 20px;">
+            <p>请先连接钱包查看订单</p>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        const data = await apiFetch('/orders');
+        displayOrders(data.orders || []);
+      } catch (error) {
+        console.error('加载订单失败:', error);
+        document.getElementById('ordersContainer').innerHTML = `
+          <div class="text-center" style="padding: 20px;">
+            <p>加载订单失败，请稍后重试</p>
+          </div>
+        `;
+      }
+    }
+
+    // 显示订单列表
+    function displayOrders(orders) {
+      const container = document.getElementById('ordersContainer');
+      
+      if (orders.length === 0) {
+        container.innerHTML = `
+          <div class="text-center" style="padding: 20px;">
+            <p>暂无订单记录</p>
+          </div>
+        `;
+        return;
+      }
+
+      const ordersHTML = orders.slice(0, 3).map(order => `
+        <div class="item-card">
+          <h4>订单 #${order.id || 'N/A'}</h4>
+          <p>商品: ${order.product_title || '未知商品'}</p>
+          <p>价格: ${order.price || 'N/A'} ${order.currency || ''}</p>
+          <p>时间: ${formatTime(order.created_at)}</p>
+          <span class="status-badge status-${order.status || 'pending'}">${getStatusText(order.status)}</span>
+        </div>
+      `).join('');
+
+      container.innerHTML = ordersHTML;
+    }
+
+    // 加载徽章数据
+    async function loadBadges() {
+      if (!currentWallet) {
+        document.getElementById('badgesContainer').innerHTML = `
+          <div class="text-center" style="padding: 20px;">
+            <p>请先连接钱包查看徽章</p>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        const data = await apiFetch('/badge/list');
+        displayBadges(data.badges || []);
+      } catch (error) {
+        console.error('加载徽章失败:', error);
+        document.getElementById('badgesContainer').innerHTML = `
+          <div class="text-center" style="padding: 20px;">
+            <p>加载徽章失败，请稍后重试</p>
+          </div>
+        `;
+      }
+    }
+
+    // 显示徽章列表
+    function displayBadges(badges) {
+      const container = document.getElementById('badgesContainer');
+      
+      if (badges.length === 0) {
+        container.innerHTML = `
+          <div class="text-center" style="padding: 20px;">
+            <p>暂无徽章记录</p>
+          </div>
+        `;
+        return;
+      }
+
+      const badgesHTML = badges.slice(0, 3).map(badge => `
+        <div class="item-card">
+          <h4>${badge.title || '未知徽章'}</h4>
+          <p>类型: ${badge.type || 'N/A'}</p>
+          <p>状态: ${badge.claimed ? '已领取' : '未领取'}</p>
+          <p>时间: ${formatTime(badge.created_at)}</p>
+        </div>
+      `).join('');
+
+      container.innerHTML = badgesHTML;
+    }
+
+    // 加载积分数据
+    async function loadPoints() {
+      if (!currentWallet) {
+        document.getElementById('pointsContainer').innerHTML = `
+          <div class="text-center" style="padding: 20px;">
+            <p>请先连接钱包查看积分</p>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        const data = await apiFetch('/points');
+        displayPoints(data.points || 0, data.history || []);
+      } catch (error) {
+        console.error('加载积分失败:', error);
+        document.getElementById('pointsContainer').innerHTML = `
+          <div class="text-center" style="padding: 20px;">
+            <p>加载积分失败，请稍后重试</p>
+          </div>
+        `;
+      }
+    }
+
+    // 显示积分信息
+    function displayPoints(totalPoints, history) {
+      const container = document.getElementById('pointsContainer');
+      
+      const pointsHTML = `
+        <div class="item-card">
+          <h4>总积分: ${totalPoints}</h4>
+          <p>最近活动: ${history.length > 0 ? history[0].description || '无' : '无'}</p>
+          <p>积分来源: 参与活动、购买商品、社区贡献</p>
+        </div>
+      `;
+
+      container.innerHTML = pointsHTML;
+    }
+
+    // 工具函数
+    function formatTime(timestamp) {
+      if (!timestamp) return 'N/A';
+      const date = new Date(timestamp);
+      return isNaN(date.getTime()) ? timestamp : date.toLocaleString('zh-CN');
+    }
+
+    function getStatusText(status) {
+      const statusMap = {
+        'pending': '待处理',
+        'completed': '已完成',
+        'failed': '失败',
+        'cancelled': '已取消'
+      };
+      return statusMap[status] || status || '未知';
+    }
+
+    // 更新钱包连接状态
+    function updateWalletStatus() {
+      const statusEl = document.getElementById('walletStatus');
+      const addressEl = document.getElementById('walletAddress');
+      
+      if (currentWallet) {
+        statusEl.textContent = '已连接';
+        statusEl.className = 'pill pill-ok';
+        addressEl.value = currentWallet;
+      } else {
+        statusEl.textContent = '未连接';
+        statusEl.className = 'pill';
+        addressEl.value = '';
+      }
+    }
+
+    // 页面加载完成后检查登录状态
+    document.addEventListener("DOMContentLoaded", function() {
+      checkLoginStatus();
+      updateWalletStatus();
+      
+      // 如果已连接钱包，加载数据
+      if (currentWallet) {
+        loadOrders();
+        loadBadges();
+        loadPoints();
+      }
+    });
+  </script>
+
+  <!-- ethers v6 UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+
+  <style>
+    /* 宋代美学·宣纸红金整体风格 */
+    body.app {
+      background-color: #F9F6F0;
+      color: #2D2A26;
+      font-family: "Noto Serif SC", serif;
+    }
+    header.nav {
+      background-color: #9E2A2B;
+      color: #F9F6F0;
+      border-bottom: 2px solid #D5BDAF;
+    }
+    header.nav .link {
+      color: #F9F6F0;
+      font-weight: bold;
+    }
+    header.nav .nav-title {
+      color: #F9F6F0;
+      font-weight: 700;
+    }
+    footer.foot {
+      background-color: #9E2A2B;
+      color: #F9F6F0;
+      border-top: 2px solid #D5BDAF;
+      text-align: center;
+      padding: 12px 0;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    /* 卡片改为浅色半透明风格 */
+    .card {
+      background-color: rgba(213, 189, 175, 0.15);
+      border: 1.5px solid #D5BDAF;
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 4px 8px rgba(213, 189, 175, 0.25);
+      color: #2D2A26;
+    }
+    .card-title {
+      color: #9E2A2B;
+      font-weight: 700;
+      margin-bottom: 16px;
+      font-size: 1.3em;
+      letter-spacing: 1px;
+    }
+
+    /* 按钮风格调整 */
+    .btn {
+      background-color: #9E2A2B;
+      color: #F9F6F0;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 3px 6px rgba(158, 42, 43, 0.4);
+    }
+    .btn:hover {
+      background-color: #7a2021;
+      box-shadow: 0 4px 10px rgba(122, 32, 33, 0.6);
+    }
+    .btn:disabled, .btn[disabled] {
+      background-color: rgba(158, 42, 43, 0.4);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn-primary {
+      background-color: #9E2A2B;
+    }
+    .btn-gradient {
+      background: linear-gradient(90deg, #9E2A2B 0%, #D5BDAF 100%);
+      color: #2D2A26;
+      font-weight: 700;
+      box-shadow: 0 4px 8px rgba(213, 189, 175, 0.6);
+    }
+    .btn-gradient:hover {
+      background: linear-gradient(90deg, #7a2021 0%, #bba997 100%);
+    }
+    .btn-ghost {
+      background-color: transparent;
+      color: #9E2A2B;
+      border: 2px solid #9E2A2B;
+      box-shadow: none;
+      font-weight: 600;
+    }
+    .btn-ghost:hover {
+      background-color: #D5BDAF;
+      color: #7a2021;
+      border-color: #7a2021;
+    }
+    .btn-outline {
+      background-color: transparent;
+      color: #9E2A2B;
+      border: 2px solid #D5BDAF;
+      font-weight: 600;
+      box-shadow: none;
+    }
+    .btn-outline:hover {
+      background-color: #D5BDAF;
+      color: #7a2021;
+      border-color: #7a2021;
+    }
+    .btn-block {
+      width: 100%;
+    }
+
+    /* pill 标签调整为浅色半透明 */
+    .pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      line-height: 18px;
+      background: rgba(213, 189, 175, 0.3);
+      color: #2D2A26;
+      margin-left: 8px;
+      font-weight: 600;
+      box-shadow: 0 2px 5px rgba(213, 189, 175, 0.4);
+    }
+    .pill-ok {
+      background: rgba(158, 42, 43, 0.15);
+      color: #9E2A2B;
+      font-weight: 700;
+    }
+
+    /* 输入框样式 */
+    input, textarea {
+      background-color: #F4EFE7;
+      border: 1.5px solid #D5BDAF;
+      border-radius: 8px;
+      color: #4A463F;
+      font-weight: 500;
+      padding: 8px 12px;
+      font-size: 1em;
+      outline-offset: 2px;
+      transition: border-color 0.3s ease;
+      width: 100%;
+      box-sizing: border-box;
+      font-family: "Noto Serif SC", serif;
+    }
+    input::placeholder, textarea::placeholder {
+      color: #A3988A;
+      font-style: italic;
+    }
+    input:focus, textarea:focus {
+      border-color: #9E2A2B;
+      background-color: #F9F6F0;
+      color: #2D2A26;
+      box-shadow: 0 0 6px rgba(158, 42, 43, 0.4);
+    }
+
+    /* 轻量提示 toast 调整 */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      background: rgba(158, 42, 43, 0.85);
+      color: #F9F6F0;
+      padding: 10px 16px;
+      border-radius: 12px;
+      opacity: 0.98;
+      font-weight: 600;
+      box-shadow: 0 4px 10px rgba(158, 42, 43, 0.6);
+      font-family: "Noto Serif SC", serif;
+    }
+
+    /* 扫码层背景调整为半透明浅色 */
+    .sheet {
+      position: fixed;
+      inset: 0;
+      background: rgba(249, 246, 240, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(6px);
+    }
+    .sheet .sheet-body {
+      width: min(92vw,420px);
+      background: #F4EFE7;
+      padding: 20px 20px 24px;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(213, 189, 175, 0.4);
+      color: #2D2A26;
+      font-weight: 600;
+      font-family: "Noto Serif SC", serif;
+    }
+    .sheet-title {
+      font-size: 1.25em;
+      color: #9E2A2B;
+      margin-bottom: 12px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    .sheet.hidden {
+      display: none;
+    }
+
+    /* 视频扫码区域 */
+    .cam {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      background: #F4EFE7;
+      border: 2px solid #D5BDAF;
+      box-shadow: inset 0 0 8px rgba(213, 189, 175, 0.6);
+    }
+
+    /* 网格和行布局保持不变 */
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+    .grid-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* 标签文字颜色 */
+    label {
+      color: #9E2A2B;
+      font-weight: 600;
+      font-family: "Noto Serif SC", serif;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    /* 提示文字 */
+    .tips {
+      color: #7a2021;
+      font-style: italic;
+      font-size: 0.9em;
+      margin-top: 12px;
+      font-family: "Noto Serif SC", serif;
+    }
+
+    /* Loading 动画 */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #D5BDAF;
+      border-radius: 50%;
+      border-top-color: #9E2A2B;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* 订单/徽章/积分卡片样式 */
+    .item-card {
+      background: rgba(213, 189, 175, 0.1);
+      border: 1px solid #D5BDAF;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    .item-card h4 {
+      color: #9E2A2B;
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 0.8em;
+    }
+
+    .item-card p {
+      color: #4A463F;
+      font-size: 0.7em;
+      margin: 1px 0;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.7em;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .status-pending {
+      background: rgba(255, 193, 7, 0.2);
+      color: #856404;
+    }
+
+    .status-completed {
+      background: rgba(40, 167, 69, 0.2);
+      color: #155724;
+    }
+
+    .status-failed {
+      background: rgba(220, 53, 69, 0.2);
+      color: #721c24;
+    }
+  </style>
+</head>
+<body class="app">
+<header class="nav">
+  <div class="nav-left"><a class="link" href="/">返回</a></div>
+  <div class="nav-title">个人中心</div>
+  <div class="nav-right">
+    <button id="adminLoginBtn" class="btn btn-ghost" style="display:none;">管理员登录</button>
+    <button id="adminLogoutBtn" class="btn btn-ghost" style="display:none;">登出</button>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- 钱包连接状态 -->
+  <section class="card">
+    <h2 class="card-title">
+      <i class="fas fa-wallet" style="margin-right: 8px;"></i>
+      钱包地址
+    </h2>
+    
+    <div class="row">
+      <button id="btnConnect" class="btn btn-primary">
+        <i class="fas fa-plug" style="margin-right: 6px;"></i>
+        连接钱包
+      </button>
+      <span id="walletStatus" class="pill">未连接</span>
+    </div>
+    
+    <div class="field">
+      <label>钱包地址</label>
+      <input id="walletAddress" readonly placeholder="请先连接钱包"/>
+    </div>
+    
+    <div class="tips">连接钱包后可以查看个人订单、徽章和积分信息</div>
+  </section>
+
+  <!-- 我的订单 -->
+  <section class="card">
+    <h2 class="card-title">
+      <i class="fas fa-shopping-bag" style="margin-right: 8px;"></i>
+      我的订单
+    </h2>
+    
+    <div id="ordersContainer">
+      <div class="text-center" style="padding: 20px;">
+        <div class="loading" style="display: inline-block; margin-bottom: 10px;"></div>
+        <p>加载订单中...</p>
+      </div>
+    </div>
+    
+    <div class="row">
+      <button class="btn btn-outline" onclick="loadOrders()">
+        <i class="fas fa-refresh" style="margin-right: 6px;"></i>
+        刷新订单
+      </button>
+      <button class="btn btn-ghost" onclick="goto('/orders/')">
+        <i class="fas fa-external-link-alt" style="margin-right: 6px;"></i>
+        查看全部
+      </button>
+    </div>
+  </section>
+
+  <!-- 我的徽章 -->
+  <section class="card">
+    <h2 class="card-title">
+      <i class="fas fa-certificate" style="margin-right: 8px;"></i>
+      我的徽章
+    </h2>
+    
+    <div id="badgesContainer">
+      <div class="text-center" style="padding: 20px;">
+        <div class="loading" style="display: inline-block; margin-bottom: 10px;"></div>
+        <p>加载徽章中...</p>
+      </div>
+    </div>
+    
+    <div class="row">
+      <button class="btn btn-outline" onclick="loadBadges()">
+        <i class="fas fa-refresh" style="margin-right: 6px;"></i>
+        刷新徽章
+      </button>
+      <button class="btn btn-ghost" onclick="goto('/claim/')">
+        <i class="fas fa-gift" style="margin-right: 6px;"></i>
+        领取徽章
+      </button>
+    </div>
+  </section>
+
+  <!-- 我的积分/空投 -->
+  <section class="card">
+    <h2 class="card-title">
+      <i class="fas fa-coins" style="margin-right: 8px;"></i>
+      我的积分
+    </h2>
+    
+    <div id="pointsContainer">
+      <div class="text-center" style="padding: 20px;">
+        <div class="loading" style="display: inline-block; margin-bottom: 10px;"></div>
+        <p>加载积分中...</p>
+      </div>
+    </div>
+    
+    <div class="row">
+      <button class="btn btn-outline" onclick="loadPoints()">
+        <i class="fas fa-refresh" style="margin-right: 6px;"></i>
+        刷新积分
+      </button>
+      <button class="btn btn-ghost" onclick="goto('/points/')">
+        <i class="fas fa-chart-line" style="margin-right: 6px;"></i>
+        积分详情
+      </button>
+    </div>
+  </section>
+
+  <!-- 快速操作 -->
+  <section class="card">
+    <h2 class="card-title">
+      <i class="fas fa-bolt" style="margin-right: 8px;"></i>
+      快速操作
+    </h2>
+    
+    <div class="grid grid-2">
+      <button class="btn btn-block" onclick="goto('/checkin/')">
+        <i class="fas fa-qrcode" style="margin-right: 6px;"></i>
+        活动签到
+      </button>
+      <button class="btn btn-block" onclick="goto('/market/')">
+        <i class="fas fa-store" style="margin-right: 6px;"></i>
+        浏览商城
+      </button>
+      <button class="btn btn-block" onclick="goto('/artisans/')">
+        <i class="fas fa-user-tie" style="margin-right: 6px;"></i>
+        匠人中心
+      </button>
+      <button class="btn btn-block" onclick="goto('/dao/')">
+        <i class="fas fa-vote-yea" style="margin-right: 6px;"></i>
+        DAO治理
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">© 2025 旗袍DAO</footer>
+
+<script>
+/*************** 小工具 ***************/
+const $ = (s)=>document.querySelector(s);
+function toast(msg){ const n=document.createElement('div'); n.className='toast'; n.textContent=msg; document.body.appendChild(n); setTimeout(()=>n.remove(),2200) }
+const goto = (p)=>location.href=p;
+
+/*************** 事件绑定 ***************/
+$('#btnConnect').onclick = connectWallet;
+$('#adminLoginBtn').onclick = adminLogin;
+$('#adminLogoutBtn').onclick = adminLogout;
+
+</script>
+</body>
+</html>

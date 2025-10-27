@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+  />
+  <title>我的订单｜非遗正品追踪</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- ethers v6 CDN，可按需要替换成你项目现有版本 -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+  <style>
+    body {
+      background-color: #f9f6f0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC",
+        "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    }
+  </style>
+</head>
+<body class="text-[#4A403A]">
+
+  <!-- 顶部栏 -->
+  <header class="p-4 flex items-center justify-between">
+    <div class="text-sm">
+      <div class="text-[#9E2A2B] font-semibold text-base">
+        我的订单
+      </div>
+      <div class="text-[11px] text-[#4A403A]/60 leading-tight">
+        每一单都对应一段传承
+      </div>
+    </div>
+
+    <button id="connectBtn"
+      class="text-[11px] px-3 py-1 rounded-xl border border-[#9E2A2B]/40 text-[#9E2A2B] active:bg-[#9E2A2B]/10">
+      连接钱包
+    </button>
+  </header>
+
+  <main class="p-4 pb-24">
+    <div id="orders_list" class="grid gap-4 text-sm"></div>
+  </main>
+
+  <script>
+    const API_BASE = "https://songbrocade-api.petterbrand03.workers.dev"; // 改成你的Worker API
+
+    // 这个 ABI 必须和你的 Poap1155WithSig.sol 实际函数一致
+    // 合约有方法:
+    // function mintWithSig(
+    //   address to,
+    //   uint256 eventId,
+    //   uint256 amount,
+    //   uint256 deadline,
+    //   uint8 v, bytes32 r, bytes32 s
+    // ) external;
+    const BADGE_ABI = [
+      "function mintWithSig(address to,uint256 eventId,uint256 amount,uint256 deadline,uint8 v,bytes32 r,bytes32 s) external"
+    ];
+
+    function getBearer() {
+      return localStorage.getItem("bearer_token") || "";
+    }
+    function authHeaders(json = true) {
+      const h = {};
+      const b = getBearer();
+      if (b) h["Authorization"] = "Bearer " + b;
+      if (json) h["Content-Type"] = "application/json";
+      return h;
+    }
+
+    let currentWallet = "";
+
+    function shortAddr(addr) {
+      if (!addr) return "";
+      return addr.slice(0,6) + "..." + addr.slice(-4);
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert("未检测到钱包，请在钱包内打开或安装钱包插件");
+        return;
+      }
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      currentWallet = accounts[0];
+      document.getElementById("connectBtn").innerText = shortAddr(currentWallet);
+
+      await loadMyOrders();
+    }
+
+    async function loadMyOrders() {
+      if (!currentWallet) return;
+
+      const url = API_BASE + "/orders?wallet=" + encodeURIComponent(currentWallet);
+      const res = await fetch(url, {
+        method: "GET",
+        headers: authHeaders(false)
+      });
+      const data = await res.json();
+
+      const wrap = document.getElementById("orders_list");
+      wrap.innerHTML = "";
+
+      if (!data.ok) {
+        wrap.innerHTML = `<div class="text-xs text-red-600">订单加载失败：${data.error || "unknown"}</div>`;
+        return;
+      }
+
+      if (!data.orders || !data.orders.length) {
+        wrap.innerHTML = `<div class="text-xs text-gray-500">当前没有订单</div>`;
+        return;
+      }
+
+      data.orders.forEach(o => {
+        const card = document.createElement("div");
+        card.className = "rounded-2xl border border-[#9E2A2B]/30 bg-white/90 shadow p-4 flex flex-col";
+
+        const statusTag = `
+          <span class="px-2 py-0.5 rounded bg-[#9E2A2B]/10 border border-[#9E2A2B]/30 text-[#9E2A2B] text-[10px]">
+            ${o.status}
+          </span>
+        `;
+
+        // 如果订单完成，允许领取徽章
+        const badgeBtn = (o.status === "completed")
+          ? `<button class="mt-2 bg-[#9E2A2B] text-white rounded-xl py-2 text-[11px] font-semibold active:opacity-80"
+                     onclick="claimBadge('${o.id}')">
+               领取正品认证徽章
+             </button>`
+          : `<div class="text-[10px] text-gray-400 mt-2 leading-relaxed">
+               待完成交付后即可领取正品认证徽章（链上永久可查）。
+             </div>`;
+
+        card.innerHTML = `
+          <div class="text-[#4A403A] text-sm font-semibold flex flex-wrap gap-2 items-center">
+            <span>${o.title_zh || "非遗作品"}</span>
+            ${statusTag}
+          </div>
+
+          <div class="text-[11px] text-[#4A403A]/70 mb-1">
+            订单号：${o.id}
+          </div>
+
+          <div class="text-[11px] text-[#4A403A]/70">
+            商品编号：${o.slug || "-"} 
+          </div>
+
+          <div class="text-[11px] text-[#4A403A]/70">
+            数量：${o.qty} | 支付Tx: ${o.tx_hash || "-"}
+          </div>
+
+          <div class="text-[10px] text-gray-500 mt-2 leading-relaxed">
+            创建时间：${o.created_at || ""}<br/>
+            最新更新：${o.updated_at || ""}
+          </div>
+
+          ${badgeBtn}
+        `;
+
+        wrap.appendChild(card);
+      });
+    }
+
+    // 用户点击"领取正品认证徽章"
+    async function claimBadge(orderId) {
+      if (!currentWallet) {
+        alert("请先连接钱包");
+        return;
+      }
+      
+      try {
+        // 1. 从后端拿签名包
+        const ticketRes = await fetch(
+          API_BASE + "/badge/claim-ticket?order_id=" + encodeURIComponent(orderId),
+          {
+            method: "GET",
+            headers: authHeaders(false)
+          }
+        );
+        const ticketData = await ticketRes.json();
+        if (!ticketData.ok) {
+          alert("无法领取徽章: " + (ticketData.error || "unknown"));
+          return;
+        }
+
+        const badge = ticketData.badge;
+        const payload = badge.payload;
+        
+        // 检查 payload 是否包含必要的签名信息
+        if (!payload.contract || !payload.tokenId || !payload.deadline || !payload.signature) {
+          alert("徽章签名数据不完整，请联系管理员");
+          return;
+        }
+
+        // 2. 调用链上合约 mintWithSig
+        if (!window.ethereum) {
+          alert("缺少钱包环境，无法上链领取徽章");
+          return;
+        }
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        // 重要：请确保 payload.contract 是 badge合约地址，且 BADGE_ABI 和合约一致
+        const badgeContract = new ethers.Contract(payload.contract, BADGE_ABI, signer);
+
+        // 解析签名：假设后端返回的是完整的签名字符串，需要拆分成 v, r, s
+        // 这里需要根据你的后端签名格式来调整
+        let v, r, s;
+        if (payload.signature && payload.signature.startsWith('0x')) {
+          // 假设签名是 65 字节的十六进制字符串
+          const sig = payload.signature.slice(2); // 去掉 0x
+          if (sig.length === 130) { // 65 * 2
+            r = '0x' + sig.slice(0, 64);
+            s = '0x' + sig.slice(64, 128);
+            v = parseInt(sig.slice(128, 130), 16);
+          } else {
+            throw new Error("签名格式不正确");
+          }
+        } else {
+          throw new Error("缺少有效的签名数据");
+        }
+
+        // 调用合约方法
+        const tx = await badgeContract.mintWithSig(
+          currentWallet, // to
+          BigInt(payload.tokenId), // eventId
+          BigInt(payload.amount || "1"), // amount
+          BigInt(payload.deadline), // deadline
+          v, // v
+          r, // r
+          s  // s
+        );
+        
+        alert("交易已提交，上链中: " + tx.hash);
+        
+        // 等待交易确认
+        const receipt = await tx.wait();
+        if (receipt.status === 1) {
+          alert("徽章领取成功！交易哈希: " + tx.hash);
+          // 刷新订单列表
+          await loadMyOrders();
+        } else {
+          alert("交易失败，请重试");
+        }
+        
+      } catch (err) {
+        console.error("claimBadge error:", err);
+        alert("领取失败: " + (err && err.message ? err.message : err));
+        return;
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      // 如果钱包已经连接过，自动带上地址
+      if (window.ethereum) {
+        try {
+          const accs = await window.ethereum.request({ method: "eth_accounts" });
+          if (accs && accs[0]) {
+            currentWallet = accs[0];
+            document.getElementById("connectBtn").innerText = shortAddr(currentWallet);
+            await loadMyOrders();
+          }
+        } catch (e) {}
+      }
+
+      document.getElementById("connectBtn").addEventListener("click", connectWallet);
+    });
+  </script>
+</body>
+</html>

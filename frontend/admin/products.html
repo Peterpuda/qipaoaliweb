@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>商品管理 - 旗袍DAO管理后台</title>
+  <link rel="stylesheet" href="/styles/app.css"/>
+  <link rel="stylesheet" href="common/admin-common.css"/>
+  <script src="/poap.config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <!-- 导航栏 -->
+  <nav class="admin-nav">
+    <div class="nav-brand">商品管理</div>
+    <button class="hamburger">☰</button>
+    <div class="nav-user">
+      <span id="authState" class="pill">未登录</span>
+    </div>
+  </nav>
+
+  <!-- 移动端侧边栏 -->
+  <div class="sidebar-overlay"></div>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div>导航菜单</div>
+      <button class="sidebar-close">×</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/admin/index.html" class="nav-item">
+        <i>📊</i> 仪表板
+      </a>
+      <a href="/admin/events.html" class="nav-item">
+        <i>🎪</i> 活动管理
+      </a>
+      <a href="/admin/artisans.html" class="nav-item">
+        <i>👨‍🎨</i> 传承人管理
+      </a>
+      <a href="/admin/products.html" class="nav-item">
+        <i>🛍️</i> 商品管理
+      </a>
+      <a href="/admin/orders.html" class="nav-item">
+        <i>📦</i> 订单管理
+      </a>
+      <a href="../profile/" class="nav-item">
+        <i>👤</i> 个人中心
+      </a>
+      <a href="javascript:logout()" class="nav-item">
+        <i>🚪</i> 退出登录
+      </a>
+    </nav>
+  </div>
+
+  <!-- 商品创建/编辑表单 -->
+  <div class="card">
+    <h2 class="card-title">商品信息</h2>
+    
+    <form id="productForm">
+      <input type="hidden" id="product_id" name="id" />
+      
+      <div class="field">
+        <label>商品ID（编辑时自动填入）</label>
+        <input id="product_id_display" placeholder="新建时留空" readonly/>
+      </div>
+      
+      <div class="field">
+        <label>传承人ID *</label>
+        <select id="product_artisan_id" name="artisan_id" required>
+          <option value="">请选择传承人</option>
+        </select>
+      </div>
+      
+      <div class="field">
+        <label>商品 slug *</label>
+        <input id="product_slug" name="slug" placeholder="如：qipao-001" required/>
+      </div>
+      
+      <div class="field">
+        <label>标题（中文）*</label>
+        <input id="product_title_zh" name="title_zh" placeholder="商品中文标题" required/>
+      </div>
+      
+      <div class="field">
+        <label>标题（英文）</label>
+        <input id="product_title_en" name="title_en" placeholder="Product Title (English / 可选)"/>
+      </div>
+      
+      <div class="field">
+        <label>商品描述（Markdown）</label>
+        <textarea id="product_desc_md" name="desc_md" rows="4" placeholder="支持 Markdown 格式"></textarea>
+      </div>
+      
+      <div class="field">
+        <label>图片 Key（R2 存储路径）</label>
+        <input id="product_image_key" name="image_key" placeholder="如：products/qipao-001.jpg"/>
+      </div>
+      
+      <div class="field">
+        <label>上传图片到 R2</label>
+        <input id="product_image_file" type="file" accept="image/*" class="w-full"/>
+        <button type="button" id="btnUploadImage" class="btn btn-sm btn-secondary mt-1">
+          上传图片
+        </button>
+      </div>
+      
+      <div class="grid grid-2">
+        <div class="field">
+          <label>价格（原生代币）*</label>
+          <input id="product_price_native" name="price_native" type="number" step="0.000001" placeholder="0.001" required/>
+        </div>
+        <div class="field">
+          <label>货币单位 *</label>
+          <input id="product_price_currency" name="price_currency" placeholder="ETH" required/>
+        </div>
+        <div class="field">
+          <label>积分价格</label>
+          <input id="product_price_points" name="price_points" type="number" placeholder="1000"/>
+        </div>
+        <div class="field">
+          <label>库存数量</label>
+          <input id="product_stock" name="stock" type="number" placeholder="10"/>
+        </div>
+      </div>
+      
+      <div class="field">
+        <label>徽章合约地址</label>
+        <input id="product_badge_contract" name="badge_contract" placeholder="0x... 用于 POAP 徽章"/>
+      </div>
+      
+      <div class="row">
+        <button type="button" id="btnSaveProduct" class="btn btn-primary btn-block">
+          保存 / 更新 商品
+        </button>
+        <button type="button" id="btnClearProductForm" class="btn btn-secondary btn-block">
+          清空表单
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 商品列表 -->
+  <div class="card">
+    <h2 class="card-title">商品列表</h2>
+    
+    <div class="row" style="justify-content: space-between; align-items: center;">
+      <div>当前商品</div>
+      <button id="btnRefreshProducts" class="btn btn-sm btn-secondary">
+        刷新
+      </button>
+    </div>
+    
+    <div id="product_list" class="list" style="margin-top: 12px;">
+      <div class="list-item text-center">
+        <div class="loading"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="common/admin-common.js"></script>
+<script>
+// 商品管理特定功能
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+  loadArtisans();
+  loadProducts();
+});
+
+// 加载传承人列表（用于下拉选择）
+async function loadArtisans() {
+  if (!ensureAuth()) return;
+  
+  try {
+    const result = await apiJSONmulti(['/admin/artisans']);
+    const select = $('#product_artisan_id');
+    
+    if (result.artisans && result.artisans.length > 0) {
+      select.innerHTML = '<option value="">请选择传承人</option>' + 
+        result.artisans.map(a => `<option value="${a.id}">${a.name_zh || a.name_en || a.id}</option>`).join('');
+    }
+  } catch (error) {
+    console.error('加载传承人列表失败:', error);
+  }
+}
+
+// 上传图片到R2
+$('#btnUploadImage').addEventListener('click', async () => {
+  if (!ensureAuth()) return;
+  
+  const fileInput = $('#product_image_file');
+  const file = fileInput.files[0];
+  
+  if (!file) {
+    toast('请先选择图片文件', 'error');
+    return;
+  }
+  
+  const btn = $('#btnUploadImage');
+  const originalText = btn.textContent;
+  showLoading(btn);
+  
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const result = await apiJSONmulti(['/admin/upload'], {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (result.ok && result.key) {
+      $('#product_image_key').value = result.key;
+      toast('图片上传成功: ' + result.key);
+    } else {
+      toast('上传失败: ' + (result.error || 'unknown'), 'error');
+    }
+    
+  } catch (error) {
+    console.error('上传图片失败:', error);
+    toast('上传失败: ' + error.message, 'error');
+  } finally {
+    hideLoading(btn, originalText);
+  }
+});
+
+// 保存/更新商品
+$('#btnSaveProduct').addEventListener('click', async () => {
+  if (!ensureAuth()) return;
+  
+  const formData = getFormData('productForm');
+  const errors = validateForm(formData, ['artisan_id', 'slug', 'title_zh', 'price_native', 'price_currency']);
+  
+  if (errors.length > 0) {
+    toast(errors.join(', '), 'error');
+    return;
+  }
+  
+  const btn = $('#btnSaveProduct');
+  const originalText = btn.textContent;
+  showLoading(btn);
+  
+  try {
+    const payload = {
+      id: formData.id || undefined,
+      artisan_id: formData.artisan_id,
+      slug: formData.slug.trim(),
+      title_zh: formData.title_zh.trim(),
+      title_en: formData.title_en.trim(),
+      desc_md: formData.desc_md.trim(),
+      image_key: formData.image_key.trim(),
+      price_native: Number(formData.price_native),
+      price_currency: formData.price_currency.trim(),
+      price_points: Number(formData.price_points) || 0,
+      stock: Number(formData.stock) || 0,
+      badge_contract: formData.badge_contract.trim()
+    };
+    
+    const result = await apiJSONmulti(['/admin/product-upsert'], {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    
+    if (result.ok) {
+      toast('已保存商品 / ID: ' + result.id);
+      clearProductForm();
+      loadProducts();
+    } else {
+      toast('保存失败: ' + (result.error || 'unknown'), 'error');
+    }
+    
+  } catch (error) {
+    console.error('保存商品失败:', error);
+    toast('保存失败: ' + error.message, 'error');
+  } finally {
+    hideLoading(btn, originalText);
+  }
+});
+
+// 清空商品表单
+$('#btnClearProductForm').addEventListener('click', clearProductForm);
+
+// 刷新商品列表
+$('#btnRefreshProducts').addEventListener('click', loadProducts);
+
+// 加载商品列表
+async function loadProducts() {
+  if (!ensureAuth()) return;
+  
+  try {
+    const result = await apiJSONmulti(['/products']);
+    displayProducts(result.products || []);
+  } catch (error) {
+    console.error('加载商品列表失败:', error);
+    $('#product_list').innerHTML = '<div class="list-item text-center">加载失败</div>';
+  }
+}
+
+// 显示商品列表
+function displayProducts(products) {
+  const container = $('#product_list');
+  
+  if (!products || products.length === 0) {
+    container.innerHTML = '<div class="list-item text-center">暂无商品</div>';
+    return;
+  }
+  
+  container.innerHTML = products.map(product => {
+    const priceText = `${product.price_native} ${product.price_currency}`;
+    const pointsText = product.price_points ? ` / ${product.price_points} 积分` : '';
+    const stockText = product.stock ? `库存: ${product.stock}` : '无库存';
+    
+    return `
+      <div class="list-item">
+        <div style="flex: 1;">
+          <div style="font-weight: 600;">${product.title_zh || "(未命名)"}</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+            ${product.slug} | ${priceText}${pointsText}
+          </div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">
+            ${stockText} | 传承人: ${product.artisan_id}
+          </div>
+        </div>
+        <div>
+          <button onclick="editProduct('${product.id}')" class="btn btn-sm btn-secondary">
+            编辑
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 编辑商品
+function editProduct(productId) {
+  // 这里应该从列表中获取商品数据，或者重新加载单个商品
+  // 为了简化，我们重新加载列表并找到对应的商品
+  loadProducts().then(() => {
+    // 找到对应的商品并填充表单
+    const productElement = document.querySelector(`[onclick="editProduct('${productId}')"]`);
+    if (productElement) {
+      // 这里需要从服务器获取完整的商品数据
+      // 为了简化，我们显示一个提示
+      toast('请从服务器重新加载商品数据', 'error');
+    }
+  });
+}
+
+// 清空商品表单
+function clearProductForm() {
+  clearForm('productForm');
+  $('#product_id').value = '';
+  $('#product_id_display').value = '';
+  $('#product_image_file').value = '';
+}
+
+// 填充商品表单
+function fillProductForm(product) {
+  $('#product_id').value = product.id || '';
+  $('#product_id_display').value = product.id || '';
+  $('#product_artisan_id').value = product.artisan_id || '';
+  $('#product_slug').value = product.slug || '';
+  $('#product_title_zh').value = product.title_zh || '';
+  $('#product_title_en').value = product.title_en || '';
+  $('#product_desc_md').value = product.desc_md || '';
+  $('#product_image_key').value = product.image_key || '';
+  $('#product_price_native').value = product.price_native || '';
+  $('#product_price_currency').value = product.price_currency || '';
+  $('#product_price_points').value = product.price_points || '';
+  $('#product_stock').value = product.stock || '';
+  $('#product_badge_contract').value = product.badge_contract || '';
+}
+
+// 将函数暴露到全局作用域
+window.editProduct = editProduct;
+window.fillProductForm = fillProductForm;
+window.clearProductForm = clearProductForm;
+</script>
+</body>
+</html>

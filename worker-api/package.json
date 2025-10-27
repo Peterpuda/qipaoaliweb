@@ -1,0 +1,17 @@
+{
+  "name": "songbrocade-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --local index.js",
+    "deploy": "wrangler deploy index.js --name songbrocade-api",
+    "tail": "wrangler tail songbrocade-api",
+    "init-db": "curl -X POST http://127.0.0.1:8787/__init"
+  },
+  "dependencies": {
+    "ethers": "^6.13.2",
+    "hono": "^4.6.5",
+    "qrcode": "^1.5.3"
+  }
+}

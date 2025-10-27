@@ -1,134 +1,1195 @@
-<!doctype html>
-<html lang="zh">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>POAP 签到 · 宋锦 × 旗袍DAO</title>
-  <style>
-    body{font-family:system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, Noto Sans SC, Arial; background:#FAF8F3; color:#1A1A1A; padding:24px;}
-    .wrap{max-width:780px; margin:0 auto;}
-    .card{background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(0,0,0,0.08);}
-    h1{font-size:28px; margin:0 0 8px;}
-    .muted{color:#666}
-    input,select,button{padding:12px; border-radius:10px; border:1px solid #e6e6e6; width:100%; margin:8px 0;}
-    button{background:#B41E2E; color:#fff; border:none; cursor:pointer;}
-    button.secondary{background:#fff; color:#B41E2E; border:1px solid #B41E2E;}
-    .row{display:flex; gap:12px; align-items:center;}
-    .row > *{flex:1}
-    pre{background:#111; color:#0f0; padding:12px; border-radius:10px; overflow:auto; max-height:240px;}
-    .badge{display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid #e6e6e6; background:#fff; font-size:12px; margin-right:6px;}
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1>活动签到 · 领取 POAP</h1>
-      <p class="muted">宋锦 × 旗袍DAO「全球启动仪式」示例（Event ID：20251208）</p>
-
-      <div class="row">
-        <button id="connect">连接钱包</button>
-        <button id="switch" class="secondary">切换到 Base Sepolia</button>
-      </div>
-
-      <label>活动 ID</label>
-      <input id="eventId" value="20251208" />
-
-      <label>签到码（5分钟有效）</label>
-      <input id="code" placeholder="如：A7F3QX 或扫码自动填充" />
-
-      <label>POAP 合约地址</label>
-      <input id="contract" placeholder="0x..." />
-
-      <div class="row">
-        <button id="checkin">立即签到并领取</button>
-      </div>
-
-      <div class="row">
-        <span class="badge">隐私保护：仅发送钱包地址与签到码</span>
-        <span class="badge">签名授权：服务端签名，前端自费上链</span>
-      </div>
-
-      <pre id="log"></pre>
-    </div>
-  </div>
-
-  <script type="module">
-    import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.min.js";
-
-    const ABI = [
-      "function nonces(address) view returns (uint256)",
-      "function mintWithSig(address to,uint256 eventId,uint256 amount,uint256 deadline,uint8 v,bytes32 r,bytes32 s)"
-    ];
-
-    const log = (m)=>{ const el=document.querySelector("#log"); el.textContent += (typeof m==='string'?m:JSON.stringify(m,null,2)) + "\\n"; el.scrollTop=el.scrollHeight; };
-
-    let provider, signer, addr;
-
-    async function connect() {
-      if (!window.ethereum) { alert("请先安装钱包扩展"); return; }
-      provider = new ethers.BrowserProvider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
-      signer = await provider.getSigner();
-      addr = await signer.getAddress();
-      log("已连接: " + addr);
-    }
-
-    async function switchBaseSepolia() {
-      const baseSepolia = {
-        chainId: "0x14A34", // 84532
-        chainName: "Base Sepolia",
-        nativeCurrency: { name:"ETH", symbol:"ETH", decimals:18 },
-        rpcUrls: ["https://sepolia.base.org"],
-        blockExplorerUrls: ["https://sepolia.basescan.org"]
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>非遗&Web3 | 全球非遗文化数字保护平台</title>
+    <script src="https://res.gemcoder.com/js/reload.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#9E2A2B",
+              secondary: "#4A403A",
+              accent: "#D5BDAF",
+              gold: "#D4AF37",
+              ink: "#2D2A26",
+              paper: "#F9F6F0",
+            },
+            fontFamily: {
+              song: ['"Noto Serif SC"', "serif"],
+              kai: ['"Noto Serif SC"', "serif"],
+            },
+            spacing: {
+              18: "4.5rem",
+              22: "5.5rem",
+              26: "6.5rem",
+              72: "18rem",
+              80: "20rem",
+              88: "22rem",
+              96: "24rem",
+            },
+            backgroundImage: {
+              "pattern-paper":
+                "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjZmZmZmZmIj48L3JlY3Q+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmNWY1ZjUiPjwvcmVjdD4KPC9zdmc+')",
+            },
+          },
+        },
       };
-      try {
-        await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: baseSepolia.chainId }] });
-      } catch (e) {
-        if (e.code === 4902) {
-          await window.ethereum.request({ method: "wallet_addEthereumChain", params: [baseSepolia] });
+    </script>
+    <style type="text/tailwindcss">
+      @layer utilities {
+        .content-auto {
+          content-visibility: auto;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .text-shadow {
+          text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        /* 确保导航栏在移动端正确显示 */
+        #navbar {
+          position: fixed !important;
+          top: 0 !important;
+          left: 50% !important;
+          transform: translateX(-50%) !important;
+          width: 100% !important;
+          max-width: 600px !important;
+          z-index: 9999 !important;
+        }
+        /* 确保内容区域不被导航栏遮挡 */
+        main {
+          padding-top: 4rem !important;
+        }
+        @media (min-width: 640px) {
+          main {
+            padding-top: 5rem !important;
+          }
+        }
+        
+        /* 黄金比例排版和字间距优化 */
+        .golden-ratio {
+          max-width: 61.8%; /* 黄金比例宽度 */
+        }
+        
+        .golden-ratio-small {
+          max-width: 38.2%; /* 黄金比例小宽度 */
+        }
+        
+        /* 字间距优化 */
+        .text-spacing-tight {
+          letter-spacing: -0.025em;
+        }
+        
+        .text-spacing-normal {
+          letter-spacing: 0;
+        }
+        
+        .text-spacing-wide {
+          letter-spacing: 0.025em;
+        }
+        
+        .text-spacing-wider {
+          letter-spacing: 0.05em;
+        }
+        
+        /* 行间距优化 */
+        .leading-optimal {
+          line-height: 1.618; /* 黄金比例行高 */
+        }
+        
+        .leading-comfortable {
+          line-height: 1.5;
+        }
+        
+        .leading-relaxed {
+          line-height: 1.75;
+        }
+        
+        /* 标题字间距和行高优化 */
+        h1, h2, h3 {
+          letter-spacing: -0.02em;
+          line-height: 1.2;
+        }
+        
+        /* 正文优化 */
+        p {
+          letter-spacing: 0.01em;
+          line-height: 1.618;
+        }
+        
+        /* 小字优化 */
+        .text-xs, .text-sm {
+          letter-spacing: 0.025em;
+          line-height: 1.5;
+        }
+        
+        /* 按钮文字优化 */
+        button, .btn {
+          letter-spacing: 0.02em;
+          line-height: 1.4;
+        }
+        
+        /* 黄金比例容器 */
+        .container-golden {
+          max-width: 61.8rem; /* 约988px */
+          margin: 0 auto;
+        }
+        
+        /* 黄金比例间距 */
+        .space-golden {
+          margin-bottom: 1.618rem; /* 约26px */
+        }
+        
+        .space-golden-sm {
+          margin-bottom: 1rem; /* 约16px */
+        }
+        
+        .space-golden-lg {
+          margin-bottom: 2.618rem; /* 约42px */
+        }
+        
+        /* 弹出式导航菜单样式 */
+        #navMenu {
+          animation: slideDown 0.2s ease-out;
+        }
+        
+        #navMenu.hidden {
+          display: none;
+        }
+        
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        /* 菜单项悬停效果 */
+        #navMenu a:hover,
+        #navMenu button:hover {
+          background-color: rgba(213, 189, 175, 0.1);
+          transition: background-color 0.2s ease;
+        }
+        
+        /* 菜单图标样式 */
+        #navMenu i {
+          width: 16px;
+          text-align: center;
+        }
+        
+        /* 菜单分组标题样式 */
+        #navMenu .px-4.py-2.text-xs {
+          color: #9E2A2B;
+          font-weight: 600;
+          letter-spacing: 0.05em;
+        }
+        
+        /* 卡片悬停效果增强 */
+        .group:hover {
+          transform: translateY(-2px);
+        }
+        
+        /* 加载动画 */
+        .loading {
+          width: 40px;
+          height: 40px;
+          border: 3px solid #f3f3f3;
+          border-top: 3px solid #9E2A2B;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        /* 文本截断样式 */
+        .line-clamp-1 {
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       }
-      log("已切换到 Base Sepolia");
-    }
+    </style>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-paper text-ink font-song min-h-screen" style="background-image: none;">
+    <div class="min-h-screen flex flex-col px-2 sm:px-4 max-w-[600px] mx-auto">
+      <!-- 导航栏 -->
+      <header
+        class="fixed w-full z-[9999] bg-paper/95 backdrop-blur-sm shadow-md"
+        id="navbar"
+      >
+        <div class="flex justify-between items-center px-2 py-3 sm:px-4">
+          <a class="flex items-center" href="javascript:void(0);">
+            <div
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary flex items-center justify-center text-paper mr-2"
+            >
+              <i class="fas fa-chess-rook text-lg"></i>
+            </div>
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-kai font-bold text-primary leading-tight">
+                非遗上链
+              </h1>
+              <p class="text-xs sm:text-sm text-secondary/80 leading-none">全球非遗文化数字保护平台</p>
+            </div>
+          </a>
+          <!-- 弹出式导航菜单 -->
+          <div class="relative">
+            <button
+              id="navMenuToggle"
+              class="bg-primary hover:bg-primary/90 text-paper px-4 py-2 rounded-full text-base font-medium shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <i class="fas fa-bars mr-2"></i>菜单
+            </button>
+            
+            <!-- 弹出式导航菜单 -->
+            <div
+              id="navMenu"
+              class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-accent/20 z-50"
+            >
+              <div class="py-2">
+                <div class="px-4 py-2 text-xs font-semibold text-secondary uppercase tracking-wide border-b border-accent/20">
+                  用户功能
+                </div>
+                <a href="./profile/" class="block px-4 py-3 text-base hover:bg-accent/10 flex items-center">
+                  <i class="fas fa-user mr-3 text-primary"></i>
+                  个人中心
+                </a>
+                <a href="./orders/" class="block px-4 py-3 text-base hover:bg-accent/10 flex items-center">
+                  <i class="fas fa-shopping-bag mr-3 text-primary"></i>
+                  我的订单
+                </a>
+                <a href="./rewards/" class="block px-4 py-3 text-base hover:bg-accent/10 flex items-center">
+                  <i class="fas fa-gift mr-3 text-primary"></i>
+                  我的奖励
+                </a>
+              </div>
+              
+              <div class="py-2 border-t border-accent/20">
+                <div class="px-4 py-2 text-xs font-semibold text-secondary uppercase tracking-wide">
+                  快速导航
+                </div>
+                <a href="./market/" class="block px-4 py-3 text-base hover:bg-accent/10 flex items-center">
+                  <i class="fas fa-store mr-3 text-primary"></i>
+                  链商平台
+                </a>
+                <a href="./artisans/" class="block px-4 py-3 text-base hover:bg-accent/10 flex items-center">
+                  <i class="fas fa-user-tie mr-3 text-primary"></i>
+                  匠人中心
+                </a>
+                <a href="./checkin/" class="block px-4 py-3 text-base hover:bg-accent/10 flex items-center">
+                  <i class="fas fa-calendar-alt mr-3 text-primary"></i>
+                  活动签到
+                </a>
+                <a href="./dao/" class="block px-4 py-3 text-base hover:bg-accent/10 flex items-center">
+                  <i class="fas fa-vote-yea mr-3 text-primary"></i>
+                  DAO治理
+                </a>
+              </div>
+              
+              <div class="py-2 border-t border-accent/20">
+                <button
+                  id="adminLoginBtn"
+                  class="w-full text-left px-4 py-3 text-base hover:bg-accent/10 flex items-center"
+                >
+                  <i class="fas fa-user-shield mr-3 text-primary"></i>
+                  节点登录
+                </button>
+                <button
+                  id="adminLogoutBtn"
+                  class="w-full text-left px-4 py-3 text-base hover:bg-accent/10 flex items-center"
+                  style="display:none;"
+                >
+                  <i class="fas fa-sign-out-alt mr-3 text-primary"></i>
+                  登出
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
 
-    async function checkin() {
-      try {
-        const eventId = document.querySelector("#eventId").value.trim();
-        const code = document.querySelector("#code").value.trim();
-        const contractAddr = document.querySelector("#contract").value.trim();
-        if (!eventId || !code || !contractAddr) { alert("请填写完整"); return; }
-        if (!signer) await connect();
+      <!-- 英雄区域 -->
+      <main class="flex-grow pt-20">
+        <section
+  class="relative flex flex-col items-center justify-center text-center text-ink py-16 sm:py-20 overflow-hidden"
+  style="
+    background-image: url('./image/hero.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  "
+>
+  <!-- 半透明遮罩层提升文字可读性 -->
+  <div class="absolute inset-0 bg-paper/40 backdrop-blur-[1px]"></div>
 
-        // 1) 查询当前 nonce（建议前端读取并传给后端校验）
-        const c = new ethers.Contract(contractAddr, ABI, signer);
-        const nonce = await c.nonces(addr);
-        log("nonce: " + nonce);
+  <!-- 内容区 -->
+  <div class="relative z-10 container-golden px-4">
+    <h1 class="text-3xl sm:text-4xl font-kai font-bold text-primary mb-6 drop-shadow-md text-spacing-tight">
+      非遗上链<br />全球非遗文化数字保护平台
+    </h1>
+    <p class="text-base sm:text-lg text-secondary mb-10 leading-optimal drop-shadow text-spacing-normal">
+      融合传统文化与Web3技术，构建全球非遗文化数字保护生态，实现文化传承、创新与社区自治。
+    </p>
 
-        // 2) 请求后端校验签到码并返回签名包
-        // 说明：实际部署时，请替换为你的 Worker 真实地址
-        const resp = await fetch("http://localhost:8787/api/poap/checkin", {
-          method: "POST",
-          headers: {"content-type":"application/json"},
-          body: JSON.stringify({ eventId, wallet: addr, code, nonce: nonce.toString() })
+    <div class="flex flex-wrap gap-4 justify-center">
+      <a
+        href="./market/"
+        class="bg-primary text-paper px-6 py-3 rounded-full text-sm sm:text-base shadow-md hover:bg-primary/90 transition-colors text-spacing-wide"
+      >
+        <i class="fas fa-store mr-2"></i>浏览商城
+      </a>
+      <a
+        href="./artisans/"
+        class="border border-primary text-primary px-6 py-3 rounded-full text-sm sm:text-base hover:bg-primary hover:text-paper transition-all duration-300 text-spacing-wide"
+      >
+        <i class="fas fa-user-tie mr-2"></i>了解匠人
+      </a>
+    </div>
+  </div>
+</section>
+
+        <!-- 社区自治模块 - 移动到第2位 -->
+        <section class="py-20 sm:py-24 bg-gradient-to-br from-primary/5 via-gold/5 to-primary/10">
+          <div class="max-w-4xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-16">
+              <span
+                class="inline-block bg-primary/15 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6 tracking-wide"
+              >
+                社区治理
+              </span>
+              <h2
+                class="text-3xl sm:text-4xl font-kai font-bold text-ink mb-8 leading-tight"
+              >
+                $QI
+              </h2>
+              <p class="text-lg sm:text-xl text-secondary mb-12 leading-relaxed max-w-3xl mx-auto tracking-wide">
+                我们采用DAO（去中心化自治组织）模式，让全球社区成员共同参与非遗项目的选择、保护和发展决策，实现文化遗产的集体守护。
+              </p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+              <div class="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-primary/10 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-start mb-6">
+                  <div
+                    class="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center text-primary mr-4 flex-shrink-0"
+                  >
+                    <i class="fas fa-vote-yea text-xl"></i>
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="text-xl font-bold text-ink mb-4 leading-tight">
+                      提案与投票
+                    </h3>
+                    <p class="text-base text-secondary leading-relaxed tracking-wide">
+                      社区成员可提交全球非遗项目上链提案，通过文化通证$QI投票决定资源分配和项目优先级。
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-primary/10 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-start mb-6">
+                  <div
+                    class="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center text-primary mr-4 flex-shrink-0"
+                  >
+                    <i class="fas fa-users-cog text-xl"></i>
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="text-xl font-bold text-ink mb-4 leading-tight">委员会制度</h3>
+                    <p class="text-base text-secondary leading-relaxed tracking-wide">
+                      选举产生文化专家、技术专家和社区代表组成委员会，负责项目审核和社区发展规划。
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-primary/10 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-start mb-6">
+                  <div
+                    class="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center text-primary mr-4 flex-shrink-0"
+                  >
+                    <i class="fas fa-coins text-xl"></i>
+                  </div>
+                  <div class="flex-1">
+                    <h3 class="text-xl font-bold text-ink mb-4 leading-tight">通证激励</h3>
+                    <p class="text-base text-secondary leading-relaxed tracking-wide mb-4">
+                      贡献者可获得通证奖励，用于参与治理。
+                    </p>
+                    <p class="text-sm text-secondary/70 leading-relaxed tracking-wide">
+                      提示：$QI 为社区功能凭证，非证券和不具备投资功能，不支持二级市场交易或转让。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="text-center">
+              <a
+                href="./dao/"
+                class="inline-block bg-gradient-to-r from-primary to-primary/80 text-paper px-8 py-4 rounded-2xl hover:from-primary/90 hover:to-primary/70 transition-all duration-300 transform hover:scale-105 flex items-center text-lg font-semibold shadow-xl mx-auto"
+              >
+                <i class="fas fa-hand-holding-heart mr-3"></i>
+                立即参与治理
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- 价值主张模块 - 移动到第3位 -->
+        <section class="py-16 sm:py-20 bg-paper">
+          <div class="container-golden px-4 sm:px-6">
+            <div class="text-center space-golden-lg">
+              <span
+                class="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full text-xs font-medium mb-6 text-spacing-wider"
+                >我们的使命</span
+              >
+              <h2
+                class="text-lg sm:text-xl font-kai font-bold text-ink mb-4 text-spacing-tight"
+              >
+                保护全球非遗文化，构建数字传承生态
+              </h2>
+              <p class="text-sm text-secondary leading-relaxed max-w-lg mx-auto text-spacing-normal">
+                我们致力于通过Web3技术，将全球非物质文化遗产数字化、上链保存，并建立去中心化社区共同参与文化保护、传承与创新发展。
+              </p>
+            </div>
+            <div class="grid grid-cols-1 gap-5">
+                <a href="https://songbrocade-app.pages.dev/mint" target="_blank">
+                <div
+                  class="bg-white/90 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div
+                    class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4"
+                  >
+                    <i class="fas fa-shield-alt text-lg"></i>
+                  </div>
+                  <h3 class="text-sm font-semibold mb-3 text-ink text-spacing-tight">文化永久保存</h3>
+                  <p class="text-xs text-secondary leading-relaxed text-spacing-normal">
+                    利用区块链技术将全球非遗技艺、图案、工艺等数字资产上链，实现永久保存与可追溯。
+                  </p>
+                </div>
+              </a>
+              <a href="./admin/index.html">
+                <div
+                  class="bg-white/90 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div
+                    class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4"
+                  >
+                    <i class="fas fa-globe-asia text-lg"></i>
+                  </div>
+                  <h3 class="text-sm font-semibold mb-3 text-ink text-spacing-tight">全球社区共建</h3>
+                  <p class="text-xs text-secondary leading-relaxed text-spacing-normal">
+                    建立去中心化自治组织，让全球非遗文化爱好者共同参与文化保护决策与发展。
+                  </p>
+                </div>
+              </a>
+              <a href="https://songbrocade-app.pages.dev/mint" target="_blank">
+                <div
+                  class="bg-white/90 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div
+                    class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4"
+                  >
+                    <i class="fas fa-crown text-lg"></i>
+                  </div>
+                  <h3 class="text-sm font-semibold mb-2 text-ink">数字资产赋能</h3>
+                  <p class="text-xs text-secondary leading-relaxed">
+                    发行全球非遗数字藏品(NFT)，为传统工艺注入新活力，创造文化与经济价值。
+                  </p>
+                </div>
+              </a>
+              <a href="./rewards/index.html">
+                <div
+                  class="bg-white/90 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div
+                    class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4"
+                  >
+                    <i class="fas fa-lightbulb text-lg"></i>
+                  </div>
+                  <h3 class="text-sm font-semibold mb-2 text-ink">创新传承模式</h3>
+                  <p class="text-xs text-secondary leading-relaxed">
+                    结合现代设计与传统工艺，培养新一代传承人，推动全球非遗文化创新发展。
+                  </p>
+                </div>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- 匠人推荐模块 -->
+        <section class="py-12 sm:py-16 bg-white">
+          <div class="container-golden px-4 sm:px-6">
+            <div class="text-center mb-8">
+              <h2 class="text-xl sm:text-2xl font-kai font-bold text-ink mb-3">推荐匠人</h2>
+              <p class="text-sm text-secondary leading-relaxed">
+                传承千年工艺，展现匠人风采
+              </p>
+            </div>
+            
+            <div id="featuredArtisans" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <!-- 匠人卡片将通过JavaScript动态加载 -->
+              <div class="text-center py-8">
+                <div class="loading"></div>
+              </div>
+            </div>
+            
+            <div class="text-center">
+              <a href="./artisans/" class="btn btn-secondary">
+                <i class="fas fa-user-tie mr-2"></i>查看更多匠人
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- 热门商品模块 -->
+        <section class="py-12 sm:py-16 bg-paper">
+          <div class="container-golden px-4 sm:px-6">
+            <div class="text-center mb-8">
+              <h2 class="text-xl sm:text-2xl font-kai font-bold text-ink mb-3">热门商品</h2>
+              <p class="text-sm text-secondary leading-relaxed">
+                精选非遗作品，每件都有链上真品凭证
+              </p>
+            </div>
+            
+            <div id="featuredProducts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <!-- 商品卡片将通过JavaScript动态加载 -->
+              <div class="text-center py-8">
+                <div class="loading"></div>
+              </div>
+            </div>
+            
+            <div class="text-center">
+              <a href="./market/" class="btn btn-primary">
+                <i class="fas fa-store mr-2"></i>浏览全部商品
+              </a>
+            </div>
+          </div>
+        </section>
+
+        
+                <!-- 页脚 -->
+                <footer class="bg-ink text-paper pt-12 pb-6">
+                  <div class="max-w-2xl mx-auto px-4 sm:px-6">
+                    <div class="text-center mb-8">
+                      <div class="flex items-center justify-center mb-4">
+                        <div
+                          class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-paper mr-3"
+                        >
+                          <i class="fas fa-chess-rook text-sm"></i>
+                        </div>
+                        <div>
+                          <h3 class="text-lg font-kai font-bold text-paper">
+                            非遗上链
+                          </h3>
+                          <p class="text-xs text-paper/60">全球非遗文化数字保护平台</p>
+                        </div>
+                      </div>
+                      <p class="text-sm text-paper/70 mb-6 leading-relaxed">
+                        融合传统文化与Web3技术，构建全球非遗文化数字保护生态，实现文化传承与社区自治。
+                      </p>
+                      <div class="flex justify-center space-x-4 mb-6">
+                        <a
+                          href="javascript:void(0);"
+                          class="w-8 h-8 rounded-full bg-paper/10 flex items-center justify-center text-paper hover:bg-primary transition"
+                          ><i class="fab fa-weixin text-sm"></i
+                        ></a>
+                        <a
+                          href="javascript:void(0);"
+                          class="w-8 h-8 rounded-full bg-paper/10 flex items-center justify-center text-paper hover:bg-primary transition"
+                          ><i class="fab fa-twitter text-sm"></i
+                        ></a>
+                        <a
+                          href="javascript:void(0);"
+                          class="w-8 h-8 rounded-full bg-paper/10 flex items-center justify-center text-paper hover:bg-primary transition"
+                          ><i class="fab fa-instagram text-sm"></i
+                        ></a>
+                        <a
+                          href="javascript:void(0);"
+                          class="w-8 h-8 rounded-full bg-paper/10 flex items-center justify-center text-paper hover:bg-primary transition"
+                          ><i class="fab fa-discord text-sm"></i
+                        ></a>
+                      </div>
+        
+                      <div>
+                        <h4 class="text-lg font-bold mb-6 text-paper">快速链接</h4>
+                        <ul class="space-y-3">
+                          <li><a href="javascript:void(0);">首页</a></li>
+                          <li><a href="./about.html">关于平台</a></li>
+                          <li><a href="./qipao/">旗袍社区</a></li>
+                          <li><a href="./heritage/">非遗项目</a></li>
+                          <li><a href="./dao/">社区治理</a></li>
+                          <li><a href="javascript:void(0);">新闻动态</a></li>
+                          <li><a href="javascript:void(0);">联系我们</a></li>
+                        </ul>
+                      </div>
+                      
+                      <div>
+                        <h4 class="text-lg font-bold mb-6 text-paper">链上验证</h4>
+                        <div class="space-y-3">
+                          <div class="flex items-center space-x-2">
+                            <i class="fas fa-certificate text-accent"></i>
+                            <span class="text-sm">POAP 徽章</span>
+                          </div>
+                          <div class="flex items-center space-x-2">
+                            <i class="fab fa-ethereum text-accent"></i>
+                            <span class="text-sm">NFT 认证</span>
+                          </div>
+                          <div class="flex items-center space-x-2">
+                            <i class="fas fa-link text-accent"></i>
+                            <span class="text-sm">链上证明</span>
+                          </div>
+                          <div class="flex items-center space-x-2">
+                            <i class="fas fa-shield-alt text-accent"></i>
+                            <span class="text-sm">RWA 确权</span>
+                          </div>
+                        </div>
+                      </div>
+        
+                      <div>
+                        <h4 class="text-lg font-bold mb-6 text-paper">联系我们</h4>
+                        <ul class="space-y-4">
+                          <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt text-primary mt-1 mr-3"></i>
+                            <span class="text-paper/70"
+                              >上海市黄浦区南京东路123号非遗文化中心5楼</span
+                            >
+                          </li>
+                          <li class="flex items-center">
+                            <i class="fas fa-envelope text-primary mr-3"></i>
+                            <span class="text-paper/70"
+                              >contact@feiyishanglian.org</span
+                            >
+                          </li>
+                          <li class="flex items-center">
+                            <i class="fas fa-phone text-primary mr-3"></i>
+                            <span class="text-paper/70">+86 21 5888 7777</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+        
+                    <div class="border-t border-paper/10 pt-6">
+                      <div class="text-center">
+                        <p class="text-paper/50 text-xs mb-3">
+                          © 2025 非遗上链旗袍文化全球社区. 保留所有权利.
+                        </p>
+                        <div class="flex justify-center space-x-4 text-xs text-paper/50">
+                          <a href="javascript:void(0);" class="hover:text-paper/70 transition-colors">隐私政策</a>
+                          <a href="javascript:void(0);" class="hover:text-paper/70 transition-colors">服务条款</a>
+                          <a href="javascript:void(0);" class="hover:text-paper/70 transition-colors">Cookie政策</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </footer>
+              </main>
+            </div>
+        
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 移除旧的钱包连接代码，因为相关DOM元素已被移除
+
+      // 动画和 Intersection Observer
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("animate-fadeIn");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+      document
+        .querySelectorAll(".group, [class*='bg-white'], article")
+        .forEach((el) => observer.observe(el));
+
+      // 了解更多弹出式卡片功能
+      const learnMoreBtn = document.getElementById('learnMoreBtn');
+      const learnMoreModal = document.getElementById('learnMoreModal');
+      const closeModal = document.getElementById('closeModal');
+      const closeModalBottom = document.getElementById('closeModalBottom');
+
+      // 只有当元素存在时才添加事件监听器
+      if (learnMoreBtn && learnMoreModal && closeModal && closeModalBottom) {
+        // 显示弹出式卡片
+        learnMoreBtn.addEventListener('click', () => {
+          learnMoreModal.classList.remove('hidden');
+          learnMoreModal.classList.add('flex');
+          document.body.style.overflow = 'hidden'; // 防止背景滚动
         });
-        const data = await resp.json();
-        if (!data.ok) { throw new Error(data.message || "签到失败"); }
-        log(data);
 
-        // 3) 前端自费上链领取 POAP
-        const { v, r, s, deadline, amount } = data;
-        const tx = await c.mintWithSig(addr, Number(eventId), amount || 1, deadline, v, r, s);
-        log("Tx: " + tx.hash);
-        const rc = await tx.wait();
-        log("成功领取，区块确认: " + rc.status);
-      } catch (e) {
-        log("Error: " + (e.message || e));
+        // 关闭弹出式卡片
+        const closeModalFunc = () => {
+          learnMoreModal.classList.add('hidden');
+          learnMoreModal.classList.remove('flex');
+          document.body.style.overflow = ''; // 恢复滚动
+        };
+
+        closeModal.addEventListener('click', closeModalFunc);
+        closeModalBottom.addEventListener('click', closeModalFunc);
+
+        // 点击背景关闭卡片
+        learnMoreModal.addEventListener('click', (e) => {
+          if (e.target === learnMoreModal) {
+            closeModalFunc();
+          }
+        });
+
+        // ESC键关闭卡片
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && !learnMoreModal.classList.contains('hidden')) {
+            closeModalFunc();
+          }
+        });
       }
-    }
+    });
+    </script>
 
-    document.querySelector("#connect").onclick = connect;
-    document.querySelector("#switch").onclick = switchBaseSepolia;
-    document.querySelector("#checkin").onclick = checkin;
-  </script>
-</body>
-</html>
+    <!-- 了解更多弹出式卡片 -->
+    <div
+      id="learnMoreModal"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[10000] hidden items-center justify-center p-4"
+    >
+      <div
+        class="bg-paper rounded-2xl shadow-2xl max-w-4xl max-h-[90vh] overflow-y-auto"
+      >
+        <!-- 卡片头部 -->
+        <div class="sticky top-0 bg-paper border-b border-accent/20 px-6 py-4 rounded-t-2xl">
+          <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-kai font-bold text-primary">全球数字文化生命体</h2>
+            <button
+              id="closeModal"
+              class="text-secondary hover:text-primary transition-colors duration-200"
+            >
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 卡片内容 -->
+        <div class="px-6 py-6">
+          <div class="prose prose-lg max-w-none">
+            <p class="text-lg text-secondary mb-6 leading-relaxed">
+              基于旗袍优雅文化经济学的自主演化协议
+            </p>
+
+            <div class="space-y-6">
+              <p class="text-base text-ink leading-relaxed">
+                我们正在催化一个名为"优雅"的数字文化生命体。它并非被"构建"，而是在一套精妙的优雅经济学规则下，从初始协议形态中"生长"而出。该生命体的核心驱动力，在于将文化价值的生产、确权、流转与演化，编译为一场可编程的、全球共筑的体验。
+              </p>
+
+              <div>
+                <h3 class="text-xl font-kai font-bold text-primary mb-4">
+                  一、生命体的基因序列：可编程文化单元
+                </h3>
+                <p class="text-base text-ink leading-relaxed mb-4">
+                  生命体的基础细胞，由ERC-3525半匀质化通证与ERC-6551代币绑定账户融合而成。这赋予了每个文化单元（一幅画、一段旋律、一个IP角色）双重天性：
+                </p>
+                <ul class="space-y-2 text-base text-ink">
+                  <li class="flex items-start">
+                    <span class="text-primary mr-2">·</span>
+                    <span><strong>价值流动性：</strong>如同生命所需的能量交换，ERC-3525让文化价值能像流体一样分割、组合与流转。</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="text-primary mr-2">·</span>
+                    <span><strong>身份自主性：</strong>ERC-6551让每个文化单元成为一个有"记忆"与"行动能力"的智能账户，能自主积累其历史轨迹与附属资产，成为具有独特故事的生命个体。</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 class="text-xl font-kai font-bold text-primary mb-4">
+                  二、生命体的记忆与感知：分布式意识与隐私屏障
+                </h3>
+                <p class="text-base text-ink leading-relaxed">
+                  生命体的集体记忆存储于IPFS与Arweave构成的永久分布式网络中，确保文化DNA的不可篡改与永续传承。同时，零知识证明构成了生命体的"选择性感知屏障"——它允许个体在无需暴露全部隐私的前提下，向生态证明自身的合规性与独特性，实现可信又隐秘的交互。
+                </p>
+              </div>
+
+              <div>
+                <h3 class="text-xl font-kai font-bold text-primary mb-4">
+                  三、生命体的治理神经中枢：三院制自主反射弧
+                </h3>
+                <p class="text-base text-ink leading-relaxed mb-4">
+                  生命体的演化方向由去中心化的"神经中枢"——三院制DAO协调控制，形成高效的自主反射弧：
+                </p>
+                <ul class="space-y-2 text-base text-ink">
+                  <li class="flex items-start">
+                    <span class="text-primary mr-2">·</span>
+                    <span><strong>文化评审院（SBT灵魂共识）：</strong>由持有不可转让SBT的文化灵魂节点守护，确保演化不偏离"优雅"的审美与纯粹性。</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="text-primary mr-2">·</span>
+                    <span><strong>技术共识院（通证化权益）：</strong>由治理通证持有者驱动，负责协议层的安全、效率与升级，是生命体的基础代谢调节。</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="text-primary mr-2">·</span>
+                    <span><strong>生态发展院（贡献证明激励）：</strong>通过预言机捕捉每一次创作、传播与协作，并将其量化为效用通证激励，正向调节生命体的生长活力。</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 class="text-xl font-kai font-bold text-primary mb-4">
+                  四、生命体的演化与扩张：自适应与跨域共生
+                </h3>
+                <p class="text-base text-ink leading-relaxed">
+                  生命体具备内在的AIGC生成能力，能辅助文化符号的变异与再生，加速其进化历程。通过跨链互操作协议，它突破了单一链环境的限制，实现与其他数字生态的"基因交流"与流动性共生。所有高频率的交互在Layer 2的毛细血管网络中完成，确保生命体代谢的高效与低成本。
+                </p>
+              </div>
+
+              <div class="bg-primary/5 p-6 rounded-xl border border-primary/20">
+                <p class="text-base text-ink leading-relaxed font-medium">
+                  最终，这个生命体本身，便是"优雅经济学"最极致的表达。它从最初的协议代码中萌芽，通过持续的价值发现与社区博弈，逐步演化为一个拥有强大文化向心力与经济自驱力的数字文明国度。我们并非在建造一座宫殿，而是在培育一片森林，让文化在此编译为一种可跨链流转、可编程、可感知的通用价值语言——让"优雅"，成为一场自我延续的革命。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 卡片底部 -->
+        <div class="sticky bottom-0 bg-paper border-t border-accent/20 px-6 py-4 rounded-b-2xl">
+          <button
+            id="closeModalBottom"
+            class="w-full bg-primary text-paper px-6 py-3 rounded-full hover:bg-primary/90 transition-all duration-300 font-medium"
+          >
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 数据加载脚本 -->
+    <script>
+      // API配置
+      const API_BASE = (window.POAP_CONFIG?.WORKER_BASE_URL || 'https://songbrocade-api.petterbrand03.workers.dev').replace(/\/+$/, '');
+      
+      // 全局变量
+      let currentWallet = '';
+      
+      // 弹出式导航菜单功能
+      document.getElementById('navMenuToggle').addEventListener('click', function(e) {
+        e.stopPropagation();
+        const menu = document.getElementById('navMenu');
+        menu.classList.toggle('hidden');
+      });
+
+      // 点击菜单外部关闭菜单
+      document.addEventListener('click', function(e) {
+        const menu = document.getElementById('navMenu');
+        const toggle = document.getElementById('navMenuToggle');
+        
+        if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+          menu.classList.add('hidden');
+        }
+      });
+
+      // 连接钱包函数
+      async function connectWallet() {
+        if (typeof window.ethereum === 'undefined') {
+          alert('请安装 MetaMask 钱包');
+          return false;
+        }
+
+        try {
+          const accounts = await window.ethereum.request({
+            method: 'eth_requestAccounts'
+          });
+          
+          if (accounts.length > 0) {
+            currentWallet = accounts[0];
+            return true;
+          } else {
+            alert('未获取到钱包地址');
+            return false;
+          }
+        } catch (error) {
+          console.error('钱包连接失败:', error);
+          alert('钱包连接失败: ' + error.message);
+          return false;
+        }
+      }
+
+      // 管理员登录相关功能
+
+      // 获取 Bearer Token
+      function getBearer() {
+        return localStorage.getItem("bearer_token") || "";
+      }
+
+      // 设置 Bearer Token
+      function setBearer(token) {
+        localStorage.setItem("bearer_token", token);
+      }
+
+      // 清除 Bearer Token
+      function clearBearer() {
+        localStorage.removeItem("bearer_token");
+      }
+
+      // 获取认证头
+      function authHeaders(json = false) {
+        const h = {};
+        const b = getBearer();
+        if (b) h["Authorization"] = "Bearer " + b;
+        if (json) h["Content-Type"] = "application/json";
+        return h;
+      }
+
+      // 通用 API 请求函数
+      async function apiFetch(endpoint, options = {}) {
+        const url = API_BASE + endpoint;
+        const defaultOptions = {
+          headers: authHeaders(true),
+          method: 'GET',
+        };
+        const finalOptions = { ...defaultOptions, ...options };
+        
+        try {
+          const response = await fetch(url, finalOptions);
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error('API请求失败:', error);
+          return { ok: false, error: error.message };
+        }
+      }
+
+      // 管理员登录
+      async function adminLogin() {
+        // 关闭菜单
+        document.getElementById('navMenu').classList.add('hidden');
+        
+        // 如果未连接钱包，先连接钱包
+        if (!currentWallet) {
+          const connected = await connectWallet();
+          if (!connected) {
+            return;
+          }
+        }
+        
+        try {
+          // 获取挑战
+          const challengeData = await apiFetch("/auth/challenge", {
+            method: "POST",
+            body: JSON.stringify({ address: currentWallet })
+          });
+          
+          if (!challengeData.ok) {
+            throw new Error(challengeData.error || "获取挑战失败");
+          }
+          
+          // 签名挑战
+          const message = challengeData.message;
+          const signature = await window.ethereum.request({
+            method: "personal_sign",
+            params: [message, currentWallet]
+          });
+          
+          // 提交签名
+          const loginData = await apiFetch("/auth/verify", {
+            method: "POST",
+            body: JSON.stringify({
+              address: currentWallet,
+              signature: signature,
+              message: message
+            })
+          });
+          
+          if (loginData.ok) {
+            setBearer(loginData.token);
+            // 同时存储到管理员页面可以访问的位置
+            localStorage.setItem("qipao.admin.token", loginData.token);
+            sessionStorage.setItem("qipao.admin.token", loginData.token);
+            checkLoginStatus();
+            alert("管理员登录成功！正在跳转到管理后台...");
+            // 跳转到管理员页面
+            window.location.href = './admin/index.html';
+          } else {
+            throw new Error(loginData.error || "登录失败");
+          }
+        } catch (error) {
+          console.error("管理员登录失败:", error);
+          alert("登录失败: " + error.message);
+        }
+      }
+
+      // 管理员登出
+      function adminLogout() {
+        clearBearer();
+        checkLoginStatus();
+        alert("已登出");
+        // 关闭菜单
+        document.getElementById('navMenu').classList.add('hidden');
+      }
+
+      // 检查登录状态
+      function checkLoginStatus() {
+        const token = getBearer();
+        const loginBtn = document.getElementById("adminLoginBtn");
+        const logoutBtn = document.getElementById("adminLogoutBtn");
+        
+        if (token) {
+          if (loginBtn) loginBtn.style.display = "none";
+          if (logoutBtn) logoutBtn.style.display = "block";
+        } else {
+          if (loginBtn) loginBtn.style.display = "block";
+          if (logoutBtn) logoutBtn.style.display = "none";
+        }
+      }
+
+      // 绑定管理员按钮事件
+      document.getElementById('adminLoginBtn').addEventListener('click', adminLogin);
+      document.getElementById('adminLogoutBtn').addEventListener('click', adminLogout);
+      
+      // 加载推荐匠人
+      async function loadFeaturedArtisans() {
+        try {
+          const response = await fetch(`${API_BASE}/artisans`);
+          const data = await response.json();
+          
+          if (data.artisans && data.artisans.length > 0) {
+            const artisans = data.artisans.slice(0, 4); // 只显示前4个
+            const container = document.getElementById('featuredArtisans');
+            
+            container.innerHTML = artisans.map(artisan => `
+              <div class="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition-all duration-300 border border-accent/20">
+                <!-- 匠人头像和信息 -->
+                <div class="flex items-start mb-4">
+                  <div class="w-14 h-14 bg-gradient-to-br from-primary/10 to-primary/20 rounded-full flex items-center justify-center text-primary mr-4 flex-shrink-0">
+                    <i class="fas fa-user-tie text-xl"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-ink text-lg mb-1 truncate">${artisan.name_zh || '未知匠人'}</h3>
+                    <p class="text-sm text-secondary mb-2 flex items-center">
+                      <i class="fas fa-map-marker-alt mr-1 text-xs"></i>
+                      ${artisan.region || '未知地区'}
+                    </p>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${artisan.verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                      <i class="fas fa-${artisan.verified ? 'check-circle' : 'clock'} mr-1"></i>
+                      ${artisan.verified ? '已认证' : '待认证'}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- 匠人简介 -->
+                <p class="text-sm text-secondary mb-4 line-clamp-2 leading-relaxed">${artisan.bio || '暂无介绍'}</p>
+                
+                <!-- 操作按钮 -->
+                <div class="flex items-center justify-between pt-3 border-t border-accent/10">
+                  <div class="flex items-center text-xs text-secondary">
+                    <i class="fas fa-star text-yellow-400 mr-1"></i>
+                    <span>传承工艺</span>
+                  </div>
+                  <a href="./artisans/?id=${artisan.id}" class="inline-flex items-center text-primary hover:text-primary/80 text-sm font-medium transition-colors duration-200">
+                    查看详情
+                    <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                  </a>
+                </div>
+              </div>
+            `).join('');
+          }
+        } catch (error) {
+          console.error('加载匠人数据失败:', error);
+          document.getElementById('featuredArtisans').innerHTML = '<div class="text-center py-8 text-secondary">加载失败</div>';
+        }
+      }
+      
+      // 加载热门商品
+      async function loadFeaturedProducts() {
+        try {
+          const response = await fetch(`${API_BASE}/products`);
+          const data = await response.json();
+          
+          if (data.products && data.products.length > 0) {
+            const products = data.products.slice(0, 4); // 只显示前4个
+            const container = document.getElementById('featuredProducts');
+            
+            container.innerHTML = products.map(product => `
+              <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 border border-accent/20 group">
+                <!-- 商品图片区域 -->
+                <div class="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center relative overflow-hidden">
+                  <i class="fas fa-image text-4xl text-gray-400 group-hover:scale-110 transition-transform duration-300"></i>
+                  <!-- 商品标签 -->
+                  <div class="absolute top-3 left-3">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/90 text-white">
+                      <i class="fas fa-certificate mr-1"></i>
+                      正品认证
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- 商品信息区域 -->
+                <div class="p-5">
+                  <div class="mb-3">
+                    <h3 class="font-semibold text-ink text-lg mb-2 line-clamp-1">${product.title_zh || '未知商品'}</h3>
+                    <p class="text-sm text-secondary line-clamp-2 leading-relaxed">${product.desc_md || '暂无描述'}</p>
+                  </div>
+                  
+                  <!-- 价格和操作区域 -->
+                  <div class="flex items-center justify-between pt-3 border-t border-accent/10">
+                    <div class="flex flex-col">
+                      <div class="text-primary font-bold text-lg">
+                        ${product.price_native} ${product.price_currency}
+                      </div>
+                      <div class="text-xs text-secondary">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        链上认证
+                      </div>
+                    </div>
+                    <a href="./product.html?id=${product.id}" class="inline-flex items-center bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 text-sm font-medium transition-colors duration-200">
+                      立即查看
+                      <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            `).join('');
+          }
+        } catch (error) {
+          console.error('加载商品数据失败:', error);
+          document.getElementById('featuredProducts').innerHTML = '<div class="text-center py-8 text-secondary">加载失败</div>';
+        }
+      }
+      
+      // 页面加载完成后加载数据
+      document.addEventListener('DOMContentLoaded', function() {
+        checkLoginStatus(); // 检查管理员登录状态
+        loadFeaturedArtisans();
+        loadFeaturedProducts();
+      });
+    </script>
+          </body>
+        </html>

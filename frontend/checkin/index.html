@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>链上铭刻 · 一次出席，一生留名</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles/app.css"/>
+  <style>
+    :root{
+      --brand:#9E2A2B; /* 中国红 */
+      --brand2:#D5BDAF; /* 次色 */
+      --bg:#F9F6F0; /* 宣纸色背景 */
+      --card:rgba(255,255,255,0.85); /* 白色半透明卡片背景 */
+      --line:#D5BDAF; /* 边框浅色 */
+      --muted:#A89B91; /* 柔和灰色 */
+      --ok:#9E2A2B; /* 主色，红色 */
+      --err:#D32F2F; /* 错误色，深红 */
+      --text:#2D2A26; /* 字体主色，深灰 */
+      --shadow: 0 8px 24px rgba(158, 42, 43, 0.15);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{
+      height:100%;
+      background:#F9F6F0; /* 宣纸色纯背景 */
+      /* 如果需要浅纹理背景，可在此添加背景图片或纹理 */
+      color:var(--text);
+      font-family: "Noto Serif SC", "Songti SC", "SimSun", serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
+    }
+    .wrap{
+      max-width:560px;
+      margin:0 auto;
+      padding:14px;
+    }
+    .card{
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow: var(--shadow);
+      padding:16px;
+      margin:14px 0;
+    }
+    .heroTitle{
+      font-weight:800;
+      font-size:24px;
+      margin-bottom:4px;
+      color: var(--brand);
+      line-height:1.3;
+    }
+    .heroSubtitle{
+      font-weight:600;
+      font-size:16px;
+      margin-bottom:8px;
+      color: var(--brand);
+      opacity:0.85;
+    }
+    .sub{
+      font-size:13px;
+      color: var(--muted);
+      line-height:1.5;
+    }
+    .header-top{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      padding-bottom:16px;
+      border-bottom:1px solid rgba(213, 189, 175, 0.3);
+    }
+    .header-icon{
+      width:48px;
+      height:48px;
+      border-radius:12px;
+      background:linear-gradient(135deg, var(--brand), var(--brand2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:20px;
+      flex-shrink:0;
+      box-shadow: 0 4px 12px rgba(158, 42, 43, 0.3);
+    }
+    .header-content{
+      flex:1;
+      min-width:0;
+    }
+    .network-badge{
+      background:rgba(213, 189, 175, 0.3);
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:6px 12px;
+      font-size:11px;
+      font-weight:600;
+      color:var(--text);
+      text-align:center;
+      flex-shrink:0;
+      white-space:nowrap;
+    }
+    .wallet-section{
+      margin-top:16px;
+      padding-top:16px;
+      border-top:1px solid rgba(213, 189, 175, 0.3);
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:10px 0;
+    }
+    input,select,button{
+      height:48px;
+      border-radius:14px;
+      font-size:15px;
+    }
+    input,select{
+      flex:1;
+      background:rgba(255,255,255,0.85);
+      border:1px solid var(--line);
+      color:var(--text);
+      padding:0 12px;
+      font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+      transition: all 0.3s ease;
+    }
+    input:focus,select:focus{
+      outline:none;
+      border-color:var(--brand);
+      box-shadow: 0 0 0 2px rgba(158, 42, 43, 0.2);
+    }
+    .btn{
+      flex:1;
+      border:none;
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      color:#fff;
+      font-weight:600;
+      box-shadow: 0 3px 14px rgba(158, 42, 43, 0.6);
+      font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      background: linear-gradient(90deg, #7a1b1c, #bba997);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(158, 42, 43, 0.4);
+    }
+    .ghost{
+      flex:1;
+      background:rgba(213, 189, 175, 0.3);
+      border:1px solid var(--line);
+      color:var(--text);
+      font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight:600;
+    }
+    .ghost:hover {
+      background:var(--brand2);
+      border-color: var(--brand);
+    }
+    .eventH{
+      font-size:16px;
+      font-weight:700;
+      margin:2px 0 8px;
+      color: var(--brand);
+      font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+    }
+    .eventLine{
+      color: var(--muted);
+      font-size:13px;
+      margin:4px 0;
+      font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+    }
+    .panel{
+      background:rgba(255,255,255,0.85);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+      font:14px/1.6 "Noto Serif SC", "Songti SC", "SimSun", serif;
+      color:var(--text);
+      min-height:48px;
+      white-space:pre-wrap;
+      box-shadow: inset 0 0 8px rgba(158, 42, 43, 0.15);
+    }
+    .hint{
+      font-size:11px;
+      color: var(--muted);
+      text-align:center;
+      margin-top:6px;
+      font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+    }
+    .qrBox{
+      text-align:center;
+      margin:12px 0;
+    }
+    .okdot{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:var(--ok);
+      display:inline-block;
+      margin-right:8px;
+      box-shadow: 0 0 6px var(--ok);
+    }
+    .modalMask{
+      position:fixed;
+      inset:0;
+      background:rgba(249, 246, 240, 0.95);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+      color: var(--text);
+    }
+    .modal{
+      width:min(92vw,520px);
+      background:rgba(255,255,255,0.95);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:20px;
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .modal h3{
+      margin:0 0 8px;
+      font-size:18px;
+      color: var(--brand);
+      font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+    }
+    .modal p{
+      margin:6px 0 12px;
+      color: var(--muted);
+      font-size:14px;
+      font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+    }
+  </style>
+  <!-- 统一配置（提供 WORKER_BASE_URL/RPC 等） -->
+  <script src="/poap.config.js?v=20251014"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 卡片1：口号 + 钱包连接 -->
+  <div class="card">
+    <!-- 顶部区域：标题 + 网络标签 -->
+    <div class="header-top">
+      <div class="header-icon">
+        <i class="fas fa-stamp"></i>
+      </div>
+      <div class="header-content">
+        <div class="heroTitle">链上铭刻</div>
+        <div class="heroSubtitle">一次出席，一生留名</div>
+        <div class="sub">你的参与，将被永久记录；每一次签名，都是文化的印记。</div>
+      </div>
+      <div class="network-badge">Base Sepolia</div>
+    </div>
+    
+    <!-- 钱包连接区域 -->
+    <div class="wallet-section">
+      <div class="row" style="margin-top:0">
+        <select id="walletSel">
+          <option value="auto">自动检测</option>
+          <option value="metamask">MetaMask</option>
+          <option value="coinbase">Coinbase</option>
+          <option value="phantom">Phantom</option>
+          <option value="walletconnect">WalletConnect（通用）</option>
+        </select>
+        <button class="btn" id="btnConnect">连接钱包</button>
+      </div>
+      <div id="addrLine" class="sub" style="margin-top:8px">未连接</div>
+    </div>
+  </div>
+
+  <!-- 卡片2：活动详情 + 二维码 + 铭刻 -->
+  <div class="card" id="eventCard" style="display:none">
+    <div class="eventH" id="evTitle">活动主题</div>
+    <div class="eventLine" id="evTime"></div>
+    <div class="eventLine" id="evLoc"></div>
+    <div class="eventLine" id="evPoap"></div>
+
+    <div class="row" style="margin-top:12px">
+      <input id="code" placeholder="签到码（固定或临时）">
+    </div>
+    <div class="row">
+      <input id="poapContract" placeholder="合约地址（自动填充）" readonly>
+    </div>
+
+    <div class="qrBox">
+      <img id="qr" alt="活动二维码" style="width:220px;height:220px;border-radius:12px;border:1px solid var(--line);background:#fff"/>
+    </div>
+
+    <div class="row">
+      <button class="btn" id="btnClaim">铭刻我的到场</button>
+    </div>
+    <div class="row" id="claimButtonRow" style="display:none;margin-top:8px">
+      <button class="btn" onclick="window.location.href='../claim/index.html'">🎁 前往领取代币</button>
+    </div>
+
+    <div class="panel" id="panel">就绪。</div>
+    <div class="hint">流程：连接钱包 → 输入签到码（活动固定码或临时码皆可）→ 点击「铭刻我的到场」。</div>
+  </div>
+
+  <!-- 卡片3：签到历史 -->
+  <div class="card" id="historyCard" style="display:none">
+    <div class="eventH">我的签到历史</div>
+    <div id="historyList" class="eventLine">加载中...</div>
+  </div>
+
+</div>
+
+<!-- 弹窗 -->
+<div class="modalMask" id="mask">
+  <div class="modal">
+    <h3><span class="okdot"></span>铭刻成功 · 你的参与已被记录</h3>
+    <p id="successText">已完成签到。</p>
+    <div class="row">
+      <button class="btn" id="btnShare">一键分享</button>
+      <button class="ghost" id="btnClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/** ===== 常量 / 工具 ===== **/
+const WC_PROJECT_ID = "c793ffa242818d20b1b2173f14e8dab2";
+const BASE_SEPOLIA = {
+  chainId: 84532, chainIdHex: "0x14A34",
+  rpcUrl: window.POAP_CONFIG?.RPC_URL || "https://sepolia.base.org",
+  explorer: window.POAP_CONFIG?.EXPLORER || "https://sepolia.basescan.org"
+};
+const $ = id => document.getElementById(id);
+
+// 修复：用正确的正则去掉末尾“斜杠”，不是反斜杠
+const API_BASE = (window.POAP_CONFIG?.WORKER_BASE_URL || '').replace(/\/+$/,'');
+// 修复：模板字符串内不要再嵌套反引号
+const api = p => `${API_BASE}${p.startsWith('/') ? p : '/' + p}`;
+
+function setPanel(t){$('panel').textContent=t;}
+const shortAddr = a => a ? (a.slice(0,6)+"…"+a.slice(-6)) : "";
+function formatTime(s){const d=new Date(s);return isNaN(d.getTime())?s||"":d.toLocaleString();}
+function buildQR(url){$('qr').src=`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(url)}`;}
+
+/** ===== 活动加载（兼容 event 与 slug 参数） ===== **/
+async function fetchEventBySlug(slug){
+  const paths=[
+    `/api/events/get?slug=${encodeURIComponent(slug)}`,
+    `/api/event?slug=${encodeURIComponent(slug)}`,
+    `/api/events/${encodeURIComponent(slug)}`
+  ];
+  for(const p of paths){
+    try{
+      const r=await fetch(api(p));
+      if(!r.ok) continue;
+      const j=await r.json();
+      if(j?.ok && j.event) return j.event;
+    }catch(_){}
+  }
+  return null;
+}
+
+async function loadEvent(){
+  const u = new URLSearchParams(location.search);
+  const slug = (u.get("event") || u.get("slug") || "").trim();
+  const code = (u.get("code") || "").trim();
+  const title = u.get("title") || "";
+  const loc = u.get("loc") || "";
+  const start = u.get("start") || "";
+  const poap = u.get("poap") || "";
+
+  if(code) $("code").value = code.toUpperCase();
+  $("eventCard").style.display="block";
+  $("evTitle").textContent=title||slug||"活动主题";
+  $("evTime").textContent=start?("时间："+formatTime(start)):"";
+  $("evLoc").textContent=loc?("地点："+loc):"";
+  $("evPoap").textContent=poap?("合约地址："+poap):"";
+  if(poap)$("poapContract").value=poap;
+
+  buildQR(location.href.split("#")[0]);
+
+  if(slug){
+    try{
+      const evt=await fetchEventBySlug(slug);
+      if(evt){
+        $("evTitle").textContent=evt.name||$("evTitle").textContent;
+        $("evTime").textContent=evt.start_time?("时间："+formatTime(evt.start_time)):$("evTime").textContent;
+        $("evLoc").textContent=evt.location?("地点："+evt.location):$("evLoc").textContent;
+        if(evt.poap_contract){
+          $("evPoap").textContent="合约地址："+evt.poap_contract;
+          $("poapContract").value=evt.poap_contract;
+        }
+      }
+    }catch(e){ setPanel("活动信息加载失败："+(e?.message||e)); }
+  }
+}
+
+/** ===== 钱包连接（注入优先，WalletConnect 回退） ===== **/
+let SELECTED_PROVIDER=null,WC_PROVIDER=null;
+
+async function detectInjected(choice="auto"){
+  const eth=window.ethereum;const list=(eth&&Array.isArray(eth.providers))?eth.providers:[];
+  const pick=f=>list.find(p=>p&&p[f])||(eth&&eth[f]?eth:null);
+  if(choice==="metamask")return pick("isMetaMask");
+  if(choice==="coinbase")return pick("isCoinbaseWallet")||window.coinbaseWalletExtension;
+  if(choice==="phantom")return window.phantom?.ethereum;
+  if(list.length)return pick("isMetaMask")||pick("isCoinbaseWallet")||list[0];
+  return eth||window.coinbaseWalletExtension||window.phantom?.ethereum||null;
+}
+async function getWalletConnectProvider(){
+  if (!window.EthereumProvider) {
+    await new Promise((resolve, reject)=>{
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2/dist/umd/index.min.js';
+      s.onload = resolve;
+      s.onerror = ()=>reject(new Error('WalletConnect UMD load failed'));
+      document.head.appendChild(s);
+    });
+  }
+  if (WC_PROVIDER) return WC_PROVIDER;
+  WC_PROVIDER = await window.EthereumProvider.init({
+    projectId: WC_PROJECT_ID,
+    chains: [BASE_SEPOLIA.chainId],
+    showQrModal: true,
+    rpcMap: { [BASE_SEPOLIA.chainId]: BASE_SEPOLIA.rpcUrl },
+    metadata: {
+      name: "POAP Check-in",
+      description: "链上铭刻签到",
+      url: location.origin,
+      icons: ["https://walletconnect.com/walletconnect-logo.png"]
+    }
+  });
+  return WC_PROVIDER;
+}
+async function ensureBaseSepolia(p){
+  try{
+    const id=await p.request({method:"eth_chainId"});
+    if(id.toLowerCase()!==BASE_SEPOLIA.chainIdHex.toLowerCase()){
+      await p.request({method:"wallet_switchEthereumChain",params:[{chainId:BASE_SEPOLIA.chainIdHex}]});
+    }
+  }catch{
+    try{await p.request({method:"wallet_addEthereumChain",
+      params:[{chainId:BASE_SEPOLIA.chainIdHex,chainName:"Base Sepolia",
+      nativeCurrency:{name:"ETH",symbol:"ETH",decimals:18},rpcUrls:[BASE_SEPOLIA.rpcUrl],
+      blockExplorerUrls:[BASE_SEPOLIA.explorer]}]});}catch(_){}
+  }
+}
+async function connect(){
+  const choice=$("walletSel").value||"auto";
+  try{
+    if(choice==="walletconnect" || (!window.ethereum && /Android|iPhone|iPad/i.test(navigator.userAgent))){
+      const p=await getWalletConnectProvider();await p.connect();SELECTED_PROVIDER=p;
+    }else{
+      const p=await detectInjected(choice);
+      if(!p){$("addrLine").textContent="未检测到钱包，尝试自动唤起…"; openMetaMask();return;}
+      SELECTED_PROVIDER=p;await p.request({method:"eth_requestAccounts"});
+    }
+    await ensureBaseSepolia(SELECTED_PROVIDER);
+    const acc=await SELECTED_PROVIDER.request({method:"eth_accounts"});
+    $("addrLine").textContent=acc[0]?`已连接：${shortAddr(acc[0])}`:"连接失败";
+  }catch(e){$("addrLine").textContent="连接错误："+(e?.message||e);}
+}
+function openMetaMask(){
+  const deep="metamask://dapp/"+location.host;
+  const fallback="https://metamask.app.link/dapp/"+location.host;
+  window.location.href=deep;
+  setTimeout(()=>{window.location.href=fallback;},1000);
+}
+
+/** ===== 签到 ===== **/
+function beepOk(){try{const c=new(AudioContext||webkitAudioContext)();const o=c.createOscillator(),g=c.createGain();
+o.type="sine";o.frequency.value=880;g.gain.setValueAtTime(0.0001,c.currentTime);
+g.gain.exponentialRampToValueAtTime(0.12,c.currentTime+.03);
+g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+.35);
+o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+.42);}catch(_){ }}
+function openModal(t){$("successText").textContent=t||"你已完成活动签到，感谢参与。";$("mask").style.display="flex";beepOk();}
+$("btnClose").onclick=()=>{$("mask").style.display="none";};
+$("btnShare").onclick=async()=>{
+  const url=location.href.split("#")[0];const title=$("evTitle").textContent||"POAP签到";
+  const text="我已完成链上到场铭刻，与你共享这一刻。";
+  if(navigator.share){try{await navigator.share({title,text,url});return;}catch(_){ }}
+  try{await navigator.clipboard.writeText(url);alert("已复制分享链接");}catch{alert(url);}
+};
+
+async function postJSONWithFallbacks(paths, body){
+  let lastErr = null;
+  for(const p of paths){
+    try{
+      const r = await fetch(api(p), {
+        method: "POST",
+        headers: {"content-type":"application/json"},
+        body: JSON.stringify(body)
+      });
+      const txt = await r.text(); let j={}; try{ j=JSON.parse(txt) }catch{};
+      if(r.ok && (j?.ok===true || j?.ok==="true")) return {ok:true, data:j};
+      lastErr = j?.error || `${r.status} ${txt}` || "UNKNOWN_ERROR";
+    }catch(e){ lastErr = e?.message || String(e); }
+  }
+  return {ok:false, error:lastErr};
+}
+
+async function claim(){
+  const p=SELECTED_PROVIDER;
+  if(!p){ setPanel("请先连接钱包"); return; }
+
+  const acc = await p.request({method:"eth_accounts"});
+  const address = acc?.[0];
+  if(!address){ setPanel("钱包未授权地址"); return; }
+
+  const code = $("code").value.trim().toUpperCase();
+  const poap = $("poapContract").value.trim();
+
+  const params = new URLSearchParams(location.search);
+  const slug = (params.get("event") || params.get("slug") || "").trim();
+  if (!slug){ setPanel("链接缺少 event/slug 参数"); return; }
+  if (!code){ setPanel("请输入签到码（或使用二维码携带的 code）"); return; }
+
+  setPanel("请求服务器校验中…");
+
+  const payload = { slug, code, address, poapContract: poap };
+  const tries = [
+    "/api/poap/checkin",
+    "/poap/checkin"
+  ];
+  const res = await postJSONWithFallbacks(tries, payload);
+
+  if(!res.ok){ setPanel("领取失败："+ (res.error || "UNKNOWN_ERROR")); return; }
+
+  // ✅ 显示积分和空投资格
+  const points = res.data?.points || 0;
+  const eligible = res.data?.eligible || false;
+  
+  if (eligible && points > 0) {
+    setPanel(`签到成功！获得 ${points} 积分 🎁 已获得空投资格 💎`);
+    $('claimButtonRow').style.display = 'flex';
+    openModal(`你的参与已被记录。\n\n🎁 获得 ${points} 积分！\n💎 已获得空投资格！\n\n可以前往领取页面领取代币。`);
+  } else if (points > 0) {
+    setPanel(`签到成功！获得 ${points} 积分`);
+    openModal(`你的参与已被记录。🎁 获得 ${points} 积分！`);
+  } else {
+    setPanel("签到成功");
+    openModal("你的参与已被记录。");
+  }
+}
+
+// 加载签到历史
+async function loadCheckinHistory() {
+  const p = SELECTED_PROVIDER;
+  if (!p) return;
+  
+  try {
+    const acc = await p.request({method: "eth_accounts"});
+    const address = acc?.[0];
+    if (!address) return;
+    
+    const response = await fetch(api('/orders'), {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('bearer') || ''}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.orders && data.orders.length > 0) {
+        displayCheckinHistory(data.orders);
+        $('historyCard').style.display = 'block';
+      }
+    }
+  } catch (error) {
+    console.error('加载签到历史失败:', error);
+  }
+}
+
+function displayCheckinHistory(orders) {
+  const historyList = $('historyList');
+  
+  if (orders.length === 0) {
+    historyList.innerHTML = '<div class="sub">暂无签到记录</div>';
+    return;
+  }
+  
+  const historyHTML = orders.map(order => `
+    <div style="border-bottom: 1px solid var(--line); padding: 8px 0; margin-bottom: 8px;">
+      <div style="font-weight: 600; color: var(--brand);">${order.event_title || '未知活动'}</div>
+      <div class="sub">时间: ${formatTime(order.created_at)}</div>
+      <div class="sub">状态: ${order.status || '未知'}</div>
+      ${order.poap_contract ? `<div class="sub">POAP: ${order.poap_contract.slice(0,10)}...</div>` : ''}
+    </div>
+  `).join('');
+  
+  historyList.innerHTML = historyHTML;
+}
+
+/** ===== 事件绑定 ===== **/
+document.getElementById('btnConnect').onclick = connect;
+document.getElementById('btnClaim').onclick = claim;
+
+/** 初始渲染 **/
+loadEvent();
+loadCheckinHistory();
+</script>
+</body>
+</html>

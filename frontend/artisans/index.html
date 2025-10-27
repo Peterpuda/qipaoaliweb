@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>匠人中心 - 非遗上链平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/poap.config.js"></script>
+  <style>
+    :root {
+      --primary: #9E2A2B;
+      --secondary: #4A403A;
+      --accent: #D5BDAF;
+      --gold: #D4AF37;
+      --ink: #2D2A26;
+      --paper: #F9F6F0;
+      --line: #D5BDAF;
+      --muted: #9E2A2B;
+    }
+    
+    body {
+      font-family: "Noto Serif SC", serif;
+      background-color: var(--paper);
+      color: var(--ink);
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      color: var(--paper);
+      box-shadow: 0 3px 14px rgba(158, 42, 43, 0.6);
+    }
+    
+    .btn-primary:hover {
+      background: #7a1b1c;
+      transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+      background: var(--paper);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--accent);
+      color: var(--ink);
+    }
+    
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(213, 189, 175, 0.4);
+      padding: 20px;
+      margin: 16px 0;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid var(--line);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .search-box {
+      position: relative;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 14px;
+    }
+    
+    .search-box i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen max-w-[600px] mx-auto px-4 py-4">
+    <!-- 导航栏 -->
+    <header class="flex items-center justify-between py-4 mb-4">
+      <a href="./index.html" class="flex items-center">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-paper mr-3">
+          <i class="fas fa-chess-rook text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-primary">匠人中心</h1>
+          <p class="text-xs text-secondary">传承千年工艺</p>
+        </div>
+      </a>
+      <button id="connectWallet" class="btn btn-primary">
+        <i class="fab fa-ethereum mr-2"></i>连接钱包
+      </button>
+    </header>
+
+    <!-- 搜索和筛选 -->
+    <div class="card mb-4">
+      <div class="search-box mb-4">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="搜索匠人姓名、地区或技艺..." />
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="filter-btn active" data-filter="all">全部</button>
+        <button class="filter-btn" data-filter="verified">已认证</button>
+        <button class="filter-btn" data-filter="qipao">旗袍工艺</button>
+        <button class="filter-btn" data-filter="ceramics">陶瓷工艺</button>
+        <button class="filter-btn" data-filter="silk">丝绸工艺</button>
+      </div>
+    </div>
+
+    <!-- 匠人列表 -->
+    <div id="artisansList" class="space-y-4">
+      <div class="text-center py-8">
+        <div class="loading"></div>
+        <p class="text-secondary mt-4">加载匠人信息...</p>
+      </div>
+    </div>
+
+    <!-- 加载更多按钮 -->
+    <div class="text-center py-4">
+      <button id="loadMoreBtn" class="btn btn-secondary" style="display: none;">
+        <i class="fas fa-plus mr-2"></i>加载更多
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // API配置
+    const API_BASE = (window.POAP_CONFIG?.WORKER_BASE_URL || 'https://songbrocade-api.petterbrand03.workers.dev').replace(/\/+$/, '');
+    
+    let allArtisans = [];
+    let filteredArtisans = [];
+    let currentPage = 1;
+    const itemsPerPage = 6;
+    
+    // 加载匠人列表
+    async function loadArtisans() {
+      try {
+        const response = await fetch(`${API_BASE}/artisans`);
+        const data = await response.json();
+        
+        if (data.artisans && data.artisans.length > 0) {
+          allArtisans = data.artisans;
+          filteredArtisans = [...allArtisans];
+          displayArtisans();
+        } else {
+          showNoArtisans();
+        }
+      } catch (error) {
+        console.error('加载匠人列表失败:', error);
+        showError('加载失败，请稍后重试');
+      }
+    }
+    
+    // 显示匠人列表
+    function displayArtisans() {
+      const container = document.getElementById('artisansList');
+      const startIndex = 0;
+      const endIndex = currentPage * itemsPerPage;
+      const displayArtisans = filteredArtisans.slice(startIndex, endIndex);
+      
+      if (displayArtisans.length === 0) {
+        showNoArtisans();
+        return;
+      }
+      
+      container.innerHTML = displayArtisans.map(artisan => `
+        <div class="card hover:shadow-lg transition-shadow cursor-pointer" onclick="viewArtisanDetail('${artisan.id}')">
+          <div class="flex items-start">
+            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4 flex-shrink-0">
+              <i class="fas fa-user-tie text-2xl"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold text-ink">${artisan.name_zh || '未知匠人'}</h3>
+                <span class="text-xs px-2 py-1 rounded-full ${artisan.verified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                  ${artisan.verified ? '已认证' : '待认证'}
+                </span>
+              </div>
+              <p class="text-sm text-secondary mb-2">${artisan.region || '未知地区'}</p>
+              <p class="text-sm text-secondary line-clamp-2 mb-3">${artisan.bio || '暂无介绍'}</p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center text-xs text-muted">
+                  <i class="fas fa-map-marker-alt mr-1"></i>
+                  <span>${artisan.region || '未知地区'}</span>
+                </div>
+                <div class="flex items-center text-xs text-muted">
+                  <i class="fas fa-eye mr-1"></i>
+                  <span>查看详情</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      
+      // 显示或隐藏加载更多按钮
+      const loadMoreBtn = document.getElementById('loadMoreBtn');
+      if (endIndex < filteredArtisans.length) {
+        loadMoreBtn.style.display = 'inline-block';
+      } else {
+        loadMoreBtn.style.display = 'none';
+      }
+    }
+    
+    // 显示无匠人状态
+    function showNoArtisans() {
+      document.getElementById('artisansList').innerHTML = `
+        <div class="text-center py-12">
+          <i class="fas fa-user-tie text-6xl text-gray-300 mb-4"></i>
+          <h3 class="text-lg font-bold text-ink mb-2">暂无匠人信息</h3>
+          <p class="text-secondary">请稍后再试或联系管理员</p>
+        </div>
+      `;
+    }
+    
+    // 显示错误状态
+    function showError(message) {
+      document.getElementById('artisansList').innerHTML = `
+        <div class="text-center py-12">
+          <i class="fas fa-exclamation-triangle text-6xl text-red-300 mb-4"></i>
+          <h3 class="text-lg font-bold text-ink mb-2">加载失败</h3>
+          <p class="text-secondary">${message}</p>
+          <button onclick="loadArtisans()" class="btn btn-primary mt-4">重新加载</button>
+        </div>
+      `;
+    }
+    
+    // 搜索功能
+    function setupSearch() {
+      const searchInput = document.getElementById('searchInput');
+      searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        if (query === '') {
+          filteredArtisans = [...allArtisans];
+        } else {
+          filteredArtisans = allArtisans.filter(artisan => 
+            (artisan.name_zh && artisan.name_zh.toLowerCase().includes(query)) ||
+            (artisan.name_en && artisan.name_en.toLowerCase().includes(query)) ||
+            (artisan.region && artisan.region.toLowerCase().includes(query)) ||
+            (artisan.bio && artisan.bio.toLowerCase().includes(query))
+          );
+        }
+        currentPage = 1;
+        displayArtisans();
+      });
+    }
+    
+    // 筛选功能
+    function setupFilters() {
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          // 更新按钮状态
+          filterBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          
+          // 应用筛选
+          const filter = this.dataset.filter;
+          if (filter === 'all') {
+            filteredArtisans = [...allArtisans];
+          } else if (filter === 'verified') {
+            filteredArtisans = allArtisans.filter(artisan => artisan.verified);
+          } else {
+            // 根据技艺类型筛选（这里需要根据实际数据结构调整）
+            filteredArtisans = allArtisans.filter(artisan => 
+              artisan.bio && artisan.bio.toLowerCase().includes(filter)
+            );
+          }
+          
+          currentPage = 1;
+          displayArtisans();
+        });
+      });
+    }
+    
+    // 加载更多功能
+    function setupLoadMore() {
+      document.getElementById('loadMoreBtn').addEventListener('click', function() {
+        currentPage++;
+        displayArtisans();
+      });
+    }
+    
+    // 查看匠人详情
+    function viewArtisanDetail(artisanId) {
+      // 这里可以跳转到匠人详情页或显示模态框
+      alert(`查看匠人详情: ${artisanId}`);
+    }
+    
+    // 钱包连接事件
+    document.getElementById('connectWallet').addEventListener('click', function() {
+      alert('钱包连接功能开发中...');
+    });
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      loadArtisans();
+      setupSearch();
+      setupFilters();
+      setupLoadMore();
+    });
+  </script>
+</body>
+</html>

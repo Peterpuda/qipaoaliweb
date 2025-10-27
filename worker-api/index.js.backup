@@ -1,0 +1,907 @@
+// worker-api/index.js — self-contained fixed version
+import { ethers } from 'ethers';
+// 简单uuid（无依赖版，够用）
+// 注意：这不是加密级别的随机，但在业务场景里可用。
+// 如果后续你想用 crypto.randomUUID()，在 Cloudflare Workers 原生环境也可以。
+// 这里保留纯JS备选，避免环境差异。
+function genId() {
+  const t = Date.now().toString(16);
+  const r = Math.floor(Math.random() * 1e16).toString(16);
+  return `id_${t}_${r}`;
+}
+
+// 标准化JSON响应
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json" }
+  });
+}
+
+// 错误返回
+function errorResponse(message, status = 400) {
+  return jsonResponse({ error: message }, status);
+}
+
+// 读取请求体JSON
+async function readJson(req) {
+  try {
+    return await req.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+// 从Header提取 Bearer Token
+function getBearer(req) {
+  const auth = req.headers.get("Authorization") || "";
+  const parts = auth.split(" ");
+  if (parts.length === 2 && parts[0] === "Bearer") {
+    return parts[1];
+  }
+  return null;
+}
+
+// 校验管理员（节点运营方 / 会长）
+// 思路：你的现有代码里应该有类似签名->JWT->地址的流程。
+// 这里我们假设 decodeToken(token, env) 能拿到 { wallet: "0xabc..." }，
+// 然后判断这个wallet是否在 env.ADMIN_WALLETS 里（逗号分隔白名单）。
+async function requireAdmin(req, env) {
+  const bearer = getBearer(req);
+  if (!bearer) return { ok: false, reason: "NO_TOKEN" };
+
+  const payload = await decodeToken(bearer, env); // 这个函数你现在后端应该已经有
+  if (!payload || !payload.wallet) {
+    return { ok: false, reason: "BAD_TOKEN" };
+  }
+
+  const adminList = (env.ADMIN_WALLETS || "").toLowerCase().split(",").map(s => s.trim());
+  if (!adminList.includes(payload.wallet.toLowerCase())) {
+    return { ok: false, reason: "NOT_ADMIN" };
+  }
+
+  return { ok: true, wallet: payload.wallet.toLowerCase() };
+}
+
+// 校验普通登录用户（需要钱包签名过）
+async function requireUser(req, env) {
+  const bearer = getBearer(req);
+  if (!bearer) return { ok: false, reason: "NO_TOKEN" };
+
+  const payload = await decodeToken(bearer, env); // 同上
+  if (!payload || !payload.wallet) {
+    return { ok: false, reason: "BAD_TOKEN" };
+  }
+
+  return { ok: true, wallet: payload.wallet.toLowerCase() };
+}
+
+
+// 小助手：执行一条SQL，返回所有行
+async function qAll(env, sql, params = []) {
+  const stmt = env.D1.prepare(sql);
+  const bound = stmt.bind(...params);
+  const res = await bound.all();
+  return res.results || [];
+}
+
+// 小助手：执行一条SQL，返回单条(row)
+async function qGet(env, sql, params = []) {
+  const stmt = env.D1.prepare(sql);
+  const bound = stmt.bind(...params);
+  const res = await bound.first();
+  return res || null;
+}
+
+// 小助手：执行写操作
+async function qRun(env, sql, params = []) {
+  const stmt = env.D1.prepare(sql);
+  const bound = stmt.bind(...params);
+  const res = await bound.run();
+  return res;
+}
+
+
+// TODO: shipping信息加密
+// shippingInfoObj 例如 { name, phone, address }
+// return string (加密后的Base64, or plain JSON for now as placeholder)
+function encryptShipping(shippingInfoObj, env) {
+  // Sprint1 先不真正加密，直接JSON.stringify
+  // 之后Sprint2/3我们会用 env.SECRET_KEY 做AES加密
+  return JSON.stringify(shippingInfoObj || {});
+}
+
+export {
+  genId,
+  jsonResponse,
+  errorResponse,
+  readJson,
+  requireAdmin,
+  requireUser,
+  qAll,
+  qGet,
+  qRun,
+  encryptShipping
+};
+/* ================= CORS & JSON ================= */
+function corsify(resp, env){
+  const r = new Response(resp.body, resp);
+  r.headers.set('access-control-allow-origin', env.CORS_ORIGIN || '*');
+  r.headers.set('access-control-allow-headers', 'authorization,content-type,x-admin-bearer');
+  r.headers.set('access-control-allow-methods', 'GET,POST,OPTIONS');
+  r.headers.set('access-control-expose-headers', '*');
+  if (!r.headers.get('content-type')) r.headers.set('content-type','application/json; charset=utf-8');
+  r.headers.set('vary','origin');
+  return r;
+}
+function json(env, data, status=200){
+  return corsify(new Response(JSON.stringify(data), { status }), env);
+}
+function stripApi(p){ return p.startsWith('/api/') ? p.slice(5) : p; }
+async function readJSON(req){ try{ return await req.json(); }catch{ return {}; } }
+
+/* ================= D1 helpers ================= */
+async function d1Run(env, sql, binds=[]){ return env.DB.prepare(sql).bind(...binds).run(); }
+async function d1All(env, sql, binds=[]){ const r = await env.DB.prepare(sql).bind(...binds).all(); return r.results || []; }
+async function d1One(env, sql, binds=[]){ const r = await env.DB.prepare(sql).bind(...binds).first(); return r || null; }
+
+/* ================= Badge helpers ================= */
+// (A) 管理员触发/刷新徽章签名 (将在 /admin/order-status 里调用)
+async function ensureBadgeIssueForOrder(env, orderId) {
+  // 1. 读订单信息 (buyer_wallet, product_id, status)
+  const ord = await d1One(env, `
+    SELECT o.id, o.buyer_wallet, o.product_id, o.status,
+           p.badge_contract
+    FROM orders o
+    LEFT JOIN products p ON o.product_id = p.id
+    WHERE o.id = ?
+  `, [orderId]);
+
+  if (!ord) return { ok:false, reason:"ORDER_NOT_FOUND" };
+  if (ord.status !== "completed") {
+    return { ok:false, reason:"ORDER_NOT_COMPLETED" };
+  }
+  if (!ord.badge_contract) {
+    return { ok:false, reason:"NO_BADGE_CONTRACT" };
+  }
+
+  // 2. 假设我们目前的策略：tokenId = product_id (或映射)
+  //   先用 product_id 当 tokenId，后面可以做更细分。
+  const tokenId = ord.product_id;
+
+  // 3. 生成一条 badges_issues 记录（如果还没有）
+  const existing = await d1One(env, `
+    SELECT *
+    FROM badges_issues
+    WHERE order_id = ?
+  `, [orderId]);
+
+  const now = new Date().toISOString();
+  const badgeId = existing?.id || genId();
+
+  // 4. 生成签名payload（占位，后续补真实签名）
+  const payload = {
+    contract: ord.badge_contract,
+    tokenId,
+    wallet: ord.buyer_wallet,
+    deadline: Math.floor(Date.now()/1000) + 7*24*3600, // 7天有效期占位
+    nonce: badgeId,
+    signature: "0xTODO_SIGNATURE"
+  };
+
+  const payloadStr = JSON.stringify(payload);
+
+  if (!existing) {
+    await d1Run(env, `
+      INSERT INTO badges_issues (
+        id, order_id, buyer_wallet, token_id, contract_addr,
+        sig_payload, claimed, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)
+    `, [
+      badgeId,
+      ord.id,
+      ord.buyer_wallet,
+      tokenId,
+      ord.badge_contract,
+      payloadStr,
+      now,
+      now
+    ]);
+  } else {
+    await d1Run(env, `
+      UPDATE badges_issues
+      SET sig_payload = ?, updated_at = ?
+      WHERE id = ?
+    `, [
+      payloadStr,
+      now,
+      badgeId
+    ]);
+  }
+
+  return { ok:true, badgeId, payload };
+}
+
+// (B) 用户领取前向后端索要签名包
+// GET /badge/claim-ticket?order_id=...
+// 前提：用户必须是该订单的buyer_wallet，订单必须completed
+// 返回 sig_payload
+async function handleGetBadgeTicket(req, env, searchParams) {
+  const userCheck = await requireUser(req, env);
+  if (!userCheck.ok) return errorResponse("not allowed", 403);
+
+  const orderId = searchParams.get("order_id");
+  if (!orderId) return errorResponse("missing order_id", 400);
+
+  const row = await d1One(env, `
+    SELECT b.id, b.order_id, b.buyer_wallet, b.token_id,
+           b.contract_addr, b.sig_payload, b.claimed,
+           o.status
+    FROM badges_issues b
+    LEFT JOIN orders o ON b.order_id = o.id
+    WHERE b.order_id = ?
+  `, [orderId]);
+
+  if (!row) return errorResponse("badge not ready yet", 404);
+
+  // 安全校验：只能拿自己的
+  if (row.buyer_wallet.toLowerCase() !== userCheck.wallet.toLowerCase()) {
+    return errorResponse("not your order", 403);
+  }
+  if (row.status !== "completed") {
+    return errorResponse("order not completed", 400);
+  }
+
+  // 直接返回payload给前端
+  return jsonResponse({
+    ok: true,
+    badge: {
+      order_id: row.order_id,
+      token_id: row.token_id,
+      contract_addr: row.contract_addr,
+      claimed: row.claimed,
+      payload: JSON.parse(row.sig_payload || "{}")
+    }
+  });
+}
+
+// POST /admin/upload-image
+// Content-Type: multipart/form-data
+// returns { ok:true, key:"r2/xxx.jpg" }
+async function handleUploadImage(req, env) {
+  const adminCheck = await requireAdmin(req, env);
+  if (!adminCheck.ok) return errorResponse("not allowed", 403);
+
+  const form = await req.formData();
+  const file = form.get("file");
+  if (!file || typeof file === "string") {
+    return errorResponse("no file", 400);
+  }
+
+  // 生成R2的key
+  const key = `product_${Date.now()}_${Math.floor(Math.random()*1e6)}.jpg`;
+
+  // 把文件内容写入R2
+  await env.R2_BUCKET.put(key, file.stream(), {
+    httpMetadata: {
+      contentType: file.type || "image/jpeg"
+    }
+  });
+
+  return jsonResponse({ ok: true, key });
+}
+
+/* ================= R2 helpers ================= */
+async function r2Put(env, key, data, options={}){
+  try {
+    await env.BUCKET.put(key, data, options);
+    return { success: true, key };
+  } catch (error) {
+    console.error('R2 PUT error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+async function r2Get(env, key){
+  try {
+    const object = await env.BUCKET.get(key);
+    if (!object) return { success: false, error: 'Object not found' };
+    return { success: true, data: object.body, headers: object.headers };
+  } catch (error) {
+    console.error('R2 GET error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+async function r2Delete(env, key){
+  try {
+    await env.BUCKET.delete(key);
+    return { success: true, key };
+  } catch (error) {
+    console.error('R2 DELETE error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+async function r2List(env, prefix='', limit=1000){
+  try {
+    const list = await env.BUCKET.list({ prefix, limit });
+    return { success: true, objects: list.objects };
+  } catch (error) {
+    console.error('R2 LIST error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/* ================= Schema helpers ================= */
+const _ti = new Map();
+async function tableInfo(env, table){
+  if (_ti.has(table)) return _ti.get(table);
+  try{
+    const rows = await d1All(env, `PRAGMA table_info(${table})`);
+    const info = rows.map(r=>({
+      name: String(r.name||'').toLowerCase(),
+      type: String(r.type||'').toUpperCase(),
+      notnull: Number(r.notnull||0),
+      pk: Number(r.pk||0),
+      dflt_value: r.dflt_value
+    }));
+    _ti.set(table, info);
+    return info;
+  }catch{ _ti.set(table, []); return []; }
+}
+function hasCol(info, col){ return info.some(c=>c.name === col.toLowerCase()); }
+function colType(info, col){ const c = info.find(x=>x.name===col.toLowerCase()); return c ? c.type : ''; }
+function isIntType(t){ return /^.*INT(eger)?$/i.test(t||''); }
+function pickKey(info){ const pk=info.find(c=>c.pk===1)?.name; if (pk) return pk; if (hasCol(info,'id')) return 'id'; if (hasCol(info,'slug')) return 'slug'; return info[0]?.name || 'id'; }
+
+/* ================= Auth helpers ================= */
+const DEFAULT_ADMIN = '0xef85456652ada05f12708b9bdcf215780e780d18';
+function readBearerRaw(req){
+  const h1 = req.headers.get('authorization') || '';
+  const h2 = req.headers.get('x-admin-bearer') || '';
+  if (h2) return h2.trim();
+  if (h1.toLowerCase().startsWith('bearer ')) return h1.slice(7).trim();
+  return '';
+}
+function readBearerAddr(req){
+  const token = readBearerRaw(req);
+  if (!token) return null;
+  // base64(JSON)
+  try{
+    const obj = JSON.parse(atob(token));
+    if (obj?.addr) return String(obj.addr).toLowerCase();
+    if (obj?.address) return String(obj.address).toLowerCase();
+  }catch{}
+  // JWT payload
+  const parts = token.split('.');
+  if (parts.length === 3){
+    try{
+      const payload = JSON.parse(decodeURIComponent(escape(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')))));
+      if (payload?.addr) return String(payload.addr).toLowerCase();
+      if (payload?.address) return String(payload.address).toLowerCase();
+    }catch{}
+  }
+  return null;
+}
+function adminRule(env){ const raw = String(env.ADMIN_WALLETS ?? '').trim(); return raw || DEFAULT_ADMIN; }
+function checkAdmin(addr, env){
+  const rule = adminRule(env);
+  if (!rule) return false;
+  if (rule === '*') return !!addr;
+  const allow = rule.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
+  return allow.includes(String(addr||'').toLowerCase());
+}
+function makeToken(addr){ return btoa(JSON.stringify({ addr:String(addr).toLowerCase(), ts:Date.now() })); }
+
+/* ================= Misc ================= */
+function randomHex(n=16){ const b=new Uint8Array(n); crypto.getRandomValues(b); return [...b].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+async function genStaticCode(env, slug){
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.AUTH_SECRET || 'qipao-secret'),
+    {name:'HMAC', hash:'SHA-256'}, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`event:${slug}`));
+  const hex = [...new Uint8Array(sig)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  return hex.slice(0,16).toUpperCase();
+}
+
+/* ================= Router ================= */
+export default {
+  async fetch(req, env){
+    try{
+      if (req.method === 'OPTIONS') return corsify(new Response(null,{status:204}), env);
+
+      const url  = new URL(req.url);
+      const path = stripApi(url.pathname);
+      const pathname = url.pathname;
+      const searchParams = url.searchParams;
+      console.log('Request path:', url.pathname, 'stripped:', path);
+
+      // health
+      if (req.method === 'GET' && (path === '/' || path === '/health')){
+        return json(env, { ok:true, service:'worker-api', ts: Date.now() });
+      }
+
+      // 用户获取徽章签名包
+      if (pathname === "/badge/claim-ticket" && req.method === "GET") {
+        return await handleGetBadgeTicket(req, env, searchParams);
+      }
+
+      // 管理员上传商品图片
+      if (pathname === "/admin/upload-image" && req.method === "POST") {
+        return await handleUploadImage(req, env);
+      }
+
+      // whoami
+      if (req.method === 'GET' && path === '/admin/whoami'){
+        const addr = readBearerAddr(req); const rule = adminRule(env);
+        if (!addr) return json(env, { ok:false, error:'NO_TOKEN', rule }, 401);
+        const ok = checkAdmin(addr, env);
+        return json(env, ok ? { ok:true, addr, rule } : { ok:false, error:'NOT_ADMIN', addr, rule }, ok?200:403);
+      }
+
+      // auth: challenge
+      if ((req.method === 'POST' || req.method === 'GET') && path === '/auth/challenge'){
+        const body = req.method === 'POST' ? await readJSON(req) : {};
+        const addr = String(body.address || body.addr || '').toLowerCase();
+        const nonce = randomHex(8);
+        const message = [
+          'Login to Admin',
+          `Nonce: ${nonce}`,
+          addr ? `Address: ${addr}` : '',
+          body?.domain ? `Domain: ${body.domain}` : '',
+          (body?.chainId !== undefined) ? `ChainId: ${body.chainId}` : ''
+        ].filter(Boolean).join('\n');
+        return corsify(new Response(JSON.stringify({ ok:true, nonce, message }), {
+          status:200,
+          headers: { 'content-type':'application/json', 'set-cookie':`nonce=${nonce}; Max-Age=300; Path=/; SameSite=Lax` }
+        }), env);
+      }
+
+      // auth: verify
+      if (req.method === 'POST' && path === '/auth/verify'){
+        const body = await readJSON(req);
+        const address = String(body.address || body.addr || '').toLowerCase();
+        const signature = body.signature || body.sig;
+        const message = body.message || '';
+        if (!address || !signature || !message) return json(env, { ok:false, error:'MISSING_FIELDS' }, 400);
+        let recovered; try{ recovered = ethers.verifyMessage(message, signature); }catch{ return json(env, { ok:false, error:'BAD_SIGNATURE' }, 400); }
+        if (String(recovered).toLowerCase() !== address) return json(env, { ok:false, error:'ADDR_MISMATCH' }, 400);
+        const token = makeToken(address);
+        return json(env, { ok:true, token });
+      }
+
+      /* ===== Admin: event-upsert（slug 唯一键 + poap_contract NOT NULL 兼容） ===== */
+      if (req.method === 'POST' && path === '/admin/event-upsert'){
+        const addr = readBearerAddr(req);
+        const rule = adminRule(env);
+        if (!addr) return json(env, { ok:false, error:'NO_TOKEN' }, 401);
+        if (!checkAdmin(addr, env)) return json(env, { ok:false, error:'NOT_ADMIN', addr, rule }, 403);
+
+        const body = await readJSON(req);
+        const slug = String(body.slug || body.title || '').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+        const title = String(body.title || '').trim();
+        const location = (body.location !== undefined && body.location !== null) ? String(body.location).trim() : null;
+        const start_time = (body.start_time !== undefined && body.start_time !== null) ? String(body.start_time) : null;
+        const start_ts   = (body.start_ts !== undefined && body.start_ts !== null) ? Number(body.start_ts) : undefined;
+        const end_ts     = (body.end_ts   !== undefined && body.end_ts   !== null) ? Number(body.end_ts)   : undefined;
+
+        // DB 里 poap_contract 为 NOT NULL，允许空串；若前端未传则写 ''
+        const poap_contract = (body.poap_contract !== undefined && body.poap_contract !== null) ? String(body.poap_contract) : '';
+
+        if (!slug || !title) return json(env, { ok:false, error:'slug_title_required' }, 400);
+
+        const einfo = await tableInfo(env, 'events');
+        if (!einfo.length) return json(env, { ok:false, error:'NO_EVENTS_TABLE' }, 500);
+
+        // 以 slug 作为唯一键进行 UPSERT（你的表中 slug UNIQUE NOT NULL）
+        const fields = [];
+        const qmarks = [];
+        const binds  = [];
+
+        // 只写存在的列；绝不写 id（你的 id 是 INTEGER AUTOINCREMENT，写字符串会触发 SQLITE_MISMATCH）
+        if (hasCol(einfo,'slug')) { fields.push('slug'); qmarks.push('?'); binds.push(slug); }
+        if (hasCol(einfo,'name')) { fields.push('name'); qmarks.push('?'); binds.push(title); }
+        if (hasCol(einfo,'poap_contract')) { fields.push('poap_contract'); qmarks.push('?'); binds.push(poap_contract); }
+        if (hasCol(einfo,'location')) { fields.push('location'); qmarks.push('?'); binds.push(location); }
+        if (hasCol(einfo,'start_time')) { fields.push('start_time'); qmarks.push('?'); binds.push(start_time); }
+        if (hasCol(einfo,'start_ts') && start_ts !== undefined) {
+          const typ = colType(einfo,'start_ts');
+          fields.push('start_ts');
+          if (isIntType(typ)) { qmarks.push('CAST(? AS INTEGER)'); binds.push(Number.isFinite(start_ts) ? start_ts : 0); }
+          else { qmarks.push('?'); binds.push(String(start_ts)); }
+        }
+        if (hasCol(einfo,'end_ts') && end_ts !== undefined) {
+          const typ = colType(einfo,'end_ts');
+          fields.push('end_ts');
+          if (isIntType(typ)) { qmarks.push('CAST(? AS INTEGER)'); binds.push(Number.isFinite(end_ts) ? end_ts : 0); }
+          else { qmarks.push('?'); binds.push(String(end_ts)); }
+        }
+
+        if (!fields.includes('slug')) return json(env, { ok:false, error:'NO_SLUG_COLUMN' }, 500);
+
+        const setters = fields.filter(f => f !== 'slug').map(f => `${f}=excluded.${f}`).join(', ');
+        const sql = `
+          INSERT INTO events (${fields.join(',')})
+          VALUES (${qmarks.join(',')})
+          ON CONFLICT(slug) DO UPDATE SET ${setters}
+        `;
+        await d1Run(env, sql, binds);
+
+        const static_code = await genStaticCode(env, slug);
+        return json(env, { ok:true, static_code, slug });
+      }
+
+      /* ===== Admin: 固定码 ===== */
+      if (req.method === 'GET' && path === '/admin/event-code'){
+        const addr = readBearerAddr(req);
+        const rule = adminRule(env);
+        if (!addr) return json(env, { ok:false, error:'NO_TOKEN' }, 401);
+        if (!checkAdmin(addr, env)) return json(env, { ok:false, error:'NOT_ADMIN', addr, rule }, 403);
+
+        const slug = url.searchParams.get('event_slug') || url.searchParams.get('id') || '';
+        if (!slug) return json(env, { ok:false, error:'event_slug_required' }, 400);
+        const static_code = await genStaticCode(env, slug);
+        return json(env, { ok:true, event_slug: slug, static_code });
+      }
+
+      /* ===== User: checkin（按 slug 校验；checkins 写真实列） ===== */
+      if (req.method === 'POST' && path === '/poap/checkin'){
+        const body = await readJSON(req);
+        const slug   = String(body.event_slug || body.eventId || body.slug || '').trim();
+        const wallet = String(body.wallet || body.address || '').toLowerCase();
+        const code   = String(body.code || body.nonce || '').toUpperCase();
+        if (!slug || !wallet) return json(env, { ok:false, error:'MISSING_FIELDS' }, 400);
+
+        // 事件存在性：优先按 slug 列检查；若无 slug 列再尝试 id
+        const einfo = await tableInfo(env, 'events');
+        if (!einfo.length) return json(env, { ok:false, error:'NO_EVENTS_TABLE' }, 500);
+        let exists = false;
+        if (hasCol(einfo,'slug')){
+          exists = !!(await d1All(env, `SELECT slug FROM events WHERE slug=? LIMIT 1`, [slug]))[0];
+        }else if (hasCol(einfo,'id')){
+          // 极端兜底：如果你的旧表以 id 存 slug 字符串（不太可能），依然尝试匹配
+          exists = !!(await d1All(env, `SELECT id FROM events WHERE id=? LIMIT 1`, [slug]))[0];
+        }
+        if (!exists) return json(env, { ok:false, error:'EVENT_NOT_FOUND' }, 404);
+
+        if (code){
+          const expect = await genStaticCode(env, slug);
+          if (expect !== code) return json(env, { ok:false, error:'BAD_CODE' }, 400);
+        }
+
+        // checkins 真实列：event_id | event_slug, wallet, code, tx_hash, created_at（有默认值）
+        const cinfo = await tableInfo(env, 'checkins');
+        if (!cinfo.length) return json(env, { ok:false, error:'NO_CHECKINS_TABLE' }, 500);
+
+        const evCol = hasCol(cinfo,'event_id') ? 'event_id' : (hasCol(cinfo,'event_slug') ? 'event_slug' : null);
+        if (!evCol) return json(env, { ok:false, error:'NO_EVENT_COL_IN_CHECKINS' }, 500);
+
+        const cols = [evCol, 'wallet', 'code'];
+        const qms  = ['?','?','?'];
+        const bds  = [slug, wallet, code || null];
+
+        if (hasCol(cinfo,'tx_hash')) { cols.push('tx_hash'); qms.push('?'); bds.push(null); }
+
+        const ins = `INSERT INTO checkins (${cols.join(',')}) VALUES (${qms.join(',')})`;
+        try { await d1Run(env, ins, bds); } catch (_){ /* ignore duplicates / constraints */ }
+
+        return json(env, { ok:true, duplicated:false, event_slug: slug });
+      }
+
+      // R2 存储桶相关 API
+      if (path === 'storage/upload') {
+        const formData = await req.formData();
+        const file = formData.get('file');
+        const key = formData.get('key') || `uploads/${Date.now()}-${file.name}`;
+        
+        if (!file) {
+          return json(env, { ok: false, error: 'No file provided' }, 400);
+        }
+
+        const result = await r2Put(env, key, file.stream(), {
+          httpMetadata: {
+            contentType: file.type || 'application/octet-stream',
+          },
+        });
+
+        return json(env, { ok: result.success, key: result.key, error: result.error });
+      }
+
+      if (path === 'storage/get') {
+        const { key } = await readJSON(req);
+        if (!key) {
+          return json(env, { ok: false, error: 'Key is required' }, 400);
+        }
+
+        const result = await r2Get(env, key);
+        if (!result.success) {
+          return json(env, { ok: false, error: result.error }, 404);
+        }
+
+        return new Response(result.data, {
+          headers: {
+            'content-type': result.headers.get('content-type') || 'application/octet-stream',
+            'access-control-allow-origin': env.CORS_ORIGIN || '*',
+          },
+        });
+      }
+
+      if (path === 'storage/list') {
+        const { prefix = '', limit = 100 } = await readJSON(req);
+        const result = await r2List(env, prefix, limit);
+        return json(env, { ok: result.success, objects: result.objects, error: result.error });
+      }
+
+      if (path === 'storage/delete') {
+        const { key } = await readJSON(req);
+        if (!key) {
+          return json(env, { ok: false, error: 'Key is required' }, 400);
+        }
+
+        const result = await r2Delete(env, key);
+        return json(env, { ok: result.success, key: result.key, error: result.error });
+      }
+
+      // ---- 匠人 / 传承人管理 ----
+      // POST /admin/artisan-upsert
+      if (path === 'admin/artisan-upsert' && req.method === 'POST') {
+        const addr = readBearerAddr(req);
+        if (!addr || !checkAdmin(addr, env)) {
+          return json(env, { ok: false, error: 'NOT_ADMIN' }, 403);
+        }
+
+        const body = await readJSON(req);
+        if (!body || !body.wallet || !body.name_zh) {
+          return json(env, { ok: false, error: 'MISSING_FIELDS', message: 'wallet/name_zh required' }, 400);
+        }
+
+        const now = new Date().toISOString();
+        const id = body.id || genId();
+
+        await d1Run(env, `
+          INSERT INTO artisans (id, wallet, name_zh, name_en, bio, region, verified, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            wallet=excluded.wallet,
+            name_zh=excluded.name_zh,
+            name_en=excluded.name_en,
+            bio=excluded.bio,
+            region=excluded.region,
+            verified=excluded.verified,
+            updated_at=excluded.updated_at
+        `, [
+          id,
+          body.wallet,
+          body.name_zh,
+          body.name_en || "",
+          body.bio || "",
+          body.region || "",
+          body.verified ? 1 : 0,
+          now,
+          now
+        ]);
+
+        return json(env, { ok: true, id });
+      }
+
+      // GET /admin/artisans
+      if (path === 'admin/artisans' && req.method === 'GET') {
+        const addr = readBearerAddr(req);
+        if (!addr || !checkAdmin(addr, env)) {
+          return json(env, { ok: false, error: 'NOT_ADMIN' }, 403);
+        }
+
+        const rows = await d1All(env, `
+          SELECT id, wallet, name_zh, name_en, region, verified, created_at, updated_at
+          FROM artisans
+          ORDER BY updated_at DESC
+        `);
+        return json(env, { ok: true, artisans: rows });
+      }
+
+      // ---- 商品管理 ----
+      // POST /admin/product-upsert
+      if (path === 'admin/product-upsert' && req.method === 'POST') {
+        const addr = readBearerAddr(req);
+        if (!addr || !checkAdmin(addr, env)) {
+          return json(env, { ok: false, error: 'NOT_ADMIN' }, 403);
+        }
+
+        const body = await readJSON(req);
+        if (!body || !body.artisan_id || !body.slug || !body.title_zh || !body.price_native || !body.price_currency) {
+          return json(env, { ok: false, error: 'MISSING_FIELDS', message: 'artisan_id/slug/title_zh/price_native/price_currency required' }, 400);
+        }
+
+        const now = new Date().toISOString();
+        const id = body.id || genId();
+
+        await d1Run(env, `
+          INSERT INTO products (
+            id, artisan_id, slug, title_zh, title_en, desc_md, image_key,
+            price_native, price_currency, price_points, stock, badge_contract,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            artisan_id=excluded.artisan_id,
+            slug=excluded.slug,
+            title_zh=excluded.title_zh,
+            title_en=excluded.title_en,
+            desc_md=excluded.desc_md,
+            image_key=excluded.image_key,
+            price_native=excluded.price_native,
+            price_currency=excluded.price_currency,
+            price_points=excluded.price_points,
+            stock=excluded.stock,
+            badge_contract=excluded.badge_contract,
+            updated_at=excluded.updated_at
+        `, [
+          id,
+          body.artisan_id,
+          body.slug,
+          body.title_zh,
+          body.title_en || "",
+          body.desc_md || "",
+          body.image_key || "",
+          Number(body.price_native),
+          body.price_currency,
+          body.price_points ? Number(body.price_points) : 0,
+          body.stock ? Number(body.stock) : 0,
+          body.badge_contract || "",
+          now,
+          now
+        ]);
+
+        return json(env, { ok: true, id });
+      }
+
+      // GET /products
+      if (path === 'products' && req.method === 'GET') {
+        console.log('Products route matched, path:', path);
+        const rows = await d1All(env, `
+          SELECT p.id, p.artisan_id, p.slug, p.title_zh, p.title_en, p.desc_md, p.image_key,
+                 p.price_native, p.price_currency, p.price_points, p.stock,
+                 p.badge_contract, p.updated_at,
+                 a.name_zh AS artisan_name_zh,
+                 a.region  AS artisan_region
+          FROM products p
+          LEFT JOIN artisans a ON p.artisan_id = a.id
+          ORDER BY p.updated_at DESC
+        `);
+        return json(env, { ok: true, products: rows });
+      }
+
+      // ---- 订单创建 / 查询 ----
+      // POST /order/create
+      if (path === 'order/create' && req.method === 'POST') {
+        const addr = readBearerAddr(req);
+        if (!addr) {
+          return json(env, { ok: false, error: 'NO_TOKEN' }, 403);
+        }
+
+        const body = await readJSON(req);
+        if (!body || !body.product_id || !body.qty || !body.shipping_info) {
+          return json(env, { ok: false, error: 'MISSING_FIELDS', message: 'product_id/qty/shipping_info required' }, 400);
+        }
+
+        // 校验商品存在 & 库存
+        const product = await d1One(env, `
+          SELECT id, stock FROM products WHERE id = ?
+        `, [body.product_id]);
+        if (!product) return json(env, { ok: false, error: 'PRODUCT_NOT_FOUND' }, 404);
+        if (Number(product.stock) < Number(body.qty)) {
+          return json(env, { ok: false, error: 'INSUFFICIENT_STOCK' }, 400);
+        }
+
+        const now = new Date().toISOString();
+        const orderId = genId();
+
+        const encShip = encryptShipping(body.shipping_info, env);
+
+        await d1Run(env, `
+          INSERT INTO orders (
+            id, buyer_wallet, product_id, qty, status,
+            tx_hash, shipping_enc,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          orderId,
+          addr,
+          body.product_id,
+          Number(body.qty),
+          "pending",
+          "",
+          encShip,
+          now,
+          now
+        ]);
+
+        return json(env, { ok: true, order_id: orderId, status: "pending" });
+      }
+
+      // GET /orders
+      if (path === 'orders' && req.method === 'GET') {
+        const addr = readBearerAddr(req);
+        if (!addr) {
+          return json(env, { ok: false, error: 'NO_TOKEN' }, 403);
+        }
+
+        const walletQ = url.searchParams.get("wallet");
+        const isAdmin = checkAdmin(addr, env);
+
+        let rows;
+        if (isAdmin && !walletQ) {
+          // 管理员看全部订单
+          rows = await d1All(env, `
+            SELECT o.id, o.buyer_wallet, o.product_id, o.qty, o.status,
+                   o.tx_hash, o.shipping_enc, o.created_at, o.updated_at,
+                   p.title_zh, p.slug
+            FROM orders o
+            LEFT JOIN products p ON o.product_id = p.id
+            ORDER BY o.created_at DESC
+          `);
+        } else {
+          const targetWallet = walletQ || addr;
+          rows = await d1All(env, `
+            SELECT o.id, o.buyer_wallet, o.product_id, o.qty, o.status,
+                   o.tx_hash, o.created_at, o.updated_at,
+                   p.title_zh, p.slug
+            FROM orders o
+            LEFT JOIN products p ON o.product_id = p.id
+            WHERE LOWER(o.buyer_wallet) = LOWER(?)
+            ORDER BY o.created_at DESC
+          `, [targetWallet]);
+        }
+
+        return json(env, { ok: true, orders: rows });
+      }
+
+      // ---- 订单状态更新（管理员操作）----
+      // POST /admin/order-status
+      if (pathname === "/admin/order-status" && req.method === "POST") {
+        const adminCheck = await requireAdmin(req, env);
+        if (!adminCheck.ok) return errorResponse("not allowed", 403);
+
+        const body = await readJson(req);
+        if (!body || !body.order_id || !body.status) {
+          return errorResponse("missing order_id/status", 400);
+        }
+
+        const now = new Date().toISOString();
+        await d1Run(env, `
+          UPDATE orders
+          SET status = ?,
+              tx_hash = COALESCE(?, tx_hash),
+              updated_at = ?
+          WHERE id = ?
+        `, [
+          body.status,
+          body.tx_hash || null,
+          now,
+          body.order_id
+        ]);
+
+        // 👇 Sprint 4 新增逻辑：如果订单已完成，就准备徽章签名
+        if (body.status === "completed") {
+          const badgePrep = await ensureBadgeIssueForOrder(env, body.order_id);
+          // 我们不强求这里返回成功/失败给管理员，但可以把结果放进响应给你调试
+          return jsonResponse({ ok: true, badgePrep });
+        }
+
+        return jsonResponse({ ok: true });
+      }
+
+      // ---- 徽章领取 ----
+      // GET /badge/claim-ticket?order_id=xxx
+      if (path === 'badge/claim-ticket' && req.method === 'GET') {
+        return await handleGetBadgeTicket(req, env, url.searchParams);
+      }
+
+      // not found
+      return json(env, { ok:false, error:'NOT_FOUND', path: url.pathname }, 404);
+    }catch(e){
+      return corsify(new Response(JSON.stringify({ ok:false, error:'INTERNAL', message:String(e?.message||e) }), {
+        status:500, headers:{'content-type':'application/json'}
+      }), env);
+    }
+  }
+};

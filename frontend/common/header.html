@@ -1,0 +1,123 @@
+<header
+  id="navbar"
+  class="fixed w-full z-50 bg-paper/90 backdrop-blur-sm shadow-sm transition-all duration-500"
+>
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16 md:h-20">
+      <!-- Logo区域 -->
+      <div class="flex items-center">
+        <a href="../index.html" class="flex items-center">
+          <div
+            class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary flex items-center justify-center text-paper mr-3"
+          >
+            <i class="fas fa-chess-rook text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-xl md:text-2xl font-kai font-bold text-primary">
+              非遗上链
+            </h1>
+            <p class="text-xs md:text-sm text-secondary/80">
+              旗袍文化全球社区
+            </p>
+          </div>
+        </a>
+      </div>
+
+      <!-- 桌面导航 -->
+      <nav class="hidden md:flex space-x-8">
+        <a href="../index.html" class="nav-link">
+          <i class="fas fa-home mr-2"></i>首页
+        </a>
+        <a href="../rewards/index.html" class="nav-link">
+          <i class="fas fa-gift mr-2"></i>任务奖励
+        </a>
+        <a href="../checkin/index.html" class="nav-link">
+          <i class="fas fa-check-circle mr-2"></i>签到
+        </a>
+        <a href="../claim/index.html" class="nav-link">
+          <i class="fas fa-coins mr-2"></i>空投
+        </a>
+        <a href="../points/index.html" class="nav-link">
+          <i class="fas fa-star mr-2"></i>积分榜
+        </a>
+        <a href="../profile/index.html" class="nav-link">
+          <i class="fas fa-user mr-2"></i>我的
+        </a>
+        <a href="../admin/index.html" class="nav-link">
+          <i class="fas fa-cog mr-2"></i>管理后台
+        </a>
+      </nav>
+
+      <!-- 连接钱包按钮 -->
+      <div class="hidden md:block">
+        <button
+          id="walletButton"
+          class="bg-primary hover:bg-primary/90 text-paper px-5 py-2 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center"
+        >
+          <i class="fab fa-wallet mr-2"></i>连接钱包
+        </button>
+      </div>
+
+      <!-- 移动端菜单 -->
+      <div class="md:hidden">
+        <button
+          class="text-ink hover:text-primary focus:outline-none"
+          id="menu-toggle"
+        >
+          <i class="fas fa-bars text-2xl"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 移动端菜单 -->
+  <div
+    id="mobile-menu"
+    class="md:hidden hidden bg-paper border-t border-accent/30 animate-fadeIn"
+  >
+    <div class="container mx-auto px-4 py-3 space-y-3">
+      <a href="../index.html" class="nav-link block py-2">
+        <i class="fas fa-home mr-2 w-6 text-center"></i>首页
+      </a>
+      <a href="../rewards/index.html" class="nav-link block py-2">
+        <i class="fas fa-gift mr-2 w-6 text-center"></i>任务奖励
+      </a>
+      <a href="../checkin/index.html" class="nav-link block py-2">
+        <i class="fas fa-check-circle mr-2 w-6 text-center"></i>签到
+      </a>
+      <a href="../claim/index.html" class="nav-link block py-2">
+        <i class="fas fa-coins mr-2 w-6 text-center"></i>空投
+      </a>
+      <a href="../points/index.html" class="nav-link block py-2">
+        <i class="fas fa-star mr-2 w-6 text-center"></i>积分榜
+      </a>
+      <a href="../profile/index.html" class="nav-link block py-2">
+        <i class="fas fa-user mr-2 w-6 text-center"></i>我的
+      </a>
+      <a href="../admin/index.html" class="nav-link block py-2">
+        <i class="fas fa-cog mr-2 w-6 text-center"></i>管理后台
+      </a>
+      <button
+        id="mobileWalletBtn"
+        class="block bg-primary hover:bg-primary/90 text-paper px-5 py-2 rounded-full transition-all duration-300 text-center mt-2 w-full"
+      >
+        <i class="fab fa-wallet mr-2"></i>连接钱包
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  // 移动端菜单切换交互
+  document.addEventListener("DOMContentLoaded", () => {
+    const menuToggle = document.getElementById("menu-toggle");
+    const mobileMenu = document.getElementById("mobile-menu");
+    const icon = menuToggle.querySelector("i");
+
+    menuToggle.addEventListener("click", () => {
+      mobileMenu.classList.toggle("hidden");
+      icon.classList.toggle("fa-bars");
+      icon.classList.toggle("fa-times");
+    });
+  });
+</script>

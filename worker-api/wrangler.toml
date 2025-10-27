@@ -1,0 +1,24 @@
+name = "songbrocade-api"
+main = "index.js"
+compatibility_date = "2024-09-01"
+workers_dev = true
+
+# （线上）RPC_URL / BROCADE_ADDR / RDA_REG_ADDR 请用 secret 设置，不建议写死在这里
+# npx wrangler secret put RPC_URL --name songbrocade-api
+# npx wrangler secret put BROCADE_ADDR --name songbrocade-api
+# npx wrangler secret put RDA_REG_ADDR --name songbrocade-api
+
+[[d1_databases]]
+binding = "DB"                          # 代码里通过 c.env.DB 访问
+database_name = "poap-db"               # 你已有的 D1
+database_id = "ba24fce5-6b11-4c24-828d-336787011ffd"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"                   # 代码里通过 c.env.R2_BUCKET 访问
+bucket_name = "poap-images"             # R2 存储桶名称
+
+[vars]
+# 管理员钱包地址列表（用逗号分隔）
+ADMIN_WALLETS = "0xEf85456652ada05f12708b9bDcF215780E780D18,0x2222222222222222222222222222222222222222"
+# 收货信息加密密钥（32字节的base64编码）
+SHIPPING_KEY = "ir9I4xwi1Umc9W2jSv6NUB9LCjzhufhixOpMvPUR02U="

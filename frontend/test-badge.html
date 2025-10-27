@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>徽章领取测试</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.11.1/dist/ethers.umd.min.js"></script>
+</head>
+<body class="text-[#4A403A] p-4">
+  <div class="max-w-md mx-auto">
+    <h1 class="text-xl font-bold mb-4">徽章领取测试</h1>
+    
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-2">订单ID:</label>
+      <input id="orderId" type="text" value="id_19a1a3fa4d1_ecde20ae2c537" 
+             class="w-full border rounded-lg p-2" />
+    </div>
+    
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-2">Bearer Token:</label>
+      <input id="bearerToken" type="text" value="test-token-123" 
+             class="w-full border rounded-lg p-2" />
+    </div>
+    
+    <button onclick="testClaimBadge()" 
+            class="w-full bg-[#9E2A2B] text-white rounded-lg py-2 font-semibold">
+      测试领取徽章
+    </button>
+    
+    <div id="result" class="mt-4 p-4 bg-gray-100 rounded-lg text-sm hidden">
+      <h3 class="font-semibold mb-2">测试结果:</h3>
+      <pre id="resultContent"></pre>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "https://songbrocade-api.petterbrand03.workers.dev";
+    
+    const BADGE_ABI = [
+      "function mintWithSig(address to,uint256 eventId,uint256 amount,uint256 deadline,uint8 v,bytes32 r,bytes32 s) external"
+    ];
+
+    function getBearer() {
+      return document.getElementById("bearerToken").value || "";
+    }
+
+    function authHeaders(json = true) {
+      const h = {};
+      const b = getBearer();
+      if (b) h["Authorization"] = "Bearer " + b;
+      if (json) h["Content-Type"] = "application/json";
+      return h;
+    }
+
+    function showResult(data) {
+      const resultDiv = document.getElementById("result");
+      const resultContent = document.getElementById("resultContent");
+      resultContent.textContent = JSON.stringify(data, null, 2);
+      resultDiv.classList.remove("hidden");
+    }
+
+    async function testClaimBadge() {
+      const orderId = document.getElementById("orderId").value;
+      
+      try {
+        showResult({ status: "开始测试...", orderId });
+        
+        // 1. 从后端拿签名包
+        const ticketRes = await fetch(
+          API_BASE + "/badge/claim-ticket?order_id=" + encodeURIComponent(orderId),
+          {
+            method: "GET",
+            headers: authHeaders(false)
+          }
+        );
+        
+        const ticketData = await ticketRes.json();
+        showResult({ 
+          status: "获取签名包", 
+          response: ticketData,
+          success: ticketData.ok 
+        });
+        
+        if (!ticketData.ok) {
+          throw new Error("无法领取徽章: " + (ticketData.error || "unknown"));
+        }
+
+        const badge = ticketData.badge;
+        const payload = badge.payload;
+        
+        // 检查 payload 是否包含必要的签名信息
+        if (!payload.contract || !payload.tokenId || !payload.deadline || !payload.signature) {
+          throw new Error("徽章签名数据不完整");
+        }
+
+        showResult({
+          status: "签名包验证通过",
+          payload: payload,
+          signature: payload.signature,
+          signatureLength: payload.signature.length
+        });
+
+        // 2. 模拟钱包环境检查
+        if (!window.ethereum) {
+          showResult({
+            status: "模拟钱包环境",
+            message: "当前环境没有钱包，但签名解析正常",
+            parsedSignature: parseSignature(payload.signature)
+          });
+          return;
+        }
+
+        // 3. 如果有钱包环境，尝试调用合约
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const currentWallet = await signer.getAddress();
+
+        const badgeContract = new ethers.Contract(payload.contract, BADGE_ABI, signer);
+        const parsedSig = parseSignature(payload.signature);
+
+        showResult({
+          status: "准备调用合约",
+          wallet: currentWallet,
+          contract: payload.contract,
+          parsedSignature: parsedSig
+        });
+
+        // 调用合约方法
+        const tx = await badgeContract.mintWithSig(
+          currentWallet, // to
+          BigInt(payload.tokenId), // eventId
+          BigInt(payload.amount || "1"), // amount
+          BigInt(payload.deadline), // deadline
+          parsedSig.v, // v
+          parsedSig.r, // r
+          parsedSig.s  // s
+        );
+        
+        showResult({
+          status: "交易已提交",
+          txHash: tx.hash,
+          message: "请在钱包中确认交易"
+        });
+        
+      } catch (err) {
+        showResult({
+          status: "测试失败",
+          error: err.message,
+          stack: err.stack
+        });
+      }
+    }
+
+    function parseSignature(signature) {
+      if (signature && signature.startsWith('0x')) {
+        const sig = signature.slice(2); // 去掉 0x
+        if (sig.length === 130) { // 65 * 2
+          return {
+            r: '0x' + sig.slice(0, 64),
+            s: '0x' + sig.slice(64, 128),
+            v: parseInt(sig.slice(128, 130), 16)
+          };
+        } else {
+          throw new Error("签名格式不正确，长度: " + sig.length);
+        }
+      } else {
+        throw new Error("缺少有效的签名数据");
+      }
+    }
+  </script>
+</body>
+</html>
+
