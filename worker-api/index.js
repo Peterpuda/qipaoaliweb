@@ -1467,11 +1467,12 @@ export default {
           const addresses = checkins.map(c => c.wallet);
           const amount = "1000000000000000000000"; // 1000 tokens (18 decimals)
           
-          // 简化的 Merkle Root 计算（实际应使用完整树）
-          const crypto = await import('crypto');
-          const simpleRoot = crypto.createHash('sha256')
-            .update(JSON.stringify({ eventId, addresses, amount }))
-            .digest('hex');
+          // 简化的 Merkle Root 计算（使用 Web Crypto API）
+          const encoder = new TextEncoder();
+          const data = encoder.encode(JSON.stringify({ eventId, addresses, amount }));
+          const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const simpleRoot = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
           
           // 为每个用户分配索引和空证明（简化版）
           let index = 0;
