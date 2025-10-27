@@ -258,9 +258,8 @@
         <select id="walletSel">
           <option value="auto">自动检测</option>
           <option value="metamask">MetaMask</option>
-          <option value="coinbase">Coinbase</option>
+          <option value="coinbase">Coinbase Wallet</option>
           <option value="phantom">Phantom</option>
-          <option value="walletconnect">WalletConnect（通用）</option>
         </select>
         <button class="btn" id="btnConnect">连接钱包</button>
       </div>
@@ -391,8 +390,8 @@ async function loadEvent(){
   }
 }
 
-/** ===== 钱包连接（注入优先，WalletConnect 回退） ===== **/
-let SELECTED_PROVIDER=null,WC_PROVIDER=null;
+/** ===== 钱包连接（仅支持浏览器扩展钱包） ===== **/
+let SELECTED_PROVIDER=null;
 
 async function detectInjected(choice="auto"){
   const eth=window.ethereum;const list=(eth&&Array.isArray(eth.providers))?eth.providers:[];
@@ -403,30 +402,7 @@ async function detectInjected(choice="auto"){
   if(list.length)return pick("isMetaMask")||pick("isCoinbaseWallet")||list[0];
   return eth||window.coinbaseWalletExtension||window.phantom?.ethereum||null;
 }
-async function getWalletConnectProvider(){
-  if (!window.WalletConnectProvider) {
-    await new Promise((resolve, reject)=>{
-      const s = document.createElement('script');
-      // 使用 WalletConnect v1 更稳定
-      s.src = 'https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js';
-      s.onload = resolve;
-      s.onerror = ()=>reject(new Error('WalletConnect 加载失败，请刷新页面重试'));
-      document.head.appendChild(s);
-    });
-  }
-  if (WC_PROVIDER) return WC_PROVIDER;
-  
-  // 使用 WalletConnect v1 API（更稳定）
-  WC_PROVIDER = new window.WalletConnectProvider.default({
-    rpc: {
-      [BASE_SEPOLIA.chainId]: BASE_SEPOLIA.rpcUrl
-    },
-    chainId: BASE_SEPOLIA.chainId,
-    qrcode: true
-  });
-  
-  return WC_PROVIDER;
-}
+// WalletConnect 已移除，简化用户体验，仅支持浏览器扩展钱包
 async function ensureBaseSepolia(p){
   try{
     const id=await p.request({method:"eth_chainId"});
@@ -444,21 +420,28 @@ async function connect(){
   const choice=$("walletSel").value||"auto";
   try{
     $("addrLine").textContent="连接中...";
-    if(choice==="walletconnect" || (!window.ethereum && /Android|iPhone|iPad/i.test(navigator.userAgent))){
-      const p=await getWalletConnectProvider();
-      await p.enable(); // WalletConnect v1 使用 enable()
-      SELECTED_PROVIDER=p;
-    }else{
-      const p=await detectInjected(choice);
-      if(!p){$("addrLine").textContent="未检测到钱包，尝试自动唤起…"; openMetaMask();return;}
-      SELECTED_PROVIDER=p;await p.request({method:"eth_requestAccounts"});
+    const p=await detectInjected(choice);
+    if(!p){
+      $("addrLine").textContent="❌ 未检测到钱包扩展";
+      // 移动端尝试唤起 MetaMask
+      if(/Android|iPhone|iPad/i.test(navigator.userAgent)){
+        setTimeout(()=>{
+          $("addrLine").textContent="尝试打开 MetaMask App...";
+          openMetaMask();
+        }, 1000);
+      } else {
+        $("addrLine").textContent="❌ 请先安装 MetaMask、Coinbase Wallet 或其他钱包扩展";
+      }
+      return;
     }
+    SELECTED_PROVIDER=p;
+    await p.request({method:"eth_requestAccounts"});
     await ensureBaseSepolia(SELECTED_PROVIDER);
     const acc=await SELECTED_PROVIDER.request({method:"eth_accounts"});
-    $("addrLine").textContent=acc[0]?`已连接：${shortAddr(acc[0])}`:"连接失败";
+    $("addrLine").textContent=acc[0]?`✅ 已连接：${shortAddr(acc[0])}`:"❌ 连接失败";
   }catch(e){
     console.error('连接错误详情:', e);
-    $("addrLine").textContent="连接错误："+(e?.message||e);
+    $("addrLine").textContent="❌ 连接错误："+(e?.message||e);
   }
 }
 function openMetaMask(){
