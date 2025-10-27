@@ -30,10 +30,12 @@ const API = (()=>{
 })();
 
 const ABI = [
-  {"inputs":[{"internalType":"bytes32","name":"_root","type":"bytes32"}],"stateMutability":"payable","type":"constructor"},
+  {"inputs":[{"internalType":"address","name":"token_","type":"address"},{"internalType":"bytes32","name":"merkleRoot_","type":"bytes32"}],"stateMutability":"nonpayable","type":"constructor"},
   {"inputs":[],"name":"merkleRoot","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
+  {"inputs":[],"name":"token","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
   {"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"isClaimed","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"index","type":"uint256"},{"internalType":"address payable","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"bytes32[]","name":"proof","type":"bytes32[]"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"}
+  {"inputs":[{"internalType":"uint256","name":"index","type":"uint256"},{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"bytes32[]","name":"proof","type":"bytes32[]"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},
+  {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"index","type":"uint256"},{"indexed":false,"internalType":"address","name":"account","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Claimed","type":"event"}
 ];
 
 let provider, signer, account;
@@ -77,9 +79,12 @@ async function doClaim() {
   setLog('提交链上交易中…');
 
   const tx = await c.claim(index, addr, amount, proof);
-  setLog('已提交：'+tx.hash);
+  setLog('交易已提交：'+tx.hash+'\n等待确认...');
   const rc = await tx.wait();
-  setLog('领取成功，区块：'+rc.blockNumber);
+  
+  // 显示领取数量（转换为可读格式）
+  const amountInTokens = (BigInt(amount) / BigInt(10**18)).toString();
+  setLog(`✅ 领取成功！\n区块：${rc.blockNumber}\n数量：${amountInTokens} 代币\n交易哈希：${tx.hash}`);
 }
 </script>
 <!-- 使用 ethers v6（从 UNPKG 引入） -->

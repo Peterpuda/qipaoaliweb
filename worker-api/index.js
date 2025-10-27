@@ -1323,8 +1323,8 @@ export default {
             })
           ]);
 
-          // ✅ 记录空投资格（1 个代币，18 decimals）
-          const AIRDROP_AMOUNT = "1000000000000000000";
+          // ✅ 记录空投资格（1000 个代币，18 decimals）
+          const AIRDROP_AMOUNT = "1000000000000000000000"; // 1000 tokens = 1000 * 10^18 wei
           await run(env, `
             INSERT INTO airdrop_eligible (wallet, event_id, amount, claimed, created_at)
             VALUES (?, ?, ?, 0, strftime('%s', 'now'))
@@ -1431,7 +1431,7 @@ export default {
           }
           
           const addresses = checkins.map(c => c.wallet);
-          const amount = "1000000000000000000"; // 1 token
+          const amount = "1000000000000000000000"; // 1000 tokens (18 decimals)
           
           // 简化的 Merkle Root 计算（实际应使用完整树）
           const crypto = await import('crypto');
