@@ -1,0 +1,8 @@
+{
+  "network": "base-sepolia",
+  "distributor": "0xb763A90039cc09CcbDcfF3feb28378fFF07B9c6C",
+  "token": "0x9Fc8A071c5a6897AD90c8614de5B26e4e75a57Aa",
+  "merkleRoot": "0x23dd5b29cc5e5026b11a9ba706e6c6e8ca810245fa285ac17e2960d1ba4d03ff",
+  "deployer": "0x88E73089789F4902428fcc5BA3033464A4d223Ef",
+  "timestamp": "2025-10-27T12:13:29.777Z"
+}

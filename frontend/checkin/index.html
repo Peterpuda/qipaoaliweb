@@ -531,7 +531,12 @@ async function claim(){
     const data = await r.json();
     
     if(!r.ok || !data.ok) {
-      setPanel("签到失败："+ (data.error || "UNKNOWN_ERROR")); 
+      const errorMsg = data.message || data.error || "UNKNOWN_ERROR";
+      if (data.error === 'ALREADY_CHECKED_IN_TODAY') {
+        setPanel("⏰ " + errorMsg);
+      } else {
+        setPanel("签到失败："+ errorMsg); 
+      }
       return;
     }
     
@@ -541,14 +546,18 @@ async function claim(){
     return;
   }
 
-  // ✅ 显示积分和空投资格
+  // ✅ 显示积分、签到次数和空投资格
   const points = res.data?.points || 0;
   const eligible = res.data?.eligible || false;
+  const totalCheckins = res.data?.totalCheckins || 1;
+  const totalTokens = res.data?.totalTokens || "0";
+  const tokensAmount = totalTokens !== "0" ? (BigInt(totalTokens) / BigInt(10**18)).toString() : "1000";
+  const message = res.data?.message || "";
   
   if (eligible && points > 0) {
-    setPanel(`签到成功！获得 ${points} 积分 🎁 已获得空投资格 💎`);
+    setPanel(`✅ ${message || `签到成功！获得 ${points} 积分`}`);
     $('claimTokenRow').style.display = 'flex';
-    openModal(`你的参与已被记录。\n\n🎁 获得 ${points} 积分！\n💎 已获得空投资格（1000枚代币）！\n\n关闭此窗口后，点击下方「领取1000枚代币」按钮完成领取。`);
+    openModal(`🎉 签到成功！\n\n📅 这是您的第 ${totalCheckins} 次签到\n🎁 获得 ${points} 积分\n💎 累计可领取 ${tokensAmount} 枚代币\n\n关闭此窗口后，点击下方「🎁 领取代币」按钮完成领取。`);
   } else if (points > 0) {
     setPanel(`签到成功！获得 ${points} 积分`);
     openModal(`你的参与已被记录。🎁 获得 ${points} 积分！`);

@@ -161,6 +161,8 @@ const STMT_CREATE = [
     claimed INTEGER DEFAULT 0,
     merkle_batch TEXT,
     token_tx_hash TEXT,
+    checkin_count INTEGER DEFAULT 0,
+    last_checkin_date TEXT,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     UNIQUE(wallet, event_id)
   )`,
@@ -179,6 +181,10 @@ const STMT_CREATE = [
 
 // --- 需要补齐的列定义（老表缺少时自动 ADD COLUMN） ---
 const COLUMN_PATCHES = {
+  airdrop_eligible: [
+    { name: 'checkin_count', def: 'INTEGER DEFAULT 0' },
+    { name: 'last_checkin_date', def: 'TEXT' }
+  ],
   events: [
     // 列名, SQL 片段（含类型/默认值/约束）
     ['start_at', 'TEXT'],

@@ -1288,18 +1288,34 @@ export default {
             actualSlug = eventRows[0].slug;
           }
 
-          // 检查是否已经签到
-          const existing = await query(env, `
-            SELECT id FROM checkins 
-            WHERE event_id = ? AND wallet = ?
+          // 检查今天是否已经签到
+          const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+          const todayCheckin = await query(env, `
+            SELECT id, created_at FROM checkins 
+            WHERE event_id = ? AND wallet = ? 
+            AND DATE(created_at) = DATE('now')
+            LIMIT 1
           `, [actualEventId, wallet]);
 
-          if (existing && existing.length > 0) {
+          if (todayCheckin && todayCheckin.length > 0) {
             return withCors(
-              jsonResponse({ ok: false, error: 'ALREADY_CHECKED_IN' }),
+              jsonResponse({ 
+                ok: false, 
+                error: 'ALREADY_CHECKED_IN_TODAY',
+                message: '您今天已经签到过了，请明天再来！',
+                nextCheckinTime: new Date(new Date(todayCheckin[0].created_at).getTime() + 24*60*60*1000).toISOString()
+              }),
               pickAllowedOrigin(req)
             );
           }
+
+          // 查询历史签到次数
+          const checkinHistory = await query(env, `
+            SELECT COUNT(*) as total_checkins FROM checkins 
+            WHERE event_id = ? AND wallet = ?
+          `, [actualEventId, wallet]);
+          
+          const totalCheckins = (checkinHistory && checkinHistory[0]) ? checkinHistory[0].total_checkins : 0;
 
           const id = genId();
           const ts = Math.floor(Date.now() / 1000);
@@ -1317,26 +1333,60 @@ export default {
             wallet.toLowerCase(),
             CHECKIN_POINTS,
             JSON.stringify({
-              description: `活动签到: ${actualSlug || actualEventId}`,
+              description: `活动签到: ${actualSlug || actualEventId} (第${totalCheckins + 1}次)`,
               event_id: actualEventId,
-              checkin_id: id
+              checkin_id: id,
+              checkin_date: today
             })
           ]);
 
-          // ✅ 记录空投资格（1000 个代币，18 decimals）
-          const AIRDROP_AMOUNT = "1000000000000000000000"; // 1000 tokens = 1000 * 10^18 wei
+          // ✅ 记录空投资格（每次签到 1000 个代币，累加）
+          const AIRDROP_AMOUNT_PER_CHECKIN = "1000000000000000000000"; // 1000 tokens = 1000 * 10^18 wei
+          
+          // 查询现有空投资格
+          const existingAirdrop = await query(env, `
+            SELECT amount, checkin_count FROM airdrop_eligible
+            WHERE wallet = ? AND event_id = ?
+          `, [wallet.toLowerCase(), actualEventId]);
+          
+          let newAmount = AIRDROP_AMOUNT_PER_CHECKIN;
+          let newCheckinCount = 1;
+          
+          if (existingAirdrop && existingAirdrop.length > 0) {
+            // 累加代币数量
+            const currentAmount = BigInt(existingAirdrop[0].amount || "0");
+            const addAmount = BigInt(AIRDROP_AMOUNT_PER_CHECKIN);
+            newAmount = (currentAmount + addAmount).toString();
+            newCheckinCount = (existingAirdrop[0].checkin_count || 0) + 1;
+          }
+          
           await run(env, `
-            INSERT INTO airdrop_eligible (wallet, event_id, amount, claimed, created_at)
-            VALUES (?, ?, ?, 0, strftime('%s', 'now'))
-            ON CONFLICT(wallet, event_id) DO UPDATE SET amount = excluded.amount
+            INSERT INTO airdrop_eligible (wallet, event_id, amount, claimed, checkin_count, last_checkin_date, created_at)
+            VALUES (?, ?, ?, 0, 1, DATE('now'), strftime('%s', 'now'))
+            ON CONFLICT(wallet, event_id) DO UPDATE SET 
+              amount = ?,
+              checkin_count = ?,
+              last_checkin_date = DATE('now')
           `, [
             wallet.toLowerCase(),
             actualEventId,
-            AIRDROP_AMOUNT
+            AIRDROP_AMOUNT_PER_CHECKIN,
+            newAmount,
+            newCheckinCount
           ]);
 
           return withCors(
-            jsonResponse({ ok: true, id, ts, points: CHECKIN_POINTS, eligible: true }),
+            jsonResponse({ 
+              ok: true, 
+              id, 
+              ts, 
+              points: CHECKIN_POINTS, 
+              eligible: true,
+              totalCheckins: totalCheckins + 1,
+              totalTokens: newAmount,
+              tokensPerCheckin: AIRDROP_AMOUNT_PER_CHECKIN,
+              message: `签到成功！这是您的第 ${totalCheckins + 1} 次签到，累计可领取 ${(BigInt(newAmount) / BigInt(10**18)).toString()} 枚代币`
+            }),
             pickAllowedOrigin(req)
           );
         } catch (error) {
