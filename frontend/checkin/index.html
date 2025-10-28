@@ -700,7 +700,7 @@ async function claimTokens() {
 
            const receipt = await tx.wait();
            const amountInTokens = (BigInt(amount) / BigInt(10**18)).toString();
-           const totalTokens = eligData.totalAmount ? (BigInt(eligData.totalAmount) / BigInt(10**18)).toString() : amountInTokens;
+           const displayTotalTokens = eligData.totalAmount ? (BigInt(eligData.totalAmount) / BigInt(10**18)).toString() : amountInTokens;
            const remainingTokens = eligData.totalAmount && eligData.totalAmount !== eligData.amount 
              ? (BigInt(eligData.totalAmount) - BigInt(eligData.amount)) / BigInt(10**18)
              : BigInt(0);
@@ -714,7 +714,7 @@ async function claimTokens() {
            let modalMsg = `🎉 恭喜！代币领取成功！\n\n💰 本次到账：${amountInTokens} 枚代币\n📦 区块高度：${receipt.blockNumber}\n\n`;
            
            if (remainingTokens > 0) {
-             modalMsg += `📈 累计总额：${totalTokens} 枚代币\n⏳ 剩余 ${remainingTokens.toString()} 枚代币将在下次 Merkle Tree 更新后可领取\n\n`;
+             modalMsg += `📈 累计总额：${displayTotalTokens} 枚代币\n⏳ 剩余 ${remainingTokens.toString()} 枚代币将在下次 Merkle Tree 更新后可领取\n\n`;
            }
            
            modalMsg += `请在钱包中查看您的资产。`;
