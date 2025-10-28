@@ -103,15 +103,24 @@ async function apiJSONmulti(paths, init = {}) {
   for (const p of list) {
     const url = p.startsWith('http') ? p : `${ADMIN_CONFIG.API_BASE}${p.startsWith('/') ? p : `/${p}`}`;
     try {
+      // 检查是否是 FormData 上传（不设置 content-type，让浏览器自动设置）
+      const isFormData = init.body instanceof FormData;
+      
+      const headers = { 
+        ...authHeaders(), 
+        ...(init.headers || {}) 
+      };
+      
+      // 只有在非 FormData 时才设置 content-type: application/json
+      if (!isFormData) {
+        headers['content-type'] = 'application/json';
+      }
+      
       const r = await fetch(url, {
         mode: 'cors',
         credentials: 'omit',
         ...init,
-        headers: { 
-          'content-type': 'application/json', 
-          ...authHeaders(), 
-          ...(init.headers || {}) 
-        }
+        headers
       });
       const txt = await r.text();
       let j = {};
