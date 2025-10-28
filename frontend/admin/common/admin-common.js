@@ -137,6 +137,11 @@ async function apiJSONmulti(paths, init = {}) {
   throw new Error(lastErr);
 }
 
+// 为了向后兼容，添加 apiJSON 作为 apiJSONmulti 的别名（单路径简化版）
+async function apiJSON(path, init = {}) {
+  return await apiJSONmulti([path], init);
+}
+
 // 移动端导航（带安全检查）
 function initMobileNav() {
   const hamburger = $('.hamburger');
