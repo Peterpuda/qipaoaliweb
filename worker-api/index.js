@@ -1431,7 +1431,7 @@ export default {
         
         // 查询空投资格（使用 LIKE 处理 "25" vs "25.0" 的情况）
         const rows = await query(env, `
-          SELECT wallet, event_id, amount, claimed, item_index, proof, merkle_batch, token_tx_hash
+          SELECT wallet, event_id, amount, merkle_amount, claimed, item_index, proof, merkle_batch, token_tx_hash, checkin_count
           FROM airdrop_eligible
           WHERE (event_id = ? OR event_id = ? || '.0') AND wallet = ?
           LIMIT 1
@@ -1465,14 +1465,20 @@ export default {
           }), pickAllowedOrigin(req));
         }
         
+        // 使用 merkle_amount（Merkle Tree 快照金额）而不是 amount（累加金额）
+        const claimableAmount = row.merkle_amount || row.amount;
+        
         return withCors(jsonResponse({ 
           ok: true,
           eligible: true,
           ready: true,
           index: row.item_index,
-          amount: row.amount,
+          amount: claimableAmount,  // 返回可领取金额（Merkle Tree 中的金额）
+          totalAmount: row.amount,   // 返回累计总金额（仅供显示）
+          checkinCount: row.checkin_count || 0,  // 签到次数
           proof: JSON.parse(row.proof || "[]"),
-          batch: row.merkle_batch
+          batch: row.merkle_batch,
+          note: row.merkle_amount ? "本次可领取基于 Merkle Tree 快照的金额" : null
         }), pickAllowedOrigin(req));
       }
 

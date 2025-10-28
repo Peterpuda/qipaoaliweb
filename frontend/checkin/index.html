@@ -659,12 +659,19 @@ async function claimTokens() {
       return;
     }
 
-    if(!eligData.ready) {
-      setClaimLog('管理员尚未生成Merkle证明，请稍后再试');
-      return;
-    }
+           if(!eligData.ready) {
+             setClaimLog('管理员尚未生成Merkle证明，请稍后再试');
+             return;
+           }
 
-    setClaimLog(`✅ 资格验证通过！准备领取 ${(BigInt(eligData.amount) / BigInt(10**18)).toString()} 枚代币...`);
+           const claimableTokens = (BigInt(eligData.amount) / BigInt(10**18)).toString();
+           const totalTokens = eligData.totalAmount ? (BigInt(eligData.totalAmount) / BigInt(10**18)).toString() : claimableTokens;
+           
+           if (eligData.totalAmount && eligData.totalAmount !== eligData.amount) {
+             setClaimLog(`✅ 资格验证通过！\n📊 累计签到 ${eligData.checkinCount || 0} 次\n💰 本次可领取：${claimableTokens} 枚代币\n📈 累计总额：${totalTokens} 枚代币\n\n⚠️ 说明：本次领取基于 Merkle Tree 快照金额。剩余代币将在下次 Merkle Tree 更新后可领取。`);
+           } else {
+             setClaimLog(`✅ 资格验证通过！准备领取 ${claimableTokens} 枚代币...`);
+           }
 
     // 2. 加载 ethers.js（如果还没加载）
     if(!window.ethers) {
@@ -691,16 +698,28 @@ async function claimTokens() {
     const tx = await contract.claim(index, address, amount, proof);
     setClaimLog(`交易已提交：${tx.hash}\n等待确认...`);
 
-    const receipt = await tx.wait();
-    const amountInTokens = (BigInt(amount) / BigInt(10**18)).toString();
+           const receipt = await tx.wait();
+           const amountInTokens = (BigInt(amount) / BigInt(10**18)).toString();
+           const totalTokens = eligData.totalAmount ? (BigInt(eligData.totalAmount) / BigInt(10**18)).toString() : amountInTokens;
+           const remainingTokens = eligData.totalAmount && eligData.totalAmount !== eligData.amount 
+             ? (BigInt(eligData.totalAmount) - BigInt(eligData.amount)) / BigInt(10**18)
+             : BigInt(0);
 
-    setClaimLog(`🎉 领取成功！\n✅ 已到账 ${amountInTokens} 枚代币\n📦 区块：${receipt.blockNumber}\n🔗 交易：${tx.hash}`);
-    
-    // 隐藏领取按钮
-    $('claimTokenRow').style.display = 'none';
-    
-    // 显示成功弹窗
-    openModal(`🎉 恭喜！代币领取成功！\n\n💰 到账数量：${amountInTokens} 枚代币\n📦 区块高度：${receipt.blockNumber}\n\n请在钱包中查看您的资产。`);
+           setClaimLog(`🎉 领取成功！\n✅ 已到账 ${amountInTokens} 枚代币\n📦 区块：${receipt.blockNumber}\n🔗 交易：${tx.hash}`);
+           
+           // 隐藏领取按钮
+           $('claimTokenRow').style.display = 'none';
+           
+           // 显示成功弹窗
+           let modalMsg = `🎉 恭喜！代币领取成功！\n\n💰 本次到账：${amountInTokens} 枚代币\n📦 区块高度：${receipt.blockNumber}\n\n`;
+           
+           if (remainingTokens > 0) {
+             modalMsg += `📈 累计总额：${totalTokens} 枚代币\n⏳ 剩余 ${remainingTokens.toString()} 枚代币将在下次 Merkle Tree 更新后可领取\n\n`;
+           }
+           
+           modalMsg += `请在钱包中查看您的资产。`;
+           
+           openModal(modalMsg);
 
   } catch(error) {
     console.error('领取失败:', error);

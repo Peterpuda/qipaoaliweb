@@ -163,6 +163,7 @@ const STMT_CREATE = [
     token_tx_hash TEXT,
     checkin_count INTEGER DEFAULT 0,
     last_checkin_date TEXT,
+    merkle_amount TEXT,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     UNIQUE(wallet, event_id)
   )`,
@@ -183,7 +184,8 @@ const STMT_CREATE = [
 const COLUMN_PATCHES = {
   airdrop_eligible: [
     ['checkin_count', 'INTEGER DEFAULT 0'],
-    ['last_checkin_date', 'TEXT']
+    ['last_checkin_date', 'TEXT'],
+    ['merkle_amount', 'TEXT']
   ],
   events: [
     // 列名, SQL 片段（含类型/默认值/约束）
