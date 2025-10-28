@@ -220,25 +220,37 @@ async function handleGetBadgeTicket(req, env, searchParams) {
 // POST /admin/upload-image (multipart/form-data)
 // ------------------------------------
 async function handleUploadImage(req, env) {
-  const adminCheck = await requireAdmin(req, env);
-  if (!adminCheck.ok) return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
+  try {
+    const adminCheck = await requireAdmin(req, env);
+    if (!adminCheck.ok) return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
 
-  const form = await req.formData();
-  const file = form.get("file");
-  if (!file || typeof file === "string") {
-    return withCors(errorResponse("no file", 400), pickAllowedOrigin(req));
-  }
-
-  const key = `product_${Date.now()}_${Math.floor(Math.random()*1e6)}`;
-
-  // 你的 Cloudflare Worker 必须绑定一个 R2 bucket 到 env.R2_BUCKET
-  await env.R2_BUCKET.put(key, file.stream(), {
-    httpMetadata: {
-      contentType: file.type || "image/jpeg"
+    const form = await req.formData();
+    const file = form.get("file");
+    if (!file || typeof file === "string") {
+      return withCors(errorResponse("no file", 400), pickAllowedOrigin(req));
     }
-  });
 
-  return withCors(jsonResponse({ ok: true, key }), pickAllowedOrigin(req));
+    const key = `product_${Date.now()}_${Math.floor(Math.random()*1e6)}`;
+
+    // 检查 R2_BUCKET 是否存在
+    if (!env.R2_BUCKET) {
+      console.error("R2_BUCKET not bound to worker");
+      return withCors(errorResponse("R2_BUCKET not configured", 500), pickAllowedOrigin(req));
+    }
+
+    // 上传到 Cloudflare R2 存储桶
+    await env.R2_BUCKET.put(key, file.stream(), {
+      httpMetadata: {
+        contentType: file.type || "image/jpeg"
+      }
+    });
+
+    console.log(`Image uploaded successfully: ${key}`);
+    return withCors(jsonResponse({ ok: true, key }), pickAllowedOrigin(req));
+  } catch (error) {
+    console.error("Upload image error:", error);
+    return withCors(errorResponse(`upload failed: ${error.message}`, 500), pickAllowedOrigin(req));
+  }
 }
 
 // ------------------------------------
