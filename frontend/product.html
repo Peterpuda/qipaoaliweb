@@ -124,6 +124,9 @@
       </div>
     </div>
 
+    <!-- AI 对话组件占位 -->
+    <div id="aiChatPlaceholder"></div>
+
     <!-- 链上认证信息 -->
     <div id="blockchainInfo" class="card">
       <h3 class="text-lg font-bold text-ink mb-4">链上认证</h3>
@@ -142,6 +145,7 @@
   </div>
 
   <script src="./common/auth.js"></script>
+  <script src="./common/artisan-chat.js"></script>
   <script>
     // 全局变量
     let currentWallet = '';
@@ -338,10 +342,20 @@
     // 显示通用匠人信息
     function displayGenericArtisanInfo() {
       document.getElementById('artisanInfo').innerHTML = `
-        <h3 class="text-lg font-bold text-ink mb-4">
-          <i class="fas fa-user-tie mr-2"></i>
-          匠人信息
-        </h3>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-ink">
+            <i class="fas fa-user-tie mr-2"></i>
+            匠人信息
+          </h3>
+          <button 
+            onclick="alert('该商品暂无关联匠人，无法开启对话')" 
+            class="px-4 py-2 bg-gray-300 text-gray-600 rounded-lg text-sm font-medium flex items-center gap-2 cursor-not-allowed"
+            disabled
+          >
+            <i class="fas fa-comment-dots"></i>
+            <span>与匠人对话</span>
+          </button>
+        </div>
         <div class="flex items-center mb-4">
           <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4">
             <i class="fas fa-user-tie text-2xl"></i>
@@ -381,10 +395,20 @@
       ).join('') : '';
 
       document.getElementById('artisanInfo').innerHTML = `
-        <h3 class="text-lg font-bold text-ink mb-4">
-          <i class="fas fa-user-tie mr-2"></i>
-          匠人信息
-        </h3>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-ink">
+            <i class="fas fa-user-tie mr-2"></i>
+            匠人信息
+          </h3>
+          <button 
+            onclick="openArtisanChat('${artisan.id}', '${artisan.name_zh || artisan.name || '传统匠人'}')" 
+            class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition text-sm font-medium flex items-center gap-2"
+            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+          >
+            <i class="fas fa-comment-dots"></i>
+            <span>与匠人对话</span>
+          </button>
+        </div>
         <div class="flex items-start mb-4">
           <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-4 flex-shrink-0">
             <i class="fas fa-user-tie text-2xl"></i>
@@ -879,6 +903,35 @@
       }, 3000);
     }
     
+    // 打开 AI 匠人对话
+    function openArtisanChat(artisanId, artisanName) {
+      // 确保 ArtisanChat 组件已加载
+      if (typeof ArtisanChat === 'undefined') {
+        alert('AI 对话组件加载失败，请刷新页面重试');
+        return;
+      }
+
+      // 构建匠人数据对象
+      const artisanData = {
+        id: artisanId,
+        name_zh: artisanName,
+        name_en: artisanName,
+        avatar: null
+      };
+
+      // 如果有当前商品信息，可以添加到 context
+      if (currentProduct) {
+        artisanData.current_product = {
+          id: currentProduct.id,
+          name: currentProduct.title_zh,
+          description: currentProduct.desc_md
+        };
+      }
+
+      // 打开对话模态框
+      ArtisanChat.open(artisanId, artisanData);
+    }
+    
     // 页面加载完成后加载数据
     document.addEventListener('DOMContentLoaded', function() {
       // 初始化钱包状态
@@ -889,6 +942,11 @@
       
       // 绑定事件监听器
       bindEventListeners();
+      
+      // 初始化 AI 对话组件
+      if (typeof ArtisanChat !== 'undefined') {
+        ArtisanChat.init();
+      }
     });
     
     // 绑定所有事件监听器
