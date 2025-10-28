@@ -607,18 +607,7 @@
             document.getElementById('loading').classList.toggle('hidden', !show);
         }
 
-        function authHeaders() {
-            const token = sessionStorage.getItem('qipao.admin.token') || 
-                         localStorage.getItem('qipao.admin.token') || 
-                         localStorage.getItem('bearer_token');
-            return token ? { 'Authorization': `Bearer ${token}` } : {};
-        }
-
-        async function apiJSON(path) {
-            return fetch(`${ADMIN_CONFIG.API_BASE}${path}`, {
-                headers: authHeaders()
-            });
-        }
+        // authHeaders 和 apiJSON 函数已在 admin-common.js 中定义，无需重复
     </script>
 </body>
 </html>
