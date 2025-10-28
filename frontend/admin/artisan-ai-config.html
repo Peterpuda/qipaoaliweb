@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>匠人 AI 智能体配置</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./common/admin-common.css">
+</head>
+<body class="bg-gray-50">
+    <!-- 顶部导航 -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="./index.html" class="text-gray-500 hover:text-gray-700">← 返回控制台</a>
+                    <span class="ml-4 text-gray-300">|</span>
+                    <h1 class="ml-4 text-lg font-semibold">匠人 AI 智能体配置</h1>
+                </div>
+                <div class="flex items-center">
+                    <span id="adminAddr" class="text-sm text-gray-600"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 匠人选择 -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">选择匠人</h2>
+            <div class="flex gap-4">
+                <select id="artisanSelect" class="flex-1 px-4 py-2 border rounded-lg">
+                    <option value="">-- 请选择匠人 --</option>
+                </select>
+                <button onclick="loadArtisanConfig()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    加载配置
+                </button>
+            </div>
+            <div id="artisanInfo" class="mt-4 hidden">
+                <div class="bg-gray-50 rounded-lg p-4 flex items-center gap-4">
+                    <img id="artisanAvatar" src="" class="w-16 h-16 rounded-full border-2 border-yellow-500">
+                    <div>
+                        <h3 id="artisanName" class="font-semibold text-lg"></h3>
+                        <p id="artisanRegion" class="text-sm text-gray-600"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI 配置表单 -->
+        <form id="configForm" class="space-y-6">
+            <!-- 基本设置 -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <span class="text-2xl mr-2">🎭</span>
+                    基本设置
+                </h2>
+                
+                <div class="space-y-4">
+                    <!-- 启用状态 -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="font-medium">启用 AI 智能体</label>
+                            <p class="text-sm text-gray-500">开启后，用户可以与匠人 AI 对话</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="enabled" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+
+                    <!-- 语气风格 -->
+                    <div>
+                        <label class="block font-medium mb-2">语气风格</label>
+                        <select id="toneStyle" class="w-full px-4 py-2 border rounded-lg">
+                            <option value="warm">温暖亲切</option>
+                            <option value="professional">专业严谨</option>
+                            <option value="passionate">热情洋溢</option>
+                            <option value="humble">谦逊低调</option>
+                        </select>
+                        <p class="text-sm text-gray-500 mt-1">选择匠人的对话语气特点</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 自我介绍 -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <span class="text-2xl mr-2">👋</span>
+                    自我介绍
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block font-medium mb-2">中文介绍</label>
+                        <textarea 
+                            id="selfIntroZh" 
+                            rows="3" 
+                            class="w-full px-4 py-2 border rounded-lg"
+                            placeholder="例如：我是李师傅，从事手工刺绣已有30年。我的作品融合了传统技艺与现代美学..."
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-2">英文介绍</label>
+                        <textarea 
+                            id="selfIntroEn" 
+                            rows="3" 
+                            class="w-full px-4 py-2 border rounded-lg"
+                            placeholder="E.g.: I'm Master Li, with 30 years of embroidery experience..."
+                        ></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 核心设定 -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <span class="text-2xl mr-2">💎</span>
+                    核心设定
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block font-medium mb-2">核心价值观</label>
+                        <textarea 
+                            id="coreValues" 
+                            rows="3" 
+                            class="w-full px-4 py-2 border rounded-lg"
+                            placeholder="例如：匠心独运、精益求精、传承创新、以人为本..."
+                        ></textarea>
+                        <p class="text-sm text-gray-500 mt-1">匠人的核心理念和价值观</p>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-2">文化传承背景</label>
+                        <textarea 
+                            id="culturalLineage" 
+                            rows="3" 
+                            class="w-full px-4 py-2 border rounded-lg"
+                            placeholder="例如：师从国家级非遗传承人张老师，家族四代从事此技艺..."
+                        ></textarea>
+                        <p class="text-sm text-gray-500 mt-1">匠人的师承关系和文化背景</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 对话示例 (Few-shot Learning) -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <span class="text-2xl mr-2">💬</span>
+                    对话示例
+                    <button type="button" onclick="addExample()" class="ml-auto px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
+                        + 添加示例
+                    </button>
+                </h2>
+                
+                <div id="examplesContainer" class="space-y-4">
+                    <!-- 示例将动态插入这里 -->
+                </div>
+                
+                <p class="text-sm text-gray-500 mt-4">
+                    💡 提示：添加 2-3 个典型问答示例，帮助 AI 学习匠人的回答风格
+                </p>
+            </div>
+
+            <!-- 禁止话题 -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <span class="text-2xl mr-2">🚫</span>
+                    禁止话题
+                </h2>
+                
+                <div id="forbiddenTopicsContainer" class="flex flex-wrap gap-2 mb-4">
+                    <!-- 标签将动态插入这里 -->
+                </div>
+                
+                <div class="flex gap-2">
+                    <input 
+                        type="text" 
+                        id="forbiddenTopicInput" 
+                        class="flex-1 px-4 py-2 border rounded-lg"
+                        placeholder="输入禁止讨论的话题，然后按回车"
+                        onkeypress="if(event.key==='Enter'){event.preventDefault();addForbiddenTopic();}"
+                    >
+                    <button type="button" onclick="addForbiddenTopic()" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        添加
+                    </button>
+                </div>
+                
+                <p class="text-sm text-gray-500 mt-4">
+                    例如：政治、宗教、价格谈判等
+                </p>
+            </div>
+
+            <!-- AI 模型配置 (高级) -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <span class="text-2xl mr-2">⚙️</span>
+                    AI 模型配置（高级）
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block font-medium mb-2">模型</label>
+                        <select id="model" class="w-full px-4 py-2 border rounded-lg">
+                            <option value="gpt-4o-mini">GPT-4o Mini（推荐，快速且经济）</option>
+                            <option value="gpt-4o">GPT-4o（高质量）</option>
+                            <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet（创意性强）</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-medium mb-2">Temperature</label>
+                            <input 
+                                type="number" 
+                                id="temperature" 
+                                min="0" 
+                                max="2" 
+                                step="0.1" 
+                                value="0.7"
+                                class="w-full px-4 py-2 border rounded-lg"
+                            >
+                            <p class="text-xs text-gray-500 mt-1">0.0-2.0（越高越有创意）</p>
+                        </div>
+                        <div>
+                            <label class="block font-medium mb-2">Max Tokens</label>
+                            <input 
+                                type="number" 
+                                id="maxTokens" 
+                                min="100" 
+                                max="2000" 
+                                step="50" 
+                                value="500"
+                                class="w-full px-4 py-2 border rounded-lg"
+                            >
+                            <p class="text-xs text-gray-500 mt-1">回答的最大长度</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 保存按钮 -->
+            <div class="flex justify-end gap-4">
+                <button type="button" onclick="resetForm()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                    重置
+                </button>
+                <button type="submit" class="px-8 py-3 bg-gradient-to-r from-yellow-500 to-red-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
+                    💾 保存配置
+                </button>
+            </div>
+        </form>
+
+        <!-- 测试对话区域 -->
+        <div id="testChatSection" class="bg-white rounded-lg shadow p-6 mt-6 hidden">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <span class="text-2xl mr-2">🧪</span>
+                测试 AI 对话
+            </h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block font-medium mb-2">测试问题</label>
+                    <input 
+                        type="text" 
+                        id="testQuestion" 
+                        class="w-full px-4 py-2 border rounded-lg"
+                        placeholder="例如：这件作品的制作工艺是什么？"
+                    >
+                </div>
+                <button onclick="testAI()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    发送测试
+                </button>
+                <div id="testResponse" class="hidden">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="font-medium mb-2">AI 回复：</p>
+                        <p id="testResponseText" class="text-gray-700"></p>
+                        <div class="mt-2 text-xs text-gray-500">
+                            <span id="testModel"></span> · <span id="testTime"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载提示 -->
+    <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-8 flex flex-col items-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mb-4"></div>
+            <p class="text-lg font-semibold">处理中...</p>
+        </div>
+    </div>
+
+    <script src="./common/admin-common.js"></script>
+    <script>
+        const ADMIN_CONFIG = {
+            API_BASE: 'https://songbrocade-api.petterbrand03.workers.dev'
+        };
+
+        let currentArtisanId = null;
+        let forbiddenTopics = [];
+
+        // 页面加载时
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            await loadArtisansList();
+        });
+
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/whoami`, {
+                    headers: authHeaders()
+                });
+                const data = await response.json();
+                if (data.ok) {
+                    document.getElementById('adminAddr').textContent = `管理员: ${data.addr}`;
+                } else {
+                    alert('请先登录');
+                    window.location.href = './index.html';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                alert('认证失败');
+                window.location.href = './index.html';
+            }
+        }
+
+        async function loadArtisansList() {
+            try {
+                const response = await apiJSON('/api/artisans');
+                const data = await response.json();
+                
+                if (data.ok && data.list) {
+                    const select = document.getElementById('artisanSelect');
+                    data.list.forEach(artisan => {
+                        const option = document.createElement('option');
+                        option.value = artisan.id;
+                        option.textContent = `${artisan.name_zh} (${artisan.wallet})`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Load artisans failed:', error);
+                alert('加载匠人列表失败');
+            }
+        }
+
+        async function loadArtisanConfig() {
+            const artisanId = document.getElementById('artisanSelect').value;
+            if (!artisanId) {
+                alert('请先选择匠人');
+                return;
+            }
+
+            currentArtisanId = artisanId;
+            showLoading(true);
+
+            try {
+                // 加载匠人基本信息
+                const artisanResponse = await apiJSON(`/api/artisans/${artisanId}`);
+                const artisanData = await artisanResponse.json();
+                
+                if (artisanData.ok) {
+                    const artisan = artisanData.artisan;
+                    document.getElementById('artisanInfo').classList.remove('hidden');
+                    document.getElementById('artisanAvatar').src = artisan.avatar || '/image/hero.png';
+                    document.getElementById('artisanName').textContent = artisan.name_zh;
+                    document.getElementById('artisanRegion').textContent = artisan.region || '中国';
+                }
+
+                // 加载 AI 配置
+                const configResponse = await apiJSON(`/admin/artisan-voice/${artisanId}`);
+                const configData = await configResponse.json();
+                
+                if (configData.ok && configData.exists) {
+                    const voice = configData.voice;
+                    
+                    // 填充表单
+                    document.getElementById('enabled').checked = voice.enabled === 1;
+                    document.getElementById('toneStyle').value = voice.tone_style || 'warm';
+                    document.getElementById('selfIntroZh').value = voice.self_intro_zh || '';
+                    document.getElementById('selfIntroEn').value = voice.self_intro_en || '';
+                    document.getElementById('coreValues').value = voice.core_values || '';
+                    document.getElementById('culturalLineage').value = voice.cultural_lineage || '';
+                    
+                    // 禁止话题
+                    forbiddenTopics = voice.forbidden_topics || [];
+                    renderForbiddenTopics();
+                    
+                    // 对话示例
+                    if (voice.examples && voice.examples.length > 0) {
+                        document.getElementById('examplesContainer').innerHTML = '';
+                        voice.examples.forEach((ex, index) => {
+                            addExample(ex);
+                        });
+                    } else {
+                        // 添加一个空示例
+                        addExample();
+                    }
+                    
+                    // 模型配置
+                    if (voice.model_config) {
+                        document.getElementById('model').value = voice.model_config.model || 'gpt-4o-mini';
+                        document.getElementById('temperature').value = voice.model_config.temperature || 0.7;
+                        document.getElementById('maxTokens').value = voice.model_config.max_tokens || 500;
+                    }
+                    
+                    // 显示测试区域
+                    document.getElementById('testChatSection').classList.remove('hidden');
+                } else {
+                    // 新建配置，使用默认值
+                    resetForm();
+                    addExample(); // 添加一个空示例
+                    document.getElementById('testChatSection').classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error('Load config failed:', error);
+                alert('加载配置失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 添加对话示例
+        function addExample(data = null) {
+            const container = document.getElementById('examplesContainer');
+            const index = container.children.length;
+            
+            const exampleDiv = document.createElement('div');
+            exampleDiv.className = 'border border-gray-200 rounded-lg p-4';
+            exampleDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-medium text-sm text-gray-600">示例 ${index + 1}</span>
+                    <button type="button" onclick="removeExample(this)" class="text-red-600 hover:text-red-700">
+                        删除
+                    </button>
+                </div>
+                <div class="space-y-2">
+                    <input 
+                        type="text" 
+                        class="w-full px-3 py-2 border rounded example-q"
+                        placeholder="用户问题"
+                        value="${data?.q || ''}"
+                    >
+                    <textarea 
+                        class="w-full px-3 py-2 border rounded example-a"
+                        rows="2"
+                        placeholder="匠人回答"
+                    >${data?.a || ''}</textarea>
+                </div>
+            `;
+            
+            container.appendChild(exampleDiv);
+        }
+
+        function removeExample(btn) {
+            btn.closest('.border').remove();
+        }
+
+        // 禁止话题
+        function addForbiddenTopic() {
+            const input = document.getElementById('forbiddenTopicInput');
+            const topic = input.value.trim();
+            
+            if (topic && !forbiddenTopics.includes(topic)) {
+                forbiddenTopics.push(topic);
+                input.value = '';
+                renderForbiddenTopics();
+            }
+        }
+
+        function removeForbiddenTopic(topic) {
+            forbiddenTopics = forbiddenTopics.filter(t => t !== topic);
+            renderForbiddenTopics();
+        }
+
+        function renderForbiddenTopics() {
+            const container = document.getElementById('forbiddenTopicsContainer');
+            container.innerHTML = forbiddenTopics.map(topic => `
+                <span class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">
+                    ${topic}
+                    <button type="button" onclick="removeForbiddenTopic('${topic}')" class="hover:text-red-900">
+                        ✕
+                    </button>
+                </span>
+            `).join('');
+        }
+
+        // 提交表单
+        document.getElementById('configForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!currentArtisanId) {
+                alert('请先选择匠人');
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                // 收集对话示例
+                const examples = [];
+                document.querySelectorAll('#examplesContainer > div').forEach(div => {
+                    const q = div.querySelector('.example-q').value.trim();
+                    const a = div.querySelector('.example-a').value.trim();
+                    if (q && a) {
+                        examples.push({ q, a });
+                    }
+                });
+
+                const payload = {
+                    artisan_id: currentArtisanId,
+                    enabled: document.getElementById('enabled').checked ? 1 : 0,
+                    tone_style: document.getElementById('toneStyle').value,
+                    self_intro_zh: document.getElementById('selfIntroZh').value.trim() || null,
+                    self_intro_en: document.getElementById('selfIntroEn').value.trim() || null,
+                    core_values: document.getElementById('coreValues').value.trim() || null,
+                    cultural_lineage: document.getElementById('culturalLineage').value.trim() || null,
+                    forbidden_topics: forbiddenTopics.length > 0 ? forbiddenTopics : null,
+                    examples: examples.length > 0 ? examples : null,
+                    model_config: {
+                        model: document.getElementById('model').value,
+                        temperature: parseFloat(document.getElementById('temperature').value),
+                        max_tokens: parseInt(document.getElementById('maxTokens').value)
+                    }
+                };
+
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/artisan-voice-upsert`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...authHeaders()
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                    alert('✅ 配置保存成功！');
+                } else {
+                    throw new Error(data.error || '保存失败');
+                }
+
+            } catch (error) {
+                console.error('Save config failed:', error);
+                alert('保存失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // 测试 AI
+        async function testAI() {
+            const question = document.getElementById('testQuestion').value.trim();
+            if (!question) {
+                alert('请输入测试问题');
+                return;
+            }
+
+            if (!currentArtisanId) {
+                alert('请先选择匠人并加载配置');
+                return;
+            }
+
+            showLoading(true);
+            document.getElementById('testResponse').classList.add('hidden');
+
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/ai/artisan-agent/reply`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        artisan_id: currentArtisanId,
+                        question: question,
+                        lang: 'zh'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                    document.getElementById('testResponse').classList.remove('hidden');
+                    document.getElementById('testResponseText').textContent = data.answer;
+                    document.getElementById('testModel').textContent = `模型: ${data.model}`;
+                    document.getElementById('testTime').textContent = `响应时间: < 2s`;
+                } else {
+                    throw new Error(data.error || data.message || '测试失败');
+                }
+
+            } catch (error) {
+                console.error('Test AI failed:', error);
+                alert('测试失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('configForm').reset();
+            forbiddenTopics = [];
+            renderForbiddenTopics();
+            document.getElementById('examplesContainer').innerHTML = '';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('hidden', !show);
+        }
+
+        function authHeaders() {
+            const token = sessionStorage.getItem('qipao.admin.token') || 
+                         localStorage.getItem('qipao.admin.token') || 
+                         localStorage.getItem('bearer_token');
+            return token ? { 'Authorization': `Bearer ${token}` } : {};
+        }
+
+        async function apiJSON(path) {
+            return fetch(`${ADMIN_CONFIG.API_BASE}${path}`, {
+                headers: authHeaders()
+            });
+        }
+    </script>
+</body>
+</html>
+

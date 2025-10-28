@@ -11,6 +11,16 @@ import {
   buildBadgeSignaturePayload
 } from "./utils/runtime.js";
 
+import {
+  buildArtisanSystemPrompt,
+  buildChatMessages,
+  callOpenAI,
+  callClaude,
+  generateMockReply,
+  moderateContent,
+  generateId
+} from "./utils/ai-helpers.js";
+
 // 导入 ethers（如果需要使用）
 let ethers = null;
 try {
@@ -383,6 +393,376 @@ export default {
           jsonResponse({ ok: true, token }),
           pickAllowedOrigin(req)
         );
+      }
+
+      // ============================================
+      // AI 匠人智能体 API
+      // ============================================
+
+      // POST /admin/artisan-voice-upsert - 配置匠人 AI 人格
+      if (pathname === "/admin/artisan-voice-upsert" && req.method === "POST") {
+        const adminCheck = await requireAdmin(req, env);
+        if (!adminCheck.ok) {
+          return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
+        }
+
+        try {
+          const body = await readJson(req);
+          const {
+            artisan_id,
+            tone_style,
+            self_intro_zh,
+            self_intro_en,
+            core_values,
+            cultural_lineage,
+            forbidden_topics,
+            examples,
+            model_config,
+            enabled
+          } = body;
+
+          if (!artisan_id) {
+            return withCors(errorResponse("missing artisan_id", 400), pickAllowedOrigin(req));
+          }
+
+          // 检查匠人是否存在
+          const artisanRows = await query(env, `SELECT id FROM artisans WHERE id = ?`, [artisan_id]);
+          if (!artisanRows || artisanRows.length === 0) {
+            return withCors(errorResponse("artisan not found", 404), pickAllowedOrigin(req));
+          }
+
+          // 检查是否已存在配置
+          const existingRows = await query(env, `SELECT id FROM artisan_voice WHERE artisan_id = ?`, [artisan_id]);
+
+          const now = Math.floor(Date.now() / 1000);
+
+          if (existingRows && existingRows.length > 0) {
+            // 更新
+            await run(env, `
+              UPDATE artisan_voice 
+              SET 
+                tone_style = ?,
+                self_intro_zh = ?,
+                self_intro_en = ?,
+                core_values = ?,
+                cultural_lineage = ?,
+                forbidden_topics = ?,
+                examples = ?,
+                model_config = ?,
+                enabled = ?,
+                updated_at = ?
+              WHERE artisan_id = ?
+            `, [
+              tone_style || 'warm',
+              self_intro_zh || null,
+              self_intro_en || null,
+              core_values || null,
+              cultural_lineage || null,
+              forbidden_topics ? JSON.stringify(forbidden_topics) : null,
+              examples ? JSON.stringify(examples) : null,
+              model_config ? JSON.stringify(model_config) : null,
+              enabled !== undefined ? (enabled ? 1 : 0) : 1,
+              now,
+              artisan_id
+            ]);
+
+            return withCors(
+              jsonResponse({ ok: true, action: 'updated', artisan_id }),
+              pickAllowedOrigin(req)
+            );
+          } else {
+            // 插入
+            const voiceId = generateId('av');
+            await run(env, `
+              INSERT INTO artisan_voice (
+                id, artisan_id, tone_style, self_intro_zh, self_intro_en,
+                core_values, cultural_lineage, forbidden_topics, examples,
+                model_config, enabled, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+              voiceId,
+              artisan_id,
+              tone_style || 'warm',
+              self_intro_zh || null,
+              self_intro_en || null,
+              core_values || null,
+              cultural_lineage || null,
+              forbidden_topics ? JSON.stringify(forbidden_topics) : null,
+              examples ? JSON.stringify(examples) : null,
+              model_config ? JSON.stringify(model_config) : null,
+              enabled !== undefined ? (enabled ? 1 : 0) : 1,
+              now,
+              now
+            ]);
+
+            return withCors(
+              jsonResponse({ ok: true, action: 'created', artisan_id, voice_id: voiceId }),
+              pickAllowedOrigin(req)
+            );
+          }
+        } catch (error) {
+          console.error('Artisan voice upsert error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // GET /admin/artisan-voice/:artisan_id - 获取匠人 AI 配置
+      if (pathname.startsWith("/admin/artisan-voice/") && req.method === "GET") {
+        const adminCheck = await requireAdmin(req, env);
+        if (!adminCheck.ok) {
+          return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
+        }
+
+        try {
+          const artisan_id = pathname.split("/admin/artisan-voice/")[1];
+          
+          const rows = await query(env, `
+            SELECT * FROM artisan_voice WHERE artisan_id = ?
+          `, [artisan_id]);
+
+          if (!rows || rows.length === 0) {
+            return withCors(
+              jsonResponse({ ok: true, exists: false, artisan_id }),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          const voice = rows[0];
+          
+          // 解析 JSON 字段
+          if (voice.forbidden_topics) {
+            try {
+              voice.forbidden_topics = JSON.parse(voice.forbidden_topics);
+            } catch (e) {
+              voice.forbidden_topics = [];
+            }
+          }
+          if (voice.examples) {
+            try {
+              voice.examples = JSON.parse(voice.examples);
+            } catch (e) {
+              voice.examples = [];
+            }
+          }
+          if (voice.model_config) {
+            try {
+              voice.model_config = JSON.parse(voice.model_config);
+            } catch (e) {
+              voice.model_config = {};
+            }
+          }
+
+          return withCors(
+            jsonResponse({ ok: true, exists: true, voice }),
+            pickAllowedOrigin(req)
+          );
+        } catch (error) {
+          console.error('Get artisan voice error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // POST /ai/artisan-agent/reply - AI 对话接口
+      if (pathname === "/ai/artisan-agent/reply" && req.method === "POST") {
+        try {
+          const body = await readJson(req);
+          const { artisan_id, question, lang = 'zh', session_id, user_id } = body;
+
+          if (!artisan_id || !question) {
+            return withCors(
+              errorResponse("missing artisan_id or question", 400),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          // 内容审核
+          const moderation = moderateContent(question);
+          if (moderation.flagged) {
+            return withCors(
+              jsonResponse({
+                ok: false,
+                error: 'content_moderation_failed',
+                reason: moderation.reason
+              }),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          // 查询匠人信息
+          const artisanRows = await query(env, `
+            SELECT * FROM artisans WHERE id = ?
+          `, [artisan_id]);
+
+          if (!artisanRows || artisanRows.length === 0) {
+            return withCors(errorResponse("artisan not found", 404), pickAllowedOrigin(req));
+          }
+
+          const artisan = artisanRows[0];
+
+          // 查询 AI 配置
+          const voiceRows = await query(env, `
+            SELECT * FROM artisan_voice WHERE artisan_id = ? AND enabled = 1
+          `, [artisan_id]);
+
+          let voiceConfig = null;
+          if (voiceRows && voiceRows.length > 0) {
+            voiceConfig = voiceRows[0];
+            
+            // 解析 JSON 字段
+            if (voiceConfig.forbidden_topics) {
+              try {
+                voiceConfig.forbidden_topics = JSON.parse(voiceConfig.forbidden_topics);
+              } catch (e) {}
+            }
+            if (voiceConfig.examples) {
+              try {
+                voiceConfig.examples = JSON.parse(voiceConfig.examples);
+              } catch (e) {}
+            }
+            if (voiceConfig.model_config) {
+              try {
+                voiceConfig.model_config = JSON.parse(voiceConfig.model_config);
+              } catch (e) {}
+            }
+          } else {
+            // 如果没有配置，使用默认值
+            voiceConfig = {
+              tone_style: 'warm',
+              self_intro_zh: '我是一名传统匠人，专注于非遗技艺的传承与创新。',
+              self_intro_en: 'I am a traditional artisan dedicated to preserving and innovating heritage crafts.',
+              core_values: null,
+              cultural_lineage: null,
+              forbidden_topics: [],
+              examples: [],
+              model_config: {}
+            };
+          }
+
+          // 构建 Prompt
+          const systemPrompt = buildArtisanSystemPrompt(artisan, voiceConfig, lang);
+          const messages = buildChatMessages(systemPrompt, voiceConfig, question);
+
+          // 调用 AI（优先使用环境变量中的真实 API，否则使用 Mock）
+          let aiResult;
+          const artisanName = lang === 'zh' ? artisan.name_zh : artisan.name_en;
+
+          if (env.OPENAI_API_KEY) {
+            aiResult = await callOpenAI(env.OPENAI_API_KEY, messages, voiceConfig.model_config);
+          } else if (env.ANTHROPIC_API_KEY) {
+            aiResult = await callClaude(env.ANTHROPIC_API_KEY, messages, voiceConfig.model_config);
+          } else {
+            // 使用 Mock（开发测试）
+            aiResult = await generateMockReply(question, artisanName, lang);
+          }
+
+          if (!aiResult.ok) {
+            console.error('AI 调用失败:', aiResult.error);
+            return withCors(
+              jsonResponse({
+                ok: false,
+                error: 'ai_service_error',
+                message: aiResult.error
+              }),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          // 记录对话日志
+          const logId = generateId('log');
+          const now = Math.floor(Date.now() / 1000);
+
+          await run(env, `
+            INSERT INTO artisan_agent_logs (
+              id, artisan_id, user_id, session_id, question, answer, lang,
+              model_used, tokens_used, response_time_ms, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `, [
+            logId,
+            artisan_id,
+            user_id || null,
+            session_id || null,
+            question,
+            aiResult.answer,
+            lang,
+            aiResult.model || 'mock',
+            aiResult.tokensUsed || 0,
+            aiResult.responseTime || 0,
+            now
+          ]);
+
+          return withCors(
+            jsonResponse({
+              ok: true,
+              answer: aiResult.answer,
+              model: aiResult.model,
+              log_id: logId
+            }),
+            pickAllowedOrigin(req)
+          );
+
+        } catch (error) {
+          console.error('AI reply error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // POST /ai/artisan-agent/feedback - 用户反馈
+      if (pathname === "/ai/artisan-agent/feedback" && req.method === "POST") {
+        try {
+          const body = await readJson(req);
+          const { log_id, feedback, note } = body;
+
+          if (!log_id || !feedback) {
+            return withCors(
+              errorResponse("missing log_id or feedback", 400),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          await run(env, `
+            UPDATE artisan_agent_logs 
+            SET user_feedback = ?, feedback_note = ?
+            WHERE id = ?
+          `, [feedback, note || null, log_id]);
+
+          return withCors(
+            jsonResponse({ ok: true }),
+            pickAllowedOrigin(req)
+          );
+        } catch (error) {
+          console.error('AI feedback error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // GET /ai/artisan-agent/history/:artisan_id - 获取对话历史（分页）
+      if (pathname.startsWith("/ai/artisan-agent/history/") && req.method === "GET") {
+        try {
+          const artisan_id = pathname.split("/ai/artisan-agent/history/")[1];
+          const offset = parseInt(searchParams.get('offset') || '0', 10);
+          const limit = parseInt(searchParams.get('limit') || '20', 10);
+
+          const rows = await query(env, `
+            SELECT id, question, answer, lang, created_at, user_feedback
+            FROM artisan_agent_logs
+            WHERE artisan_id = ?
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+          `, [artisan_id, limit, offset]);
+
+          return withCors(
+            jsonResponse({
+              ok: true,
+              messages: rows || [],
+              offset,
+              limit
+            }),
+            pickAllowedOrigin(req)
+          );
+        } catch (error) {
+          console.error('Get history error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
       }
 
       // ---------------- 传承人 / 匠人 ----------------
@@ -797,6 +1177,37 @@ export default {
       // POST /admin/upload-image
       if (pathname === "/admin/upload-image" && req.method === "POST") {
         return await handleUploadImage(req, env);
+      }
+
+      // GET /image/:key - 获取R2存储的图片
+      if (pathname.startsWith("/image/") && req.method === "GET") {
+        const key = pathname.slice(7); // 去掉 "/image/"
+        if (!key) {
+          return withCors(errorResponse("missing image key", 400), pickAllowedOrigin(req));
+        }
+
+        try {
+          if (!env.R2_BUCKET) {
+            return withCors(errorResponse("R2_BUCKET not configured", 500), pickAllowedOrigin(req));
+          }
+
+          const object = await env.R2_BUCKET.get(key);
+          if (!object) {
+            return withCors(errorResponse("image not found", 404), pickAllowedOrigin(req));
+          }
+
+          // 返回图片
+          return new Response(object.body, {
+            headers: {
+              'Content-Type': object.httpMetadata.contentType || 'image/jpeg',
+              'Cache-Control': 'public, max-age=31536000',
+              'Access-Control-Allow-Origin': pickAllowedOrigin(req),
+            },
+          });
+        } catch (error) {
+          console.error("Get image error:", error);
+          return withCors(errorResponse(`get image failed: ${error.message}`, 500), pickAllowedOrigin(req));
+        }
       }
 
       // ---------------- 下单 ----------------

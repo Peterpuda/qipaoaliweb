@@ -177,6 +177,83 @@ const STMT_CREATE = [
     claim_count INTEGER DEFAULT 0,
     created_by TEXT,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+  )`,
+
+  // ============================================
+  // AI 匠人智能体相关表
+  // ============================================
+
+  // AI 人格设定表
+  `CREATE TABLE IF NOT EXISTS artisan_voice (
+    id TEXT PRIMARY KEY,
+    artisan_id TEXT NOT NULL UNIQUE,
+    tone_style TEXT DEFAULT 'warm',
+    self_intro_zh TEXT,
+    self_intro_en TEXT,
+    core_values TEXT,
+    cultural_lineage TEXT,
+    forbidden_topics TEXT,
+    examples TEXT,
+    model_config TEXT,
+    enabled INTEGER DEFAULT 1,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+  )`,
+
+  // 文化叙事内容表
+  `CREATE TABLE IF NOT EXISTS content_variants (
+    id TEXT PRIMARY KEY,
+    product_id TEXT NOT NULL,
+    type TEXT NOT NULL,
+    content_json TEXT NOT NULL,
+    lang TEXT NOT NULL DEFAULT 'zh',
+    status TEXT DEFAULT 'draft',
+    created_by TEXT,
+    reviewed_by TEXT,
+    review_notes TEXT,
+    version INTEGER DEFAULT 1,
+    parent_id TEXT,
+    view_count INTEGER DEFAULT 0,
+    like_count INTEGER DEFAULT 0,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    published_at INTEGER
+  )`,
+
+  // AI 对话日志表
+  `CREATE TABLE IF NOT EXISTS artisan_agent_logs (
+    id TEXT PRIMARY KEY,
+    artisan_id TEXT NOT NULL,
+    user_id TEXT,
+    session_id TEXT,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    lang TEXT NOT NULL DEFAULT 'zh',
+    context_json TEXT,
+    model_used TEXT,
+    tokens_used INTEGER,
+    response_time_ms INTEGER,
+    flagged INTEGER DEFAULT 0,
+    flag_reason TEXT,
+    flag_type TEXT,
+    reviewed INTEGER DEFAULT 0,
+    user_feedback TEXT,
+    feedback_note TEXT,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+  )`,
+
+  // AI 内容审核队列表
+  `CREATE TABLE IF NOT EXISTS ai_moderation_queue (
+    id TEXT PRIMARY KEY,
+    source_type TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    priority INTEGER DEFAULT 0,
+    reviewed_by TEXT,
+    review_result TEXT,
+    review_notes TEXT,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    reviewed_at INTEGER
   )`
 ];
 
@@ -241,6 +318,18 @@ const COLUMN_PATCHES = {
   ],
   badges_issues: [
     // 新表，无需补列
+  ],
+  artisan_voice: [
+    // AI 智能体表，无需补列
+  ],
+  content_variants: [
+    // 文化叙事表，无需补列
+  ],
+  artisan_agent_logs: [
+    // AI 对话日志表，无需补列
+  ],
+  ai_moderation_queue: [
+    // AI 审核队列表，无需补列
   ]
 };
 
@@ -308,7 +397,35 @@ const STMT_INDEX = [
 
   // Merkle 批次表索引
   `CREATE INDEX IF NOT EXISTS idx_merkle_batches_root ON merkle_batches(merkle_root)`,
-  `CREATE INDEX IF NOT EXISTS idx_merkle_batches_distributor ON merkle_batches(distributor_address)`
+  `CREATE INDEX IF NOT EXISTS idx_merkle_batches_distributor ON merkle_batches(distributor_address)`,
+
+  // ============================================
+  // AI 匠人智能体索引
+  // ============================================
+
+  // artisan_voice 索引
+  `CREATE INDEX IF NOT EXISTS idx_artisan_voice_artisan ON artisan_voice(artisan_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_artisan_voice_enabled ON artisan_voice(enabled)`,
+
+  // content_variants 索引
+  `CREATE INDEX IF NOT EXISTS idx_content_variants_product ON content_variants(product_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_content_variants_type ON content_variants(type)`,
+  `CREATE INDEX IF NOT EXISTS idx_content_variants_lang ON content_variants(lang)`,
+  `CREATE INDEX IF NOT EXISTS idx_content_variants_status ON content_variants(status)`,
+  `CREATE INDEX IF NOT EXISTS idx_content_variants_created ON content_variants(created_at DESC)`,
+
+  // artisan_agent_logs 索引
+  `CREATE INDEX IF NOT EXISTS idx_agent_logs_artisan ON artisan_agent_logs(artisan_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_agent_logs_user ON artisan_agent_logs(user_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_agent_logs_session ON artisan_agent_logs(session_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_agent_logs_flagged ON artisan_agent_logs(flagged)`,
+  `CREATE INDEX IF NOT EXISTS idx_agent_logs_created ON artisan_agent_logs(created_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS idx_agent_logs_lang ON artisan_agent_logs(lang)`,
+
+  // ai_moderation_queue 索引
+  `CREATE INDEX IF NOT EXISTS idx_moderation_queue_status ON ai_moderation_queue(status)`,
+  `CREATE INDEX IF NOT EXISTS idx_moderation_queue_priority ON ai_moderation_queue(priority DESC)`,
+  `CREATE INDEX IF NOT EXISTS idx_moderation_queue_source ON ai_moderation_queue(source_type, source_id)`
 ];
 
 async function tableInfo(env, table) {
