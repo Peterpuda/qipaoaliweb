@@ -149,7 +149,7 @@
   </div>
 
 
-  <script src="./common/auth.js"></script>
+  <script src="../common/auth.js"></script>
   <script>
     // ========= 配置区域 =========
     const API_BASE = "https://songbrocade-api.petterbrand03.workers.dev"; // 已更新为正确的 Worker API
@@ -225,10 +225,18 @@
         const card = document.createElement("div");
         card.className = "rounded-2xl border border-[#9E2A2B]/30 bg-white/90 shadow p-4 flex flex-col";
 
-        // 商品主图（我们这里只放占位图，后面 Sprint 4/5 会接 R2 图片URL生成）
-        const imgBlock = `
+        // 商品主图
+        const imgBlock = p.image_key ? `
+          <img src="${API_BASE}/image/${p.image_key}" 
+               alt="${p.title_zh || '商品图片'}" 
+               class="w-full h-40 object-cover rounded-xl mb-3"
+               onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-40 bg-[#9E2A2B]/5 rounded-xl mb-3 flex items-center justify-center text-[10px] text-[#9E2A2B]/70\\'><div class=\\'text-center\\'><i class=\\'fas fa-image text-3xl text-[#9E2A2B]/40 mb-1\\'></i><p>图片加载失败</p></div></div>';">
+        ` : `
           <div class="w-full h-40 bg-[#9E2A2B]/5 rounded-xl mb-3 flex items-center justify-center text-[10px] text-[#9E2A2B]/70">
-            ${p.image_key ? "图片: "+p.image_key : "无图 / 待上传R2"}
+            <div class="text-center">
+              <i class="fas fa-image text-3xl text-[#9E2A2B]/40 mb-1"></i>
+              <p>暂无图片</p>
+            </div>
           </div>
         `;
 

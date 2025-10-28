@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 匠人对话 - 演示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/poap.config.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 py-12">
+        <h1 class="text-4xl font-bold text-center mb-8">🤖 AI 匠人对话组件演示</h1>
+        
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">使用示例</h2>
+            
+            <div class="space-y-6">
+                <!-- 示例 1：基本调用 -->
+                <div class="border border-gray-200 rounded-lg p-6">
+                    <h3 class="font-semibold text-lg mb-3">1. 基本调用</h3>
+                    <p class="text-gray-600 mb-4">点击按钮，与匠人 AI 开始对话（需要先在后台配置匠人ID）</p>
+                    
+                    <button 
+                        onclick="testBasicChat()" 
+                        class="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-600 text-white rounded-lg font-semibold hover:shadow-lg transition"
+                    >
+                        与匠人对话
+                    </button>
+                    
+                    <pre class="mt-4 bg-gray-50 p-4 rounded text-sm overflow-x-auto"><code>// JavaScript
+ArtisanChat.open('artisan_id_here');</code></pre>
+                </div>
+
+                <!-- 示例 2：带匠人数据 -->
+                <div class="border border-gray-200 rounded-lg p-6">
+                    <h3 class="font-semibold text-lg mb-3">2. 传入匠人数据（推荐）</h3>
+                    <p class="text-gray-600 mb-4">直接传入匠人信息，避免重复请求API</p>
+                    
+                    <button 
+                        onclick="testChatWithData()" 
+                        class="px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition"
+                    >
+                        与李师傅对话
+                    </button>
+                    
+                    <pre class="mt-4 bg-gray-50 p-4 rounded text-sm overflow-x-auto"><code>// JavaScript
+const artisanData = {
+  id: 'artisan_123',
+  name_zh: '李师傅',
+  name_en: 'Master Li',
+  avatar: '/image/artisan-avatar.jpg',
+  self_intro: '我是一名传统刺绣匠人...'
+};
+
+ArtisanChat.open('artisan_123', artisanData);</code></pre>
+                </div>
+
+                <!-- 示例 3：在商品卡片中使用 -->
+                <div class="border border-gray-200 rounded-lg p-6">
+                    <h3 class="font-semibold text-lg mb-3">3. 商品卡片集成示例</h3>
+                    <p class="text-gray-600 mb-4">在商品详情页嵌入对话按钮</p>
+                    
+                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 flex items-center gap-4">
+                        <img src="/image/hero.png" class="w-20 h-20 rounded-full border-2 border-yellow-500">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-lg">李师傅</h4>
+                            <p class="text-sm text-gray-600">非遗传承人 · 苏州</p>
+                            <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-full text-sm">
+                                <span class="animate-pulse">✨</span>
+                                <span>AI 智能体在线</span>
+                            </div>
+                        </div>
+                        <button 
+                            onclick="testChatWithData()" 
+                            class="px-6 py-3 bg-gradient-to-r from-yellow-500 to-red-600 text-white rounded-lg font-semibold hover:shadow-lg transition"
+                        >
+                            💬 与匠人对话
+                        </button>
+                    </div>
+                    
+                    <pre class="mt-4 bg-gray-50 p-4 rounded text-sm overflow-x-auto"><code>&lt;!-- HTML --&gt;
+&lt;div class="artisan-card"&gt;
+  &lt;img src="{{artisan.avatar}}" /&gt;
+  &lt;h3&gt;{{artisan.name_zh}}&lt;/h3&gt;
+  &lt;button onclick="ArtisanChat.open('{{artisan.id}}', artisanData)"&gt;
+    与匠人对话
+  &lt;/button&gt;
+&lt;/div&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能特点 -->
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-semibold mb-6">✨ 功能特点</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="flex gap-4">
+                    <div class="text-3xl">🎨</div>
+                    <div>
+                        <h4 class="font-semibold mb-2">精美UI设计</h4>
+                        <p class="text-gray-600 text-sm">渐变背景、动画效果、响应式布局</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="text-3xl">⚡</div>
+                    <div>
+                        <h4 class="font-semibold mb-2">打字机效果</h4>
+                        <p class="text-gray-600 text-sm">AI 回复逐字显示，提升用户体验</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="text-3xl">💡</div>
+                    <div>
+                        <h4 class="font-semibold mb-2">智能快捷问题</h4>
+                        <p class="text-gray-600 text-sm">预设常见问题，降低用户输入成本</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="text-3xl">🌐</div>
+                    <div>
+                        <h4 class="font-semibold mb-2">多语言支持</h4>
+                        <p class="text-gray-600 text-sm">一键切换中英文，国际化友好</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="text-3xl">📱</div>
+                    <div>
+                        <h4 class="font-semibold mb-2">移动端优化</h4>
+                        <p class="text-gray-600 text-sm">全屏沉浸式体验，触控优化</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="text-3xl">👍</div>
+                    <div>
+                        <h4 class="font-semibold mb-2">用户反馈</h4>
+                        <p class="text-gray-600 text-sm">点赞、复制、翻译等交互功能</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载对话组件 -->
+    <script src="/common/artisan-chat.js"></script>
+    
+    <script>
+        // 测试基本调用
+        function testBasicChat() {
+            // 使用一个测试匠人ID（需要后台先配置）
+            ArtisanChat.open('test_artisan_1');
+        }
+
+        // 测试带匠人数据
+        function testChatWithData() {
+            const artisanData = {
+                id: 'test_artisan_1',
+                name_zh: '李师傅',
+                name_en: 'Master Li',
+                avatar: '/image/hero.png',
+                self_intro: '我是一名专注传统手工刺绣的匠人，从事这一行已有30年。我的作品融合了传统技艺与现代美学，希望能够将这门技艺传承下去。'
+            };
+            
+            ArtisanChat.open('test_artisan_1', artisanData);
+        }
+    </script>
+</body>
+</html>
+
