@@ -324,21 +324,24 @@
 
         async function loadArtisansList() {
             try {
-                const response = await apiJSON('/api/artisans');
-                const data = await response.json();
+                // 使用管理员接口获取所有匠人（包括未认证的）
+                const data = await apiJSON('/admin/artisans');
                 
-                if (data.ok && data.list) {
+                if (data.ok && data.artisans) {
                     const select = document.getElementById('artisanSelect');
-                    data.list.forEach(artisan => {
+                    data.artisans.forEach(artisan => {
                         const option = document.createElement('option');
                         option.value = artisan.id;
-                        option.textContent = `${artisan.name_zh} (${artisan.wallet})`;
+                        option.textContent = `${artisan.name_zh} (${artisan.wallet || artisan.id})`;
                         select.appendChild(option);
                     });
+                } else {
+                    console.error('No artisans data:', data);
+                    alert('未找到匠人数据');
                 }
             } catch (error) {
                 console.error('Load artisans failed:', error);
-                alert('加载匠人列表失败');
+                alert('加载匠人列表失败: ' + error.message);
             }
         }
 
@@ -353,21 +356,18 @@
             showLoading(true);
 
             try {
-                // 加载匠人基本信息
-                const artisanResponse = await apiJSON(`/api/artisans/${artisanId}`);
-                const artisanData = await artisanResponse.json();
+                // 加载匠人基本信息（从已加载的列表中获取）
+                const select = document.getElementById('artisanSelect');
+                const selectedOption = select.options[select.selectedIndex];
+                const artisanName = selectedOption ? selectedOption.textContent.split(' (')[0] : '匠人';
                 
-                if (artisanData.ok) {
-                    const artisan = artisanData.artisan;
-                    document.getElementById('artisanInfo').classList.remove('hidden');
-                    document.getElementById('artisanAvatar').src = artisan.avatar || '/image/hero.png';
-                    document.getElementById('artisanName').textContent = artisan.name_zh;
-                    document.getElementById('artisanRegion').textContent = artisan.region || '中国';
-                }
+                document.getElementById('artisanInfo').classList.remove('hidden');
+                document.getElementById('artisanAvatar').src = '/image/hero.png';
+                document.getElementById('artisanName').textContent = artisanName;
+                document.getElementById('artisanRegion').textContent = '待补充';
 
                 // 加载 AI 配置
-                const configResponse = await apiJSON(`/admin/artisan-voice/${artisanId}`);
-                const configData = await configResponse.json();
+                const configData = await apiJSON(`/admin/artisan-voice/${artisanId}`);
                 
                 if (configData.ok && configData.exists) {
                     const voice = configData.voice;
