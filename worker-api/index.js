@@ -68,6 +68,7 @@ function pickAllowedOrigin(req) {
     "https://d1eeb901.poap-checkin-frontend.pages.dev",
     "https://6710bcdf.poap-checkin-frontend.pages.dev",
     "https://82842193.poap-checkin-frontend.pages.dev",
+    "https://a4c0dab5.poap-checkin-frontend.pages.dev",
     "http://localhost:8787",
     "http://localhost:3000",
     "http://127.0.0.1:8787"
