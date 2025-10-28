@@ -18,7 +18,9 @@ import {
   callClaude,
   generateMockReply,
   moderateContent,
-  generateId
+  generateId,
+  generateNarrative,
+  generateMultipleNarratives
 } from "./utils/ai-helpers.js";
 
 // 导入 ethers（如果需要使用）
@@ -761,6 +763,465 @@ export default {
           );
         } catch (error) {
           console.error('Get history error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // ============================================
+      // 文化叙事生成 API (Sprint 4)
+      // ============================================
+
+      // POST /ai/narrative/generate - 生成文化叙事
+      if (pathname === "/ai/narrative/generate" && req.method === "POST") {
+        const adminCheck = await requireAdmin(req, env);
+        if (!adminCheck.ok) {
+          return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
+        }
+
+        try {
+          const body = await readJson(req);
+          const { product_id, types, lang = 'zh', provider = 'openai' } = body;
+
+          if (!product_id || !types || !Array.isArray(types)) {
+            return withCors(
+              errorResponse("missing product_id or types array", 400),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          // 查询商品信息
+          const productRows = await query(env, `
+            SELECT p.*, a.id as artisan_id, a.name_zh, a.name_en, a.region
+            FROM products_new p
+            LEFT JOIN artisans a ON p.artisan_id = a.id
+            WHERE p.id = ?
+          `, [product_id]);
+
+          if (!productRows || productRows.length === 0) {
+            return withCors(errorResponse("product not found", 404), pickAllowedOrigin(req));
+          }
+
+          const productData = productRows[0];
+          
+          if (!productData.artisan_id) {
+            return withCors(
+              errorResponse("product has no associated artisan", 400),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          const artisanData = {
+            id: productData.artisan_id,
+            name_zh: productData.name_zh,
+            name_en: productData.name_en,
+            region: productData.region
+          };
+
+          // 选择 AI 提供商
+          const apiKey = provider === 'claude' ? env.ANTHROPIC_API_KEY : env.OPENAI_API_KEY;
+          
+          if (!apiKey) {
+            return withCors(
+              jsonResponse({
+                ok: false,
+                error: 'ai_not_configured',
+                message: '未配置 AI API Key，请联系管理员'
+              }),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          // 生成多种叙事版本
+          const results = await generateMultipleNarratives(
+            apiKey,
+            productData,
+            artisanData,
+            types,
+            lang,
+            provider
+          );
+
+          // 保存到数据库
+          const now = Math.floor(Date.now() / 1000);
+          const savedNarratives = [];
+
+          for (const type of types) {
+            if (results[type].ok) {
+              const narrativeId = generateId('nrt');
+              
+              const contentJson = JSON.stringify({
+                type: type,
+                content: results[type].content,
+                model: results[type].model,
+                tokens_used: results[type].tokensUsed,
+                generated_at: now
+              });
+
+              await run(env, `
+                INSERT INTO content_variants (
+                  id, product_id, type, content_json, lang, status,
+                  created_by, version, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              `, [
+                narrativeId,
+                product_id,
+                type,
+                contentJson,
+                lang,
+                'draft',
+                adminCheck.wallet,
+                1,
+                now,
+                now
+              ]);
+
+              savedNarratives.push({
+                id: narrativeId,
+                type: type,
+                content: results[type].content
+              });
+            }
+          }
+
+          return withCors(
+            jsonResponse({
+              ok: true,
+              narratives: savedNarratives,
+              total: savedNarratives.length,
+              results: results
+            }),
+            pickAllowedOrigin(req)
+          );
+
+        } catch (error) {
+          console.error('Generate narrative error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // GET /ai/narrative/product/:product_id - 获取商品所有叙事版本
+      if (pathname.startsWith("/ai/narrative/product/") && req.method === "GET") {
+        try {
+          const product_id = pathname.split("/ai/narrative/product/")[1];
+          const lang = searchParams.get('lang') || 'zh';
+          const status = searchParams.get('status') || 'all';
+
+          let sql = `
+            SELECT id, type, content_json, lang, status, version,
+                   created_by, reviewed_by, review_notes,
+                   view_count, like_count, created_at, updated_at, published_at
+            FROM content_variants
+            WHERE product_id = ? AND lang = ?
+          `;
+          const params = [product_id, lang];
+
+          if (status !== 'all') {
+            sql += ` AND status = ?`;
+            params.push(status);
+          }
+
+          sql += ` ORDER BY created_at DESC`;
+
+          const rows = await query(env, sql, params);
+
+          const narratives = (rows || []).map(row => {
+            let contentData = {};
+            try {
+              contentData = JSON.parse(row.content_json);
+            } catch (e) {
+              console.error('Parse content_json failed:', e);
+            }
+
+            return {
+              id: row.id,
+              type: row.type,
+              content: contentData.content || '',
+              model: contentData.model,
+              tokens_used: contentData.tokens_used,
+              lang: row.lang,
+              status: row.status,
+              version: row.version,
+              created_by: row.created_by,
+              reviewed_by: row.reviewed_by,
+              review_notes: row.review_notes,
+              view_count: row.view_count,
+              like_count: row.like_count,
+              created_at: row.created_at,
+              updated_at: row.updated_at,
+              published_at: row.published_at
+            };
+          });
+
+          return withCors(
+            jsonResponse({
+              ok: true,
+              product_id: product_id,
+              narratives: narratives,
+              total: narratives.length
+            }),
+            pickAllowedOrigin(req)
+          );
+
+        } catch (error) {
+          console.error('Get narratives error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // POST /admin/narrative/review - 审核叙事内容
+      if (pathname === "/admin/narrative/review" && req.method === "POST") {
+        const adminCheck = await requireAdmin(req, env);
+        if (!adminCheck.ok) {
+          return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
+        }
+
+        try {
+          const body = await readJson(req);
+          const { narrative_id, action, notes } = body;
+
+          if (!narrative_id || !action) {
+            return withCors(
+              errorResponse("missing narrative_id or action", 400),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          if (!['approve', 'reject', 'archive'].includes(action)) {
+            return withCors(
+              errorResponse("action must be approve, reject, or archive", 400),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          const now = Math.floor(Date.now() / 1000);
+          const statusMap = {
+            approve: 'published',
+            reject: 'draft',
+            archive: 'archived'
+          };
+
+          const newStatus = statusMap[action];
+          const publishedAt = action === 'approve' ? now : null;
+
+          await run(env, `
+            UPDATE content_variants
+            SET 
+              status = ?,
+              reviewed_by = ?,
+              review_notes = ?,
+              published_at = COALESCE(?, published_at),
+              updated_at = ?
+            WHERE id = ?
+          `, [newStatus, adminCheck.wallet, notes || null, publishedAt, now, narrative_id]);
+
+          return withCors(
+            jsonResponse({
+              ok: true,
+              narrative_id: narrative_id,
+              action: action,
+              new_status: newStatus
+            }),
+            pickAllowedOrigin(req)
+          );
+
+        } catch (error) {
+          console.error('Review narrative error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // DELETE /admin/narrative/:narrative_id - 删除叙事版本
+      if (pathname.startsWith("/admin/narrative/") && req.method === "DELETE") {
+        const adminCheck = await requireAdmin(req, env);
+        if (!adminCheck.ok) {
+          return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
+        }
+
+        try {
+          const narrative_id = pathname.split("/admin/narrative/")[1];
+
+          await run(env, `DELETE FROM content_variants WHERE id = ?`, [narrative_id]);
+
+          return withCors(
+            jsonResponse({ ok: true, narrative_id: narrative_id }),
+            pickAllowedOrigin(req)
+          );
+
+        } catch (error) {
+          console.error('Delete narrative error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // ============================================
+      // 内容审核管理 API (Sprint 5)
+      // ============================================
+
+      // GET /admin/moderation/queue - 获取审核队列
+      if (pathname === "/admin/moderation/queue" && req.method === "GET") {
+        const adminCheck = await requireAdmin(req, env);
+        if (!adminCheck.ok) {
+          return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
+        }
+
+        try {
+          const status = searchParams.get('status') || 'pending';
+          const limit = parseInt(searchParams.get('limit') || '50', 10);
+          const offset = parseInt(searchParams.get('offset') || '0', 10);
+
+          const rows = await query(env, `
+            SELECT * FROM ai_moderation_queue
+            WHERE status = ?
+            ORDER BY priority DESC, created_at DESC
+            LIMIT ? OFFSET ?
+          `, [status, limit, offset]);
+
+          return withCors(
+            jsonResponse({
+              ok: true,
+              queue: rows || [],
+              total: rows?.length || 0,
+              status: status
+            }),
+            pickAllowedOrigin(req)
+          );
+
+        } catch (error) {
+          console.error('Get moderation queue error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // GET /admin/moderation/flagged-chats - 获取被标记的对话
+      if (pathname === "/admin/moderation/flagged-chats" && req.method === "GET") {
+        const adminCheck = await requireAdmin(req, env);
+        if (!adminCheck.ok) {
+          return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
+        }
+
+        try {
+          const reviewed = searchParams.get('reviewed') === 'true';
+          const limit = parseInt(searchParams.get('limit') || '50', 10);
+          const offset = parseInt(searchParams.get('offset') || '0', 10);
+
+          const rows = await query(env, `
+            SELECT 
+              l.*,
+              a.name_zh as artisan_name
+            FROM artisan_agent_logs l
+            LEFT JOIN artisans a ON l.artisan_id = a.id
+            WHERE l.flagged = 1 AND l.reviewed = ?
+            ORDER BY l.created_at DESC
+            LIMIT ? OFFSET ?
+          `, [reviewed ? 1 : 0, limit, offset]);
+
+          return withCors(
+            jsonResponse({
+              ok: true,
+              chats: rows || [],
+              total: rows?.length || 0,
+              reviewed: reviewed
+            }),
+            pickAllowedOrigin(req)
+          );
+
+        } catch (error) {
+          console.error('Get flagged chats error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // POST /admin/moderation/review-chat - 审核对话
+      if (pathname === "/admin/moderation/review-chat" && req.method === "POST") {
+        const adminCheck = await requireAdmin(req, env);
+        if (!adminCheck.ok) {
+          return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
+        }
+
+        try {
+          const body = await readJson(req);
+          const { log_id, action, notes } = body;
+
+          if (!log_id || !action) {
+            return withCors(
+              errorResponse("missing log_id or action", 400),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          // action: approve (保留) / delete (删除)
+          if (action === 'delete') {
+            await run(env, `DELETE FROM artisan_agent_logs WHERE id = ?`, [log_id]);
+          } else if (action === 'approve') {
+            await run(env, `
+              UPDATE artisan_agent_logs
+              SET reviewed = 1, flag_reason = ?
+              WHERE id = ?
+            `, [notes || 'Reviewed and approved', log_id]);
+          }
+
+          return withCors(
+            jsonResponse({
+              ok: true,
+              log_id: log_id,
+              action: action
+            }),
+            pickAllowedOrigin(req)
+          );
+
+        } catch (error) {
+          console.error('Review chat error:', error);
+          return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // POST /admin/moderation/batch-review - 批量审核
+      if (pathname === "/admin/moderation/batch-review" && req.method === "POST") {
+        const adminCheck = await requireAdmin(req, env);
+        if (!adminCheck.ok) {
+          return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
+        }
+
+        try {
+          const body = await readJson(req);
+          const { log_ids, action } = body;
+
+          if (!log_ids || !Array.isArray(log_ids) || !action) {
+            return withCors(
+              errorResponse("missing log_ids array or action", 400),
+              pickAllowedOrigin(req)
+            );
+          }
+
+          let processed = 0;
+          for (const log_id of log_ids) {
+            try {
+              if (action === 'delete') {
+                await run(env, `DELETE FROM artisan_agent_logs WHERE id = ?`, [log_id]);
+              } else if (action === 'approve') {
+                await run(env, `
+                  UPDATE artisan_agent_logs
+                  SET reviewed = 1, flag_reason = 'Batch approved'
+                  WHERE id = ?
+                `, [log_id]);
+              }
+              processed++;
+            } catch (e) {
+              console.error(`Failed to process log_id ${log_id}:`, e);
+            }
+          }
+
+          return withCors(
+            jsonResponse({
+              ok: true,
+              processed: processed,
+              total: log_ids.length
+            }),
+            pickAllowedOrigin(req)
+          );
+
+        } catch (error) {
+          console.error('Batch review error:', error);
           return withCors(errorResponse(error.message, 500), pickAllowedOrigin(req));
         }
       }

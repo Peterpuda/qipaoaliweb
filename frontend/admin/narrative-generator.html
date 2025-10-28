@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文化叙事生成工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./common/admin-common.css">
+</head>
+<body class="bg-gray-50">
+    <!-- 顶部导航 -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="./index.html" class="text-gray-500 hover:text-gray-700">← 返回控制台</a>
+                    <span class="ml-4 text-gray-300">|</span>
+                    <h1 class="ml-4 text-lg font-semibold">📖 文化叙事生成工具</h1>
+                </div>
+                <div class="flex items-center">
+                    <span id="adminAddr" class="text-sm text-gray-600"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 商品选择 -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <span class="text-2xl mr-2">🎯</span>
+                选择商品
+            </h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block font-medium mb-2">选择要生成叙事的商品</label>
+                    <select id="productSelect" class="w-full px-4 py-2 border rounded-lg" onchange="loadProduct()">
+                        <option value="">-- 请选择商品 --</option>
+                    </select>
+                </div>
+                
+                <div id="productInfo" class="hidden bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-6">
+                    <div class="flex gap-6">
+                        <img id="productImage" src="" class="w-32 h-32 object-cover rounded-lg border-2 border-yellow-500">
+                        <div class="flex-1">
+                            <h3 id="productName" class="text-xl font-semibold mb-2"></h3>
+                            <p id="productDesc" class="text-gray-600 text-sm mb-3"></p>
+                            <div class="flex items-center gap-4 text-sm">
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full">
+                                    <span id="productCategory"></span>
+                                </span>
+                                <span class="text-gray-600">
+                                    <span class="font-medium">匠人：</span><span id="productArtisan"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生成选项 -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6" id="generateSection" style="display: none;">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <span class="text-2xl mr-2">⚙️</span>
+                生成选项
+            </h2>
+            
+            <div class="space-y-4">
+                <!-- 叙事类型 -->
+                <div>
+                    <label class="block font-medium mb-2">选择要生成的叙事类型（可多选）</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <label class="flex items-center gap-2 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="checkbox" name="narrativeType" value="story" class="w-5 h-5">
+                            <div>
+                                <div class="font-medium">📖 故事版</div>
+                                <div class="text-xs text-gray-500">创作故事与文化意义</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center gap-2 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="checkbox" name="narrativeType" value="feature" class="w-5 h-5">
+                            <div>
+                                <div class="font-medium">✨ 特点版</div>
+                                <div class="text-xs text-gray-500">特色与工艺亮点</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center gap-2 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="checkbox" name="narrativeType" value="heritage" class="w-5 h-5">
+                            <div>
+                                <div class="font-medium">🏛️ 传承版</div>
+                                <div class="text-xs text-gray-500">文化传承与历史</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center gap-2 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="checkbox" name="narrativeType" value="usage" class="w-5 h-5">
+                            <div>
+                                <div class="font-medium">💡 使用版</div>
+                                <div class="text-xs text-gray-500">使用场景与保养</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 语言和AI提供商 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-medium mb-2">语言</label>
+                        <select id="language" class="w-full px-4 py-2 border rounded-lg">
+                            <option value="zh">中文</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block font-medium mb-2">AI 提供商</label>
+                        <select id="provider" class="w-full px-4 py-2 border rounded-lg">
+                            <option value="openai">OpenAI GPT-4o</option>
+                            <option value="claude">Claude 3.5 Sonnet</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 生成按钮 -->
+                <button onclick="generateNarratives()" class="w-full px-6 py-4 bg-gradient-to-r from-yellow-500 to-red-600 text-white rounded-lg font-semibold text-lg hover:shadow-lg transition">
+                    🚀 开始生成文化叙事
+                </button>
+            </div>
+        </div>
+
+        <!-- 生成结果 -->
+        <div id="resultsSection" class="hidden space-y-6">
+            <h2 class="text-2xl font-semibold mb-4">📝 生成结果</h2>
+            <div id="narrativeResults"></div>
+        </div>
+
+        <!-- 历史版本 -->
+        <div id="historySection" class="hidden">
+            <h2 class="text-2xl font-semibold mb-4">📚 历史版本</h2>
+            <div id="narrativeHistory" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </div>
+    </div>
+
+    <!-- 加载提示 -->
+    <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-8 flex flex-col items-center max-w-md">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mb-4"></div>
+            <p class="text-lg font-semibold mb-2">AI 正在生成中...</p>
+            <p class="text-sm text-gray-600 text-center" id="loadingMessage">这可能需要几秒钟，请耐心等待</p>
+        </div>
+    </div>
+
+    <script src="./common/admin-common.js"></script>
+    <script>
+        const ADMIN_CONFIG = {
+            API_BASE: 'https://songbrocade-api.petterbrand03.workers.dev'
+        };
+
+        let currentProductId = null;
+
+        // 页面加载时
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            await loadProductsList();
+        });
+
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/whoami`, {
+                    headers: authHeaders()
+                });
+                const data = await response.json();
+                if (data.ok) {
+                    document.getElementById('adminAddr').textContent = `管理员: ${data.addr}`;
+                } else {
+                    alert('请先登录');
+                    window.location.href = './index.html';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                alert('认证失败');
+                window.location.href = './index.html';
+            }
+        }
+
+        async function loadProductsList() {
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/api/products-new`, {
+                    headers: authHeaders()
+                });
+                const data = await response.json();
+                
+                if (data.ok && data.list) {
+                    const select = document.getElementById('productSelect');
+                    data.list.forEach(product => {
+                        const option = document.createElement('option');
+                        option.value = product.id;
+                        option.textContent = `${product.name_zh} (${product.id})`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Load products failed:', error);
+                alert('加载商品列表失败');
+            }
+        }
+
+        async function loadProduct() {
+            const productId = document.getElementById('productSelect').value;
+            if (!productId) {
+                document.getElementById('productInfo').classList.add('hidden');
+                document.getElementById('generateSection').style.display = 'none';
+                return;
+            }
+
+            currentProductId = productId;
+            showLoading(true, '加载商品信息...');
+
+            try {
+                // 加载商品详情
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/api/products-new/${productId}`, {
+                    headers: authHeaders()
+                });
+                const data = await response.json();
+                
+                if (data.ok && data.product) {
+                    const product = data.product;
+                    
+                    // 显示商品信息
+                    document.getElementById('productInfo').classList.remove('hidden');
+                    document.getElementById('productImage').src = product.image_url || '/image/hero.png';
+                    document.getElementById('productName').textContent = product.name_zh;
+                    document.getElementById('productDesc').textContent = product.description || '暂无描述';
+                    document.getElementById('productCategory').textContent = product.category || '未分类';
+                    document.getElementById('productArtisan').textContent = product.artisan_name || '未指定';
+                    
+                    // 显示生成选项
+                    document.getElementById('generateSection').style.display = 'block';
+                    
+                    // 加载历史版本
+                    await loadNarrativeHistory(productId);
+                }
+
+            } catch (error) {
+                console.error('Load product failed:', error);
+                alert('加载商品信息失败');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function generateNarratives() {
+            const types = Array.from(document.querySelectorAll('input[name="narrativeType"]:checked'))
+                .map(cb => cb.value);
+            
+            if (types.length === 0) {
+                alert('请至少选择一种叙事类型');
+                return;
+            }
+
+            if (!currentProductId) {
+                alert('请先选择商品');
+                return;
+            }
+
+            const lang = document.getElementById('language').value;
+            const provider = document.getElementById('provider').value;
+
+            showLoading(true, `正在使用 ${provider === 'openai' ? 'OpenAI GPT-4o' : 'Claude 3.5'} 生成 ${types.length} 个叙事版本...`);
+
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/ai/narrative/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...authHeaders()
+                    },
+                    body: JSON.stringify({
+                        product_id: currentProductId,
+                        types: types,
+                        lang: lang,
+                        provider: provider
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                    // 显示生成结果
+                    displayNarrativeResults(data.narratives, data.results);
+                    
+                    // 重新加载历史
+                    await loadNarrativeHistory(currentProductId);
+                    
+                    alert(`✅ 成功生成 ${data.total} 个叙事版本！`);
+                } else {
+                    throw new Error(data.message || data.error || '生成失败');
+                }
+
+            } catch (error) {
+                console.error('Generate narratives failed:', error);
+                alert('生成失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayNarrativeResults(narratives, results) {
+            const container = document.getElementById('narrativeResults');
+            const section = document.getElementById('resultsSection');
+            
+            container.innerHTML = '';
+            section.classList.remove('hidden');
+
+            const typeNames = {
+                story: '📖 故事版',
+                feature: '✨ 特点版',
+                heritage: '🏛️ 传承版',
+                usage: '💡 使用版'
+            };
+
+            narratives.forEach(narrative => {
+                const result = results[narrative.type];
+                
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow p-6';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold">${typeNames[narrative.type]}</h3>
+                            <p class="text-sm text-gray-500">
+                                模型: ${result.model} | Token: ${result.tokensUsed}
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="copyNarrative('${narrative.id}')" class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-sm">
+                                📋 复制
+                            </button>
+                            <button onclick="reviewNarrative('${narrative.id}', 'approve')" class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 text-sm">
+                                ✅ 发布
+                            </button>
+                        </div>
+                    </div>
+                    <div class="prose max-w-none">
+                        <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">${narrative.content}</p>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        async function loadNarrativeHistory(productId) {
+            try {
+                const response = await fetch(
+                    `${ADMIN_CONFIG.API_BASE}/ai/narrative/product/${productId}?status=all`,
+                    { headers: authHeaders() }
+                );
+                const data = await response.json();
+                
+                if (data.ok && data.narratives.length > 0) {
+                    displayNarrativeHistory(data.narratives);
+                    document.getElementById('historySection').classList.remove('hidden');
+                } else {
+                    document.getElementById('historySection').classList.add('hidden');
+                }
+
+            } catch (error) {
+                console.error('Load history failed:', error);
+            }
+        }
+
+        function displayNarrativeHistory(narratives) {
+            const container = document.getElementById('narrativeHistory');
+            container.innerHTML = '';
+
+            const typeNames = {
+                story: '📖 故事版',
+                feature: '✨ 特点版',
+                heritage: '🏛️ 传承版',
+                usage: '💡 使用版'
+            };
+
+            const statusColors = {
+                draft: 'bg-gray-100 text-gray-700',
+                published: 'bg-green-100 text-green-700',
+                archived: 'bg-red-100 text-red-700'
+            };
+
+            narratives.forEach(narrative => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow p-4';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold">${typeNames[narrative.type]}</h4>
+                        <span class="px-2 py-1 rounded text-xs ${statusColors[narrative.status]}">
+                            ${narrative.status}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-600 line-clamp-3 mb-3">${narrative.content}</p>
+                    <div class="flex justify-between items-center text-xs text-gray-500">
+                        <span>版本 ${narrative.version}</span>
+                        <div class="flex gap-2">
+                            ${narrative.status !== 'published' ? `
+                                <button onclick="reviewNarrative('${narrative.id}', 'approve')" class="text-green-600 hover:underline">发布</button>
+                            ` : ''}
+                            <button onclick="deleteNarrative('${narrative.id}')" class="text-red-600 hover:underline">删除</button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        async function reviewNarrative(narrativeId, action) {
+            if (!confirm(`确定要${action === 'approve' ? '发布' : '归档'}这个叙事版本吗？`)) return;
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/narrative/review`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...authHeaders()
+                    },
+                    body: JSON.stringify({
+                        narrative_id: narrativeId,
+                        action: action
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                    alert('✅ 操作成功！');
+                    await loadNarrativeHistory(currentProductId);
+                } else {
+                    throw new Error(data.error || '操作失败');
+                }
+
+            } catch (error) {
+                console.error('Review failed:', error);
+                alert('操作失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function deleteNarrative(narrativeId) {
+            if (!confirm('确定要删除这个叙事版本吗？')) return;
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/narrative/${narrativeId}`, {
+                    method: 'DELETE',
+                    headers: authHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                    alert('✅ 删除成功！');
+                    await loadNarrativeHistory(currentProductId);
+                } else {
+                    throw new Error(data.error || '删除失败');
+                }
+
+            } catch (error) {
+                console.error('Delete failed:', error);
+                alert('删除失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function copyNarrative(narrativeId) {
+            const text = document.querySelector(`#narrativeResults .bg-white`).querySelector('.prose p').textContent;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text);
+                alert('✅ 已复制到剪贴板！');
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('✅ 已复制到剪贴板！');
+            }
+        }
+
+        function showLoading(show, message = '处理中...') {
+            const loading = document.getElementById('loading');
+            const loadingMessage = document.getElementById('loadingMessage');
+            loading.classList.toggle('hidden', !show);
+            if (message) loadingMessage.textContent = message;
+        }
+
+        function authHeaders() {
+            const token = sessionStorage.getItem('qipao.admin.token') || 
+                         localStorage.getItem('qipao.admin.token') || 
+                         localStorage.getItem('bearer_token');
+            return token ? { 'Authorization': `Bearer ${token}` } : {};
+        }
+    </script>
+</body>
+</html>
+

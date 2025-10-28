@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 内容审核管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./common/admin-common.css">
+</head>
+<body class="bg-gray-50">
+    <!-- 顶部导航 -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="./index.html" class="text-gray-500 hover:text-gray-700">← 返回控制台</a>
+                    <span class="ml-4 text-gray-300">|</span>
+                    <h1 class="ml-4 text-lg font-semibold">🛡️ AI 内容审核管理</h1>
+                </div>
+                <div class="flex items-center">
+                    <span id="adminAddr" class="text-sm text-gray-600"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 统计卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">待审核</p>
+                        <p id="pendingCount" class="text-3xl font-bold text-red-600">0</p>
+                    </div>
+                    <div class="text-4xl">⚠️</div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">今日审核</p>
+                        <p id="todayCount" class="text-3xl font-bold text-blue-600">0</p>
+                    </div>
+                    <div class="text-4xl">📝</div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">通过率</p>
+                        <p id="approvalRate" class="text-3xl font-bold text-green-600">0%</p>
+                    </div>
+                    <div class="text-4xl">✅</div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">总对话数</p>
+                        <p id="totalCount" class="text-3xl font-bold text-gray-600">0</p>
+                    </div>
+                    <div class="text-4xl">💬</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 筛选与批量操作 -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-2">
+                        <input type="radio" name="viewMode" value="pending" checked onchange="switchMode()">
+                        <span>待审核 (<span id="pendingBadge">0</span>)</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="radio" name="viewMode" value="reviewed" onchange="switchMode()">
+                        <span>已审核 (<span id="reviewedBadge">0</span>)</span>
+                    </label>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <button onclick="selectAll()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm">
+                        全选
+                    </button>
+                    <button onclick="batchApprove()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm" id="btnBatchApprove">
+                        ✅ 批量通过
+                    </button>
+                    <button onclick="batchDelete()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm" id="btnBatchDelete">
+                        🗑️ 批量删除
+                    </button>
+                    <button onclick="refreshList()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                        🔄 刷新
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 对话列表 -->
+        <div id="chatsList" class="space-y-4">
+            <!-- 对话卡片将动态插入这里 -->
+        </div>
+
+        <!-- 空状态 -->
+        <div id="emptyState" class="hidden bg-white rounded-lg shadow p-12 text-center">
+            <div class="text-6xl mb-4">🎉</div>
+            <h3 class="text-xl font-semibold mb-2">太棒了！</h3>
+            <p class="text-gray-600">暂无待审核内容</p>
+        </div>
+
+        <!-- 分页 -->
+        <div id="pagination" class="mt-6 flex justify-center gap-2">
+            <!-- 分页按钮将动态插入这里 -->
+        </div>
+    </div>
+
+    <!-- 加载提示 -->
+    <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-8 flex flex-col items-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mb-4"></div>
+            <p class="text-lg font-semibold">处理中...</p>
+        </div>
+    </div>
+
+    <!-- 详情模态框 -->
+    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-xl font-semibold">对话详情</h3>
+                <button onclick="closeDetailModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[60vh]" id="detailContent">
+                <!-- 详情内容 -->
+            </div>
+            <div class="p-6 border-t flex justify-end gap-4">
+                <button onclick="closeDetailModal()" class="px-6 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./common/admin-common.js"></script>
+    <script>
+        const ADMIN_CONFIG = {
+            API_BASE: 'https://songbrocade-api.petterbrand03.workers.dev'
+        };
+
+        let currentMode = 'pending';
+        let selectedChats = new Set();
+        let allChats = [];
+
+        // 页面加载时
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            await loadStats();
+            await loadChatsList();
+        });
+
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/whoami`, {
+                    headers: authHeaders()
+                });
+                const data = await response.json();
+                if (data.ok) {
+                    document.getElementById('adminAddr').textContent = `管理员: ${data.addr}`;
+                } else {
+                    alert('请先登录');
+                    window.location.href = './index.html';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                alert('认证失败');
+                window.location.href = './index.html';
+            }
+        }
+
+        async function loadStats() {
+            try {
+                // 加载统计数据（简化版，实际应该有专门的统计接口）
+                const pendingRes = await fetch(
+                    `${ADMIN_CONFIG.API_BASE}/admin/moderation/flagged-chats?reviewed=false`,
+                    { headers: authHeaders() }
+                );
+                const pendingData = await pendingRes.json();
+                
+                const reviewedRes = await fetch(
+                    `${ADMIN_CONFIG.API_BASE}/admin/moderation/flagged-chats?reviewed=true`,
+                    { headers: authHeaders() }
+                );
+                const reviewedData = await reviewedRes.json();
+
+                const pendingCount = pendingData.ok ? pendingData.total : 0;
+                const reviewedCount = reviewedData.ok ? reviewedData.total : 0;
+                const totalCount = pendingCount + reviewedCount;
+
+                document.getElementById('pendingCount').textContent = pendingCount;
+                document.getElementById('todayCount').textContent = reviewedCount;
+                document.getElementById('totalCount').textContent = totalCount;
+                document.getElementById('approvalRate').textContent = 
+                    totalCount > 0 ? Math.round((reviewedCount / totalCount) * 100) + '%' : '0%';
+                
+                document.getElementById('pendingBadge').textContent = pendingCount;
+                document.getElementById('reviewedBadge').textContent = reviewedCount;
+
+            } catch (error) {
+                console.error('Load stats failed:', error);
+            }
+        }
+
+        async function loadChatsList() {
+            showLoading(true);
+            selectedChats.clear();
+
+            try {
+                const reviewed = currentMode === 'reviewed';
+                const response = await fetch(
+                    `${ADMIN_CONFIG.API_BASE}/admin/moderation/flagged-chats?reviewed=${reviewed}`,
+                    { headers: authHeaders() }
+                );
+                const data = await response.json();
+                
+                if (data.ok) {
+                    allChats = data.chats || [];
+                    displayChatsList(allChats);
+                } else {
+                    throw new Error(data.error || '加载失败');
+                }
+
+            } catch (error) {
+                console.error('Load chats failed:', error);
+                alert('加载失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayChatsList(chats) {
+            const container = document.getElementById('chatsList');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (chats.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.innerHTML = '';
+
+            chats.forEach(chat => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow p-6';
+                
+                const flagColors = {
+                    sensitive: 'bg-red-100 text-red-700',
+                    spam: 'bg-yellow-100 text-yellow-700',
+                    inappropriate: 'bg-orange-100 text-orange-700'
+                };
+                
+                const flagColor = flagColors[chat.flag_type] || 'bg-gray-100 text-gray-700';
+                const timestamp = new Date(chat.created_at * 1000).toLocaleString('zh-CN');
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <input type="checkbox" 
+                               class="chat-checkbox mt-1 w-5 h-5" 
+                               data-chat-id="${chat.id}"
+                               onchange="toggleSelection('${chat.id}')">
+                        
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between mb-3">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="font-semibold">${chat.artisan_name || '未知匠人'}</span>
+                                        <span class="px-2 py-1 rounded text-xs ${flagColor}">
+                                            ${chat.flag_type || 'flagged'}
+                                        </span>
+                                        ${chat.reviewed ? '<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">已审核</span>' : ''}
+                                    </div>
+                                    <p class="text-sm text-gray-500">${timestamp}</p>
+                                </div>
+                                <button onclick="showDetail('${chat.id}')" class="text-blue-600 hover:text-blue-700 text-sm">
+                                    查看详情 →
+                                </button>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <p class="text-xs text-gray-500 mb-1">用户问题：</p>
+                                    <p class="text-gray-700">${escapeHtml(chat.question)}</p>
+                                </div>
+                                
+                                <div class="bg-blue-50 rounded-lg p-3">
+                                    <p class="text-xs text-gray-500 mb-1">AI 回答：</p>
+                                    <p class="text-gray-700">${escapeHtml(chat.answer)}</p>
+                                </div>
+                                
+                                ${chat.flag_reason ? `
+                                    <div class="bg-red-50 rounded-lg p-3">
+                                        <p class="text-xs text-red-500 mb-1">标记原因：</p>
+                                        <p class="text-red-700">${escapeHtml(chat.flag_reason)}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            ${!chat.reviewed ? `
+                                <div class="flex gap-2 mt-4">
+                                    <button onclick="approveSingle('${chat.id}')" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+                                        ✅ 通过
+                                    </button>
+                                    <button onclick="deleteSingle('${chat.id}')" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+                                        🗑️ 删除
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        function toggleSelection(chatId) {
+            if (selectedChats.has(chatId)) {
+                selectedChats.delete(chatId);
+            } else {
+                selectedChats.add(chatId);
+            }
+            updateBatchButtons();
+        }
+
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('.chat-checkbox');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(cb => {
+                cb.checked = !allChecked;
+                const chatId = cb.dataset.chatId;
+                if (!allChecked) {
+                    selectedChats.add(chatId);
+                } else {
+                    selectedChats.delete(chatId);
+                }
+            });
+            updateBatchButtons();
+        }
+
+        function updateBatchButtons() {
+            const hasSelection = selectedChats.size > 0;
+            document.getElementById('btnBatchApprove').disabled = !hasSelection;
+            document.getElementById('btnBatchDelete').disabled = !hasSelection;
+        }
+
+        async function approveSingle(chatId) {
+            if (!confirm('确定要通过这条对话吗？')) return;
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/moderation/review-chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...authHeaders()
+                    },
+                    body: JSON.stringify({
+                        log_id: chatId,
+                        action: 'approve'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                    await loadStats();
+                    await loadChatsList();
+                } else {
+                    throw new Error(data.error || '操作失败');
+                }
+
+            } catch (error) {
+                console.error('Approve failed:', error);
+                alert('操作失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function deleteSingle(chatId) {
+            if (!confirm('确定要删除这条对话吗？此操作不可撤销！')) return;
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/moderation/review-chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...authHeaders()
+                    },
+                    body: JSON.stringify({
+                        log_id: chatId,
+                        action: 'delete'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                    await loadStats();
+                    await loadChatsList();
+                } else {
+                    throw new Error(data.error || '操作失败');
+                }
+
+            } catch (error) {
+                console.error('Delete failed:', error);
+                alert('操作失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function batchApprove() {
+            if (selectedChats.size === 0) {
+                alert('请先选择要操作的对话');
+                return;
+            }
+
+            if (!confirm(`确定要通过选中的 ${selectedChats.size} 条对话吗？`)) return;
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/moderation/batch-review`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...authHeaders()
+                    },
+                    body: JSON.stringify({
+                        log_ids: Array.from(selectedChats),
+                        action: 'approve'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                    alert(`✅ 成功处理 ${data.processed} 条对话`);
+                    await loadStats();
+                    await loadChatsList();
+                } else {
+                    throw new Error(data.error || '操作失败');
+                }
+
+            } catch (error) {
+                console.error('Batch approve failed:', error);
+                alert('操作失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function batchDelete() {
+            if (selectedChats.size === 0) {
+                alert('请先选择要操作的对话');
+                return;
+            }
+
+            if (!confirm(`⚠️ 警告：确定要删除选中的 ${selectedChats.size} 条对话吗？\n此操作不可撤销！`)) return;
+
+            showLoading(true);
+
+            try {
+                const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/moderation/batch-review`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...authHeaders()
+                    },
+                    body: JSON.stringify({
+                        log_ids: Array.from(selectedChats),
+                        action: 'delete'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.ok) {
+                    alert(`✅ 成功删除 ${data.processed} 条对话`);
+                    await loadStats();
+                    await loadChatsList();
+                } else {
+                    throw new Error(data.error || '操作失败');
+                }
+
+            } catch (error) {
+                console.error('Batch delete failed:', error);
+                alert('操作失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function switchMode() {
+            const mode = document.querySelector('input[name="viewMode"]:checked').value;
+            currentMode = mode;
+            loadChatsList();
+        }
+
+        function refreshList() {
+            loadStats();
+            loadChatsList();
+        }
+
+        function showDetail(chatId) {
+            const chat = allChats.find(c => c.id === chatId);
+            if (!chat) return;
+
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('detailContent');
+            
+            const timestamp = new Date(chat.created_at * 1000).toLocaleString('zh-CN');
+            
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold mb-2">基本信息</h4>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-500">匠人：</span>
+                                <span>${chat.artisan_name || '未知'}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">时间：</span>
+                                <span>${timestamp}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">语言：</span>
+                                <span>${chat.lang}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">模型：</span>
+                                <span>${chat.model_used || 'N/A'}</span>
+                            </div>
+                            ${chat.tokens_used ? `
+                            <div>
+                                <span class="text-gray-500">Token 消耗：</span>
+                                <span>${chat.tokens_used}</span>
+                            </div>
+                            ` : ''}
+                            ${chat.response_time_ms ? `
+                            <div>
+                                <span class="text-gray-500">响应时间：</span>
+                                <span>${chat.response_time_ms}ms</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">对话内容</h4>
+                        <div class="bg-gray-50 rounded-lg p-4 mb-3">
+                            <p class="text-xs text-gray-500 mb-2">用户问题：</p>
+                            <p class="text-gray-700 whitespace-pre-wrap">${escapeHtml(chat.question)}</p>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <p class="text-xs text-gray-500 mb-2">AI 回答：</p>
+                            <p class="text-gray-700 whitespace-pre-wrap">${escapeHtml(chat.answer)}</p>
+                        </div>
+                    </div>
+                    
+                    ${chat.flag_reason ? `
+                    <div>
+                        <h4 class="font-semibold mb-2">标记信息</h4>
+                        <div class="bg-red-50 rounded-lg p-4">
+                            <p class="text-xs text-red-500 mb-2">标记原因：</p>
+                            <p class="text-red-700">${escapeHtml(chat.flag_reason)}</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${chat.user_feedback ? `
+                    <div>
+                        <h4 class="font-semibold mb-2">用户反馈</h4>
+                        <p class="text-sm text-gray-700">${chat.user_feedback}</p>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('hidden', !show);
+        }
+
+        function authHeaders() {
+            const token = sessionStorage.getItem('qipao.admin.token') || 
+                         localStorage.getItem('qipao.admin.token') || 
+                         localStorage.getItem('bearer_token');
+            return token ? { 'Authorization': `Bearer ${token}` } : {};
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+    </script>
+</body>
+</html>
+
