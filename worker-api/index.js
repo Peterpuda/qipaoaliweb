@@ -69,6 +69,16 @@ function pickAllowedOrigin(req) {
     "https://6710bcdf.poap-checkin-frontend.pages.dev",
     "https://82842193.poap-checkin-frontend.pages.dev",
     "https://a4c0dab5.poap-checkin-frontend.pages.dev",
+    "https://f9c67ad5.poap-checkin-frontend.pages.dev",
+    "https://2de44c5e.poap-checkin-frontend.pages.dev",
+    "https://777f13ee.poap-checkin-frontend.pages.dev",
+    "https://9441691d.poap-checkin-frontend.pages.dev",
+    "https://a6708607.poap-checkin-frontend.pages.dev",
+    "https://branch-prod.poap-checkin-frontend.pages.dev",
+    "https://prod.poap-checkin-frontend.pages.dev",
+    "https://693f317c.poap-checkin-frontend.pages.dev",
+    "http://10break.com",
+    "https://10break.com",
     "http://localhost:8787",
     "http://localhost:3000",
     "http://127.0.0.1:8787"
@@ -774,7 +784,7 @@ export default {
       // 文化叙事生成 API (Sprint 4)
       // ============================================
 
-      // POST /ai/narrative/generate - 生成文化叙事
+      // POST /ai/narrative/generate - 生成文化叙事（支持多媒体）
       if (pathname === "/ai/narrative/generate" && req.method === "POST") {
         const adminCheck = await requireAdmin(req, env);
         if (!adminCheck.ok) {
@@ -783,7 +793,16 @@ export default {
 
         try {
           const body = await readJson(req);
-          const { product_id, types, lang = 'zh', provider = 'openai' } = body;
+          const { 
+            product_id, 
+            types, 
+            lang = 'zh', 
+            provider = 'openai',
+            generate_audio = false,
+            generate_video = false,
+            voice_style = null,
+            video_style = null
+          } = body;
 
           if (!product_id || !types || !Array.isArray(types)) {
             return withCors(
@@ -844,27 +863,106 @@ export default {
             provider
           );
 
-          // 保存到数据库
+          // 保存到数据库并生成多媒体
           const now = Math.floor(Date.now() / 1000);
           const savedNarratives = [];
+          const multimediaResults = {};
+
+          // 动态导入多媒体生成模块（仅在需要时）
+          let generateMultimediaNarrative = null;
+          if (generate_audio || generate_video) {
+            try {
+              const multimediaModule = await import('./utils/multimedia-generator.js');
+              generateMultimediaNarrative = multimediaModule.generateMultimediaNarrative;
+            } catch (error) {
+              console.error('Failed to load multimedia generator:', error);
+            }
+          }
 
           for (const type of types) {
             if (results[type].ok) {
               const narrativeId = generateId('nrt');
+              const narrativeText = results[type].content;
               
               const contentJson = JSON.stringify({
                 type: type,
-                content: results[type].content,
+                content: narrativeText,
                 model: results[type].model,
                 tokens_used: results[type].tokensUsed,
                 generated_at: now
               });
 
+              // 生成多媒体内容
+              let audioKey = null, audioUrl = null, audioDuration = 0, audioSize = 0;
+              let videoKey = null, videoUrl = null, videoDuration = 0, videoSize = 0;
+              let generationStatus = 'text_only';
+              let generationProgress = { text: { status: 'completed', time: now } };
+
+              if (generateMultimediaNarrative) {
+                try {
+                  const mmResult = await generateMultimediaNarrative({
+                    narrativeText: narrativeText,
+                    narrativeType: type,
+                    narrativeId: narrativeId,
+                    productName: productData.title_zh || productData.title_en || 'Product',
+                    options: {
+                      generateAudioFlag: generate_audio,
+                      generateVideoFlag: generate_video,
+                      voiceStyle: voice_style,
+                      videoStyle: video_style
+                    },
+                    env: env
+                  });
+
+                  multimediaResults[type] = mmResult;
+
+                  // 处理音频结果
+                  if (mmResult.audio) {
+                    if (mmResult.audio.status === 'completed') {
+                      audioKey = mmResult.audio.key;
+                      audioUrl = mmResult.audio.url;
+                      audioDuration = mmResult.audio.duration;
+                      audioSize = mmResult.audio.size;
+                      generationProgress.audio = { status: 'completed', time: now, size: audioSize };
+                    } else if (mmResult.audio.status === 'failed') {
+                      generationProgress.audio = { status: 'failed', error: mmResult.audio.error };
+                    }
+                  }
+
+                  // 处理视频结果
+                  if (mmResult.video) {
+                    if (mmResult.video.status === 'processing') {
+                      generationProgress.video = { 
+                        status: 'processing', 
+                        task_id: mmResult.video.task_id 
+                      };
+                      generationStatus = 'processing';
+                    } else if (mmResult.video.status === 'failed') {
+                      generationProgress.video = { status: 'failed', error: mmResult.video.error };
+                    }
+                  }
+
+                  if (generate_audio || generate_video) {
+                    if (generationStatus === 'text_only') {
+                      generationStatus = 'completed';
+                    }
+                  }
+                } catch (error) {
+                  console.error('Multimedia generation error:', error);
+                  generationProgress.error = error.message;
+                }
+              }
+
+              const progressJson = JSON.stringify(generationProgress);
+
               await run(env, `
                 INSERT INTO content_variants (
                   id, product_id, type, content_json, lang, status,
-                  created_by, version, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                  created_by, version, created_at, updated_at,
+                  audio_key, audio_url, audio_duration, audio_size,
+                  video_key, video_url, video_duration, video_size,
+                  generation_status, generation_progress
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
               `, [
                 narrativeId,
                 product_id,
@@ -875,13 +973,26 @@ export default {
                 adminCheck.wallet,
                 1,
                 now,
-                now
+                now,
+                audioKey,
+                audioUrl,
+                audioDuration,
+                audioSize,
+                videoKey,
+                videoUrl,
+                videoDuration,
+                videoSize,
+                generationStatus,
+                progressJson
               ]);
 
               savedNarratives.push({
                 id: narrativeId,
                 type: type,
-                content: results[type].content
+                content: narrativeText,
+                audio_url: audioUrl,
+                video_url: videoUrl,
+                generation_status: generationStatus
               });
             }
           }
@@ -891,7 +1002,9 @@ export default {
               ok: true,
               narratives: savedNarratives,
               total: savedNarratives.length,
-              results: results
+              results: results,
+              multimedia_results: multimediaResults,
+              message: generate_video ? '视频正在后台生成中，请稍后刷新查看' : null
             }),
             pickAllowedOrigin(req)
           );

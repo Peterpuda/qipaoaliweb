@@ -323,7 +323,18 @@ const COLUMN_PATCHES = {
     // AI 智能体表，无需补列
   ],
   content_variants: [
-    // 文化叙事表，无需补列
+    // 多媒体字段
+    ['audio_key', 'TEXT'],
+    ['audio_url', 'TEXT'],
+    ['audio_duration', 'INTEGER DEFAULT 0'],
+    ['audio_size', 'INTEGER DEFAULT 0'],
+    ['video_key', 'TEXT'],
+    ['video_url', 'TEXT'],
+    ['video_duration', 'INTEGER DEFAULT 0'],
+    ['video_size', 'INTEGER DEFAULT 0'],
+    ['video_thumbnail', 'TEXT'],
+    ['generation_status', 'TEXT DEFAULT "pending"'],
+    ['generation_progress', 'TEXT']
   ],
   artisan_agent_logs: [
     // AI 对话日志表，无需补列
