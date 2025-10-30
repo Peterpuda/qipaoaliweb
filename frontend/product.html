@@ -1025,6 +1025,13 @@
             ? narrative.video_url 
             : `${API_BASE}${narrative.video_url}`;
           
+          // 生成缩略图 URL（如果有）
+          const thumbnailUrl = narrative.video_thumbnail 
+            ? (narrative.video_thumbnail.startsWith('http') 
+                ? narrative.video_thumbnail 
+                : `${API_BASE}${narrative.video_thumbnail}`)
+            : '';
+          
           mediaTabsHTML += `
             <button onclick="switchMediaTab('${narrative.id}', 'video', event)" 
                     class="media-tab media-tab-${narrative.id} px-3 py-2 rounded-lg text-sm bg-gray-200 text-ink hover:bg-gray-300">
@@ -1033,7 +1040,16 @@
           `;
           mediaContentHTML += `
             <div id="media-${narrative.id}-video" class="media-content media-content-${narrative.id}" style="display:none;">
-              <video controls class="w-full rounded-lg mb-4" preload="metadata">
+              <video 
+                id="video-${narrative.id}"
+                controls 
+                class="w-full rounded-lg mb-4" 
+                preload="none"
+                ${thumbnailUrl ? `poster="${thumbnailUrl}"` : ''}
+                playsinline
+                crossorigin="anonymous"
+                style="max-height: 400px; object-fit: contain; background: #000;"
+              >
                 <source src="${videoUrl}" type="video/mp4">
                 您的浏览器不支持视频播放
               </video>
@@ -1107,6 +1123,13 @@
         el.style.display = 'none';
       });
       
+      // 暂停所有该叙事的视频播放
+      document.querySelectorAll(`.media-content-${narrativeId} video`).forEach(video => {
+        if (video && !video.paused) {
+          video.pause();
+        }
+      });
+      
       // 重置所有媒体选项卡样式
       document.querySelectorAll(`.media-tab-${narrativeId}`).forEach(el => {
         el.className = `media-tab media-tab-${narrativeId} px-3 py-2 rounded-lg text-sm bg-gray-200 text-ink hover:bg-gray-300`;
@@ -1116,6 +1139,15 @@
       const mediaContent = document.getElementById(`media-${narrativeId}-${mediaType}`);
       if (mediaContent) {
         mediaContent.style.display = 'block';
+        
+        // 如果是视频，开始预加载元数据
+        if (mediaType === 'video') {
+          const video = mediaContent.querySelector('video');
+          if (video && video.networkState === HTMLMediaElement.NETWORK_IDLE) {
+            // 视频还没开始加载，手动触发预加载
+            video.load();
+          }
+        }
       }
       
       // 高亮选中的媒体选项卡
