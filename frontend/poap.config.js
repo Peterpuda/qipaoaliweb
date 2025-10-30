@@ -4,6 +4,9 @@
 window.POAP_CONFIG = {
   // 后端 API 根地址（你的 Cloudflare Worker 域名，HTTPS，末尾不要带 /）
   WORKER_BASE_URL: "https://songbrocade-api.petterbrand03.workers.dev",
+  
+  // API_BASE 别名（为了兼容不同模块的调用）
+  API_BASE: "https://songbrocade-api.petterbrand03.workers.dev",
 
   // 链路配置（Base Sepolia）
   CHAIN_ID_HEX: "0x14A34",
@@ -14,6 +17,6 @@ window.POAP_CONFIG = {
   DEFAULT_EVENT_ID: "",
   DEFAULT_POAP_CONTRACT: "",
   
-  // ERC20 Merkle Distributor 合约地址（管理员部署后填入）
-  DISTRIBUTOR_CONTRACT: "0xb763A90039cc09CcbDcfF3feb28378fFF07B9c6C"
+  // SimpleAirdropV2 合约地址（管理员部署后填入）
+  DISTRIBUTOR_CONTRACT: "0xb21e9bA27D42c30eCbC155Ed3FFbE575A449f6a2"
 };

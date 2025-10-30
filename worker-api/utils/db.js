@@ -18,7 +18,7 @@ const STMT_CREATE = [
      created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
    )`,
 
-  // 签到表（合并版本）
+  // 签到表（合并版本）- 移除唯一约束，支持无限次签到
   `CREATE TABLE IF NOT EXISTS checkins (
      id INTEGER PRIMARY KEY AUTOINCREMENT,
      event_id TEXT NOT NULL,
@@ -28,8 +28,7 @@ const STMT_CREATE = [
      ts INTEGER NOT NULL,
      sig TEXT,
      tx_hash TEXT,
-     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-     UNIQUE(event_id, wallet)
+     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
    )`,
 
   // 会员表

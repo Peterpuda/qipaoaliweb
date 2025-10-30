@@ -47,6 +47,150 @@ function authHeaders() {
   return t ? { 'authorization': 'Bearer ' + t } : {};
 }
 
+// 当前连接的钱包地址
+let currentWallet = '';
+
+// 连接钱包
+async function connectAdminWallet() {
+  if (!window.ethereum) {
+    toast('未检测到钱包，请使用 MetaMask 等 Web3 钱包访问', 'error');
+    return false;
+  }
+  
+  try {
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    currentWallet = accounts[0];
+    console.log('钱包已连接:', currentWallet);
+    return true;
+  } catch (error) {
+    console.error('连接钱包失败:', error);
+    toast('连接钱包失败: ' + error.message, 'error');
+    return false;
+  }
+}
+
+// 管理员登录（签名验证）
+async function adminLogin() {
+  try {
+    // 1. 确保钱包已连接
+    if (!currentWallet) {
+      const connected = await connectAdminWallet();
+      if (!connected) return false;
+    }
+    
+    // 2. 获取挑战消息
+    const challengeResponse = await fetch(`${ADMIN_CONFIG.API_BASE}/auth/challenge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address: currentWallet })
+    });
+    
+    const challengeData = await challengeResponse.json();
+    if (!challengeData.ok) {
+      throw new Error(challengeData.error || '获取挑战失败');
+    }
+    
+    // 3. 签名挑战
+    const message = challengeData.message;
+    const signature = await window.ethereum.request({
+      method: "personal_sign",
+      params: [message, currentWallet]
+    });
+    
+    // 4. 提交签名验证
+    const verifyResponse = await fetch(`${ADMIN_CONFIG.API_BASE}/auth/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        address: currentWallet,
+        signature: signature,
+        message: message
+      })
+    });
+    
+    const verifyData = await verifyResponse.json();
+    
+    if (verifyData.ok) {
+      setToken(verifyData.token);
+      toast('管理员登录成功！', 'success');
+      return true;
+    } else {
+      throw new Error(verifyData.error || '登录失败');
+    }
+  } catch (error) {
+    console.error('管理员登录失败:', error);
+    toast('登录失败: ' + error.message, 'error');
+    return false;
+  }
+}
+
+// 显示登录模态框
+function showLoginModal() {
+  const modalHTML = `
+    <div id="adminLoginModal" class="modal-overlay" style="display: flex;">
+      <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+          <h3><i class="fas fa-shield-alt"></i> 管理员登录</h3>
+        </div>
+        <div class="modal-body">
+          <div style="padding: 20px; text-align: center;">
+            <div class="alert alert-warning" style="margin-bottom: 20px;">
+              <i class="fas fa-exclamation-triangle"></i>
+              此区域仅限管理员访问
+            </div>
+            <p style="margin-bottom: 20px; color: #4A463F;">
+              需要连接钱包并完成签名验证以确认管理员身份
+            </p>
+            <div id="loginWalletAddress" style="margin-bottom: 20px; padding: 10px; background: #f0f0f0; border-radius: 6px; font-family: monospace; font-size: 14px; display: none;">
+              
+            </div>
+            <button onclick="startAdminLogin()" class="btn btn-primary" style="width: 100%; margin-bottom: 10px;">
+              <i class="fas fa-wallet"></i> 连接钱包并签名
+            </button>
+            <button onclick="closeLoginModal()" class="btn btn-outline" style="width: 100%;">
+              取消
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // 移除旧的模态框（如果存在）
+  const oldModal = document.getElementById('adminLoginModal');
+  if (oldModal) oldModal.remove();
+  
+  // 添加新模态框
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// 关闭登录模态框
+function closeLoginModal() {
+  const modal = document.getElementById('adminLoginModal');
+  if (modal) modal.remove();
+}
+
+// 开始管理员登录流程
+async function startAdminLogin() {
+  const loginBtn = document.querySelector('#adminLoginModal .btn-primary');
+  const originalText = loginBtn.innerHTML;
+  
+  try {
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
+    
+    const success = await adminLogin();
+    if (success) {
+      closeLoginModal();
+      // 刷新页面以更新认证状态
+      window.location.reload();
+    }
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = originalText;
+  }
+}
+
 async function ensureAuth() {
   const t = readToken();
   const authStateEl = $('#authState');
@@ -56,13 +200,14 @@ async function ensureAuth() {
       authStateEl.textContent = '未登录';
       authStateEl.className = 'pill pill-error';
     }
-    toast('未检测到管理员登录，请先完成签名登录。', 'error');
+    // 显示登录模态框而不是只提示错误
+    showLoginModal();
     return false;
   }
   
   // 验证管理员权限（白名单检查）
   try {
-    const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/artisans`, {
+    const response = await fetch(`${ADMIN_CONFIG.API_BASE}/admin/whoami`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${t}`,
@@ -71,8 +216,11 @@ async function ensureAuth() {
     });
     
     if (response.ok) {
+      const data = await response.json();
+      currentWallet = data.wallet || '';
+      
       if (authStateEl) {
-        authStateEl.textContent = '已登录';
+        authStateEl.textContent = currentWallet ? shortAddr(currentWallet) : '已登录';
         authStateEl.className = 'pill pill-ok';
       }
       return true;
@@ -81,7 +229,17 @@ async function ensureAuth() {
         authStateEl.textContent = '权限不足';
         authStateEl.className = 'pill pill-error';
       }
-      toast('管理员权限验证失败，您的地址不在白名单中。', 'error');
+      
+      // 清除无效token
+      setToken('');
+      
+      // 403 说明不是管理员，401 说明 token 过期
+      const errorMsg = response.status === 403 
+        ? '您的钱包地址不在管理员白名单中' 
+        : '登录已过期，请重新登录';
+      
+      toast(errorMsg, 'error');
+      showLoginModal();
       return false;
     }
   } catch (error) {
@@ -93,6 +251,12 @@ async function ensureAuth() {
     toast('权限验证失败，请检查网络连接。', 'error');
     return false;
   }
+}
+
+// 短地址显示
+function shortAddr(addr) {
+  if (!addr) return '';
+  return addr.slice(0, 6) + '...' + addr.slice(-4);
 }
 
 // API调用
@@ -369,7 +533,14 @@ window.$ = $;
 window.$$ = $$;
 window.toast = toast;
 window.ensureAuth = ensureAuth;
+window.adminLogin = adminLogin;
+window.connectAdminWallet = connectAdminWallet;
+window.showLoginModal = showLoginModal;
+window.closeLoginModal = closeLoginModal;
+window.startAdminLogin = startAdminLogin;
+window.shortAddr = shortAddr;
 window.apiJSONmulti = apiJSONmulti;
+window.apiJSON = apiJSON;
 window.navigateTo = navigateTo;
 window.logout = logout;
 window.setQRAndLinks = setQRAndLinks;

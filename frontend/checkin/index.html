@@ -6,6 +6,7 @@
   <title>链上铭刻 · 一次出席，一生留名</title>
   <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../styles/app.css"/>
+  <link rel="stylesheet" href="../common/wallet-connector.css"/>
   <style>
     :root{
       --brand:#9E2A2B; /* 中国红 */
@@ -233,6 +234,7 @@
   </style>
   <!-- 统一配置（提供 WORKER_BASE_URL/RPC 等） -->
   <script src="/poap.config.js?v=20251014"></script>
+  <script src="../common/wallet-connector.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -255,15 +257,12 @@
     <!-- 钱包连接区域 -->
     <div class="wallet-section">
       <div class="row" style="margin-top:0">
-        <select id="walletSel">
-          <option value="auto">自动检测</option>
-          <option value="metamask">MetaMask</option>
-          <option value="coinbase">Coinbase Wallet</option>
-          <option value="phantom">Phantom</option>
-        </select>
-        <button class="btn" id="btnConnect">连接钱包</button>
+        <button class="btn" id="btnConnect">
+          <i class="fas fa-wallet"></i> 连接钱包
+        </button>
       </div>
-      <div id="addrLine" class="sub" style="margin-top:8px">未连接</div>
+      <div id="addrLine" class="sub" style="margin-top:8px;text-align:center">未连接</div>
+      <div id="walletInfo" class="sub" style="margin-top:4px;text-align:center;display:none;"></div>
     </div>
   </div>
 
@@ -390,65 +389,62 @@ async function loadEvent(){
   }
 }
 
-/** ===== 钱包连接（仅支持浏览器扩展钱包） ===== **/
-let SELECTED_PROVIDER=null;
+/** ===== 钱包连接（使用通用钱包连接器） ===== **/
+let SELECTED_PROVIDER = null;
+let currentWalletAddress = null;
 
-async function detectInjected(choice="auto"){
-  const eth=window.ethereum;const list=(eth&&Array.isArray(eth.providers))?eth.providers:[];
-  const pick=f=>list.find(p=>p&&p[f])||(eth&&eth[f]?eth:null);
-  if(choice==="metamask")return pick("isMetaMask");
-  if(choice==="coinbase")return pick("isCoinbaseWallet")||window.coinbaseWalletExtension;
-  if(choice==="phantom")return window.phantom?.ethereum;
-  if(list.length)return pick("isMetaMask")||pick("isCoinbaseWallet")||list[0];
-  return eth||window.coinbaseWalletExtension||window.phantom?.ethereum||null;
-}
-// WalletConnect 已移除，简化用户体验，仅支持浏览器扩展钱包
-async function ensureBaseSepolia(p){
-  try{
-    const id=await p.request({method:"eth_chainId"});
-    if(id.toLowerCase()!==BASE_SEPOLIA.chainIdHex.toLowerCase()){
-      await p.request({method:"wallet_switchEthereumChain",params:[{chainId:BASE_SEPOLIA.chainIdHex}]});
-    }
-  }catch{
-    try{await p.request({method:"wallet_addEthereumChain",
-      params:[{chainId:BASE_SEPOLIA.chainIdHex,chainName:"Base Sepolia",
-      nativeCurrency:{name:"ETH",symbol:"ETH",decimals:18},rpcUrls:[BASE_SEPOLIA.rpcUrl],
-      blockExplorerUrls:[BASE_SEPOLIA.explorer]}]});}catch(_){}
-  }
-}
-async function connect(){
-  const choice=$("walletSel").value||"auto";
-  try{
-    $("addrLine").textContent="连接中...";
-    const p=await detectInjected(choice);
-    if(!p){
-      $("addrLine").textContent="❌ 未检测到钱包扩展";
-      // 移动端尝试唤起 MetaMask
-      if(/Android|iPhone|iPad/i.test(navigator.userAgent)){
-        setTimeout(()=>{
-          $("addrLine").textContent="尝试打开 MetaMask App...";
-          openMetaMask();
-        }, 1000);
-      } else {
-        $("addrLine").textContent="❌ 请先安装 MetaMask、Coinbase Wallet 或其他钱包扩展";
+async function connect() {
+  try {
+    $("addrLine").textContent = "连接中...";
+    if ($("walletInfo")) $("walletInfo").style.display = "none";
+    
+    // 使用通用钱包连接器
+    const result = await WalletConnector.connect({
+      chainId: BASE_SEPOLIA.chainIdHex,
+      chainConfig: {
+        chainId: BASE_SEPOLIA.chainIdHex,
+        chainName: "Base Sepolia",
+        nativeCurrency: {
+          name: "ETH",
+          symbol: "ETH",
+          decimals: 18
+        },
+        rpcUrls: [BASE_SEPOLIA.rpcUrl],
+        blockExplorerUrls: [BASE_SEPOLIA.explorer]
+      },
+      onAccountChanged: (newAddress) => {
+        currentWalletAddress = newAddress;
+        $("addrLine").textContent = `✅ 已连接：${WalletConnector.shortAddress(newAddress)}`;
+        // 重新加载签到历史
+        loadCheckinHistory();
+      },
+      onChainChanged: () => {
+        // 网络变化时重新连接
+        setTimeout(() => connect(), 1000);
       }
-      return;
+    });
+    
+    SELECTED_PROVIDER = result.provider;
+    currentWalletAddress = result.address;
+    
+    $("addrLine").textContent = `✅ 已连接：${WalletConnector.shortAddress(result.address)}`;
+    if ($("walletInfo")) {
+      $("walletInfo").textContent = `钱包：${result.wallet}`;
+      $("walletInfo").style.display = "block";
     }
-    SELECTED_PROVIDER=p;
-    await p.request({method:"eth_requestAccounts"});
-    await ensureBaseSepolia(SELECTED_PROVIDER);
-    const acc=await SELECTED_PROVIDER.request({method:"eth_accounts"});
-    $("addrLine").textContent=acc[0]?`✅ 已连接：${shortAddr(acc[0])}`:"❌ 连接失败";
-  }catch(e){
-    console.error('连接错误详情:', e);
-    $("addrLine").textContent="❌ 连接错误："+(e?.message||e);
+    
+    // 更新按钮文本
+    $("btnConnect").innerHTML = `<i class="fas fa-check-circle"></i> 已连接`;
+    
+    // 加载签到历史
+    loadCheckinHistory();
+    
+  } catch (error) {
+    console.error('连接错误详情:', error);
+    $("addrLine").textContent = "❌ 连接失败：" + (error?.message || error);
+    if ($("walletInfo")) $("walletInfo").style.display = "none";
+    $("btnConnect").innerHTML = `<i class="fas fa-wallet"></i> 连接钱包`;
   }
-}
-function openMetaMask(){
-  const deep="metamask://dapp/"+location.host;
-  const fallback="https://metamask.app.link/dapp/"+location.host;
-  window.location.href=deep;
-  setTimeout(()=>{window.location.href=fallback;},1000);
 }
 
 /** ===== 签到 ===== **/
@@ -487,8 +483,7 @@ async function claim(){
   const p=SELECTED_PROVIDER;
   if(!p){ setPanel("请先连接钱包"); return; }
 
-  const acc = await p.request({method:"eth_accounts"});
-  const address = acc?.[0];
+  const address = currentWalletAddress;
   if(!address){ setPanel("钱包未授权地址"); return; }
 
   const code = $("code").value.trim().toUpperCase();
@@ -515,11 +510,7 @@ async function claim(){
     
     if(!r.ok || !data.ok) {
       const errorMsg = data.message || data.error || "UNKNOWN_ERROR";
-      if (data.error === 'ALREADY_CHECKED_IN_TODAY') {
-        setPanel("⏰ " + errorMsg);
-      } else {
-        setPanel("签到失败："+ errorMsg); 
-      }
+      setPanel("签到失败："+ errorMsg); 
       return;
     }
     
@@ -556,8 +547,7 @@ async function loadCheckinHistory() {
   if (!p) return;
   
   try {
-    const acc = await p.request({method: "eth_accounts"});
-    const address = acc?.[0];
+    const address = currentWalletAddress;
     if (!address) return;
     
     const response = await fetch(api('/orders'), {
@@ -599,13 +589,36 @@ function displayCheckinHistory(orders) {
 }
 
 /** ===== 代币领取功能 ===== **/
-// ERC20 Merkle Distributor ABI
+// SimpleAirdropV2 ABI（更简单的空投合约）
 const CLAIM_ABI = [
-  {"inputs":[{"internalType":"address","name":"token_","type":"address"},{"internalType":"bytes32","name":"merkleRoot_","type":"bytes32"}],"stateMutability":"nonpayable","type":"constructor"},
-  {"inputs":[],"name":"merkleRoot","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
-  {"inputs":[],"name":"token","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"isClaimed","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"index","type":"uint256"},{"internalType":"address","name":"account","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"bytes32[]","name":"proof","type":"bytes32[]"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"}
+  {
+    "inputs": [],
+    "name": "claim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
+    "name": "isClaimed",
+    "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getContractBalance",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "amountPerClaim",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ];
 
 // 合约地址配置（管理员部署合约后填入）
@@ -624,8 +637,7 @@ async function claimTokens() {
     return;
   }
 
-  const acc = await p.request({method:"eth_accounts"});
-  const address = acc?.[0];
+  const address = currentWalletAddress;
   if(!address) {
     setClaimLog('钱包未授权地址');
     return;
@@ -664,14 +676,9 @@ async function claimTokens() {
              return;
            }
 
-           const claimableTokens = (BigInt(eligData.amount) / BigInt(10**18)).toString();
-           const totalTokens = eligData.totalAmount ? (BigInt(eligData.totalAmount) / BigInt(10**18)).toString() : claimableTokens;
+           const claimableTokens = "1000";  // SimpleAirdropV2 固定每次 1000 代币
            
-           if (eligData.totalAmount && eligData.totalAmount !== eligData.amount) {
-             setClaimLog(`✅ 资格验证通过！\n📊 累计签到 ${eligData.checkinCount || 0} 次\n💰 本次可领取：${claimableTokens} 枚代币\n📈 累计总额：${totalTokens} 枚代币\n\n⚠️ 说明：本次领取基于 Merkle Tree 快照金额。剩余代币将在下次 Merkle Tree 更新后可领取。`);
-           } else {
-             setClaimLog(`✅ 资格验证通过！准备领取 ${claimableTokens} 枚代币...`);
-           }
+           setClaimLog(`✅ 资格验证通过！\n📊 累计签到 ${eligData.checkinCount || 0} 次\n💰 可领取：${claimableTokens} 枚 QIPAO 代币\n\n准备提交链上交易...`);
 
     // 2. 加载 ethers.js（如果还没加载）
     if(!window.ethers) {
@@ -685,25 +692,18 @@ async function claimTokens() {
       });
     }
 
-    // 3. 连接合约并领取
+    // 3. 连接合约并领取（SimpleAirdropV2：无需参数）
     setClaimLog('正在提交链上交易...');
     const ethersProvider = new ethers.BrowserProvider(window.ethereum);
     const signer = await ethersProvider.getSigner();
     const contract = new ethers.Contract(distributorContract, CLAIM_ABI, signer);
 
-    const index = BigInt(eligData.index);
-    const amount = BigInt(eligData.amount);
-    const proof = eligData.proof;
-
-    const tx = await contract.claim(index, address, amount, proof);
+    // ✅ SimpleAirdropV2 的 claim() 函数不需要任何参数
+    const tx = await contract.claim();
     setClaimLog(`交易已提交：${tx.hash}\n等待确认...`);
 
            const receipt = await tx.wait();
-           const amountInTokens = (BigInt(amount) / BigInt(10**18)).toString();
-           const displayTotalTokens = eligData.totalAmount ? (BigInt(eligData.totalAmount) / BigInt(10**18)).toString() : amountInTokens;
-           const remainingTokens = eligData.totalAmount && eligData.totalAmount !== eligData.amount 
-             ? (BigInt(eligData.totalAmount) - BigInt(eligData.amount)) / BigInt(10**18)
-             : BigInt(0);
+           const amountInTokens = "1000";  // SimpleAirdropV2 固定每次 1000 代币
 
            setClaimLog(`🎉 领取成功！\n✅ 已到账 ${amountInTokens} 枚代币\n📦 区块：${receipt.blockNumber}\n🔗 交易：${tx.hash}`);
            
@@ -711,13 +711,7 @@ async function claimTokens() {
            $('claimTokenRow').style.display = 'none';
            
            // 显示成功弹窗
-           let modalMsg = `🎉 恭喜！代币领取成功！\n\n💰 本次到账：${amountInTokens} 枚代币\n📦 区块高度：${receipt.blockNumber}\n\n`;
-           
-           if (remainingTokens > 0) {
-             modalMsg += `📈 累计总额：${displayTotalTokens} 枚代币\n⏳ 剩余 ${remainingTokens.toString()} 枚代币将在下次 Merkle Tree 更新后可领取\n\n`;
-           }
-           
-           modalMsg += `请在钱包中查看您的资产。`;
+           const modalMsg = `🎉 恭喜！代币领取成功！\n\n💰 已到账：${amountInTokens} 枚 QIPAO 代币\n📦 区块高度：${receipt.blockNumber}\n🔗 交易哈希：${tx.hash.slice(0, 10)}...${tx.hash.slice(-8)}\n\n请在钱包中查看您的资产。`;
            
            openModal(modalMsg);
 

@@ -64,6 +64,8 @@ function pickAllowedOrigin(req) {
     "https://0179f589.poap-checkin-frontend.pages.dev",
     "https://998a854f.poap-checkin-frontend.pages.dev",
     "https://debae5d5.poap-checkin-frontend.pages.dev",
+    "https://ae284c96.poap-checkin-frontend.pages.dev", // SimpleAirdropV2 deployment
+    "https://04c9c425.poap-checkin-frontend.pages.dev", // Unlimited checkin deployment
     "https://2e87f1ec.poap-checkin-frontend.pages.dev",
     "https://d1eeb901.poap-checkin-frontend.pages.dev",
     "https://6710bcdf.poap-checkin-frontend.pages.dev",
@@ -77,6 +79,8 @@ function pickAllowedOrigin(req) {
     "https://branch-prod.poap-checkin-frontend.pages.dev",
     "https://prod.poap-checkin-frontend.pages.dev",
     "https://693f317c.poap-checkin-frontend.pages.dev",
+    "https://db251da8.poap-checkin-frontend.pages.dev",
+    "https://1c8bf6e6.poap-checkin-frontend.pages.dev",
     "http://10break.com",
     "https://10break.com",
     "http://localhost:8787",
@@ -1441,13 +1445,8 @@ export default {
 
         const body = await readJson(req);
         // 前端传：slug, title, start_ts?, end_ts?
-        // 我们的数据库当前结构：events(id, slug, name, location, start_time, poap_contract, chain_id, created_at, ...)
-        // 对应关系：
-        // - title      -> name
-        // - start_ts   -> start_time（转成人类可读字符串）
-        // - slug       -> slug
-        //
-        // 注意：不要引用 events 表里并不存在的列，比如 updated_at / start_ts / end_ts
+        // start_ts 和 end_ts 是天数时间戳（从 1970-01-01 开始的天数）
+        // 数据库结构：events(id, slug, name, start_time, start_ts, end_ts, location, poap_contract, chain_id, created_at, ...)
 
         if (!body || !body.slug || !body.title) {
           return withCors(
@@ -1465,8 +1464,9 @@ export default {
         if (body.start_ts) {
           const tsNum = Number(body.start_ts);
           if (!isNaN(tsNum)) {
-            const d = new Date(tsNum * 1000);
-            startTimeStr = d.toLocaleString("zh-CN", { hour12: false });
+            // 天数时间戳转换为日期
+            const d = new Date(tsNum * 24 * 60 * 60 * 1000);
+            startTimeStr = d.toLocaleDateString("zh-CN");
           }
         }
 
@@ -1479,18 +1479,22 @@ export default {
         `, [eventSlug]);
 
         if (existingRows && existingRows.length > 0) {
-          // 已存在：更新标题、开始时间等
+          // 已存在：更新标题、开始时间、时间戳等
           const existingId = existingRows[0].id;
 
           await run(env, `
             UPDATE events
             SET name = ?,
                 start_time = ?,
+                start_ts = ?,
+                end_ts = ?,
                 created_at = COALESCE(created_at, ?)
             WHERE id = ?
           `, [
             eventTitle,
             startTimeStr,
+            body.start_ts || null,
+            body.end_ts || null,
             nowSec,
             existingId
           ]);
@@ -1514,16 +1518,20 @@ export default {
               slug,
               name,
               start_time,
+              start_ts,
+              end_ts,
               location,
               poap_contract,
               chain_id,
               created_by,
               created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `, [
             eventSlug,
             eventTitle,
             startTimeStr,
+            body.start_ts || null,
+            body.end_ts || null,
             body.location || null,
             body.poap_contract || defaultContract,
             body.chain_id || null,
@@ -1589,7 +1597,7 @@ export default {
       if (pathname === "/poap/events" && req.method === "GET") {
         try {
           const rows = await query(env, `
-            SELECT id, slug, name, location, start_time, poap_contract, created_at
+            SELECT id, slug, name, location, start_time, start_ts, end_ts, poap_contract, created_at
             FROM events
             ORDER BY created_at DESC
             LIMIT 50
@@ -1756,7 +1764,109 @@ export default {
         return await handleUploadImage(req, env);
       }
 
-      // GET /image/:key - 获取R2存储的图片
+      // GET /storage/public/:path - 获取R2存储的任何公开文件（图片、视频等）
+      if (pathname.startsWith("/storage/public/") && req.method === "GET") {
+        const key = pathname.slice(16); // 去掉 "/storage/public/"
+        console.log(`[R2 DEBUG] Pathname: ${pathname}, Key: ${key}`);
+        
+        if (!key) {
+          console.error(`[R2 DEBUG] Missing key!`);
+          return withCors(errorResponse("missing file key", 400), pickAllowedOrigin(req));
+        }
+
+        try {
+          if (!env.R2_BUCKET) {
+            console.error(`[R2 DEBUG] R2_BUCKET not bound to worker!`);
+            return withCors(errorResponse("R2_BUCKET not configured", 500), pickAllowedOrigin(req));
+          }
+          
+          console.log(`[R2 DEBUG] R2_BUCKET exists, attempting to get key: ${key}`);
+
+          // 检查是否有 Range 请求（视频拖动进度条时）
+          const rangeHeader = req.headers.get('Range');
+          
+          let object;
+          let status = 200;
+          let rangeResponseHeaders = {};
+          
+          if (rangeHeader) {
+            // 解析 Range: bytes=start-end
+            const rangeMatch = rangeHeader.match(/bytes=(\d+)-(\d*)/);
+            if (rangeMatch) {
+              const start = parseInt(rangeMatch[1]);
+              
+              // 先获取文件信息以知道总大小
+              const headObject = await env.R2_BUCKET.head(key);
+              if (!headObject) {
+                console.error(`R2 file not found: ${key}`);
+                return withCors(errorResponse("file not found", 404), pickAllowedOrigin(req));
+              }
+              
+              const fileSize = headObject.size;
+              const end = rangeMatch[2] ? parseInt(rangeMatch[2]) : fileSize - 1;
+              
+              console.log(`Range request for ${key}: bytes ${start}-${end}/${fileSize}`);
+              
+              // 使用 R2 的 range 参数获取部分内容
+              object = await env.R2_BUCKET.get(key, {
+                range: { offset: start, length: end - start + 1 }
+              });
+              
+              status = 206; // Partial Content
+              rangeResponseHeaders = {
+                'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                'Content-Length': `${end - start + 1}`,
+              };
+            } else {
+              // Range 格式不对，返回完整文件
+              object = await env.R2_BUCKET.get(key);
+            }
+          } else {
+            // 没有 Range 请求，返回完整文件
+            object = await env.R2_BUCKET.get(key);
+          }
+          
+          if (!object) {
+            console.error(`R2 file not found: ${key}`);
+            return withCors(errorResponse("file not found", 404), pickAllowedOrigin(req));
+          }
+
+          // 自动检测文件类型
+          let contentType = object.httpMetadata?.contentType || 'application/octet-stream';
+          
+          // 根据文件扩展名设置正确的 Content-Type
+          if (key.endsWith('.mp4')) {
+            contentType = 'video/mp4';
+          } else if (key.endsWith('.webm')) {
+            contentType = 'video/webm';
+          } else if (key.endsWith('.mp3')) {
+            contentType = 'audio/mpeg';
+          } else if (key.endsWith('.jpg') || key.endsWith('.jpeg')) {
+            contentType = 'image/jpeg';
+          } else if (key.endsWith('.png')) {
+            contentType = 'image/png';
+          }
+
+          console.log(`Serving R2 file: ${key}, Content-Type: ${contentType}, Size: ${object.size || 'unknown'} bytes, Status: ${status}`);
+
+          // 返回文件，支持视频流式播放和 Range 请求
+          return new Response(object.body, {
+            status: status,
+            headers: {
+              'Content-Type': contentType,
+              'Cache-Control': 'public, max-age=31536000',
+              'Access-Control-Allow-Origin': '*',
+              'Accept-Ranges': 'bytes',
+              ...rangeResponseHeaders,
+            },
+          });
+        } catch (error) {
+          console.error("Get file error:", error);
+          return withCors(errorResponse(`get file failed: ${error.message}`, 500), pickAllowedOrigin(req));
+        }
+      }
+
+      // GET /image/:key - 获取R2存储的图片（保留向后兼容）
       if (pathname.startsWith("/image/") && req.method === "GET") {
         const key = pathname.slice(7); // 去掉 "/image/"
         if (!key) {
@@ -2183,6 +2293,8 @@ export default {
             slug,
             name,
             start_time,
+            start_ts,
+            end_ts,
             location,
             created_at
           FROM events
@@ -2190,15 +2302,15 @@ export default {
           LIMIT 200
         `);
 
-        // 适配前端 displayEvents() 预期字段
+        // 返回真实的 start_ts 和 end_ts（天数时间戳）
         const mapped = rows.map(r => {
-          const fakeStartTs = r.created_at || 0; // 用 created_at 近似 start_ts
           return {
             id: r.id,
             slug: r.slug,
             name: r.name,
             created_at: r.created_at,
-            start_ts: fakeStartTs
+            start_ts: r.start_ts || null,
+            end_ts: r.end_ts || null
           };
         });
 
@@ -2288,27 +2400,9 @@ export default {
             actualSlug = eventRows[0].slug;
           }
 
-          // 检查今天是否已经签到
+          // ✅ 移除每日签到限制，允许无限次签到
           const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-          const todayCheckin = await query(env, `
-            SELECT id, created_at FROM checkins 
-            WHERE event_id = ? AND wallet = ? 
-            AND DATE(created_at) = DATE('now')
-            LIMIT 1
-          `, [actualEventId, wallet]);
-
-          if (todayCheckin && todayCheckin.length > 0) {
-            return withCors(
-              jsonResponse({ 
-                ok: false, 
-                error: 'ALREADY_CHECKED_IN_TODAY',
-                message: '您今天已经签到过了，请明天再来！',
-                nextCheckinTime: new Date(new Date(todayCheckin[0].created_at).getTime() + 24*60*60*1000).toISOString()
-              }),
-              pickAllowedOrigin(req)
-            );
-          }
-
+          
           // 查询历史签到次数
           const checkinHistory = await query(env, `
             SELECT COUNT(*) as total_checkins FROM checkins 
@@ -2429,78 +2523,101 @@ export default {
           eventId = eventRows[0].id;
         }
         
-        // 查询空投资格（使用 LIKE 处理 "25" vs "25.0" 的情况）
-        const rows = await query(env, `
-          SELECT wallet, event_id, amount, merkle_amount, claimed, item_index, proof, merkle_batch, token_tx_hash, checkin_count
-          FROM airdrop_eligible
-          WHERE (event_id = ? OR event_id = ? || '.0') AND wallet = ?
-          LIMIT 1
-        `, [String(eventId), String(eventId), wallet]);
+        // ✅ 新逻辑：直接检查用户是否签到过该活动
+        const checkinRows = await query(env, `
+          SELECT COUNT(*) as checkin_count, MIN(created_at) as first_checkin
+          FROM checkins
+          WHERE event_id = ? AND wallet = ?
+        `, [eventId, wallet]);
         
-        if (!rows || !rows.length) {
+        if (!checkinRows || !checkinRows.length || checkinRows[0].checkin_count === 0) {
           return withCors(jsonResponse({ 
             ok: true, 
             eligible: false,
-            reason: "NO_QUALIFICATION"
+            reason: "NOT_CHECKED_IN",
+            message: "请先签到该活动"
           }), pickAllowedOrigin(req));
         }
         
-        const row = rows[0];
+        const checkinCount = checkinRows[0].checkin_count;
         
-        if (row.claimed) {
-          return withCors(jsonResponse({ 
-            ok: true, 
-            eligible: true,
-            claimed: true,
-            message: "Already claimed"
-          }), pickAllowedOrigin(req));
-        }
+        // 查询 Merkle 批次信息
+        const batchRows = await query(env, `
+          SELECT merkle_root, distributor_address
+          FROM merkle_batches
+          WHERE batch_id = ?
+          LIMIT 1
+        `, [eventId]);
         
-        if (!row.item_index || !row.proof) {
+        if (!batchRows || !batchRows.length || !batchRows[0].merkle_root) {
           return withCors(jsonResponse({ 
             ok: true, 
             eligible: true,
             ready: false,
-            message: "Merkle proof not generated yet, contact admin"
+            message: "Merkle Tree 尚未生成，请联系管理员"
           }), pickAllowedOrigin(req));
         }
         
-        // 使用 merkle_amount（Merkle Tree 快照金额）而不是 amount（累加金额）
-        const claimableAmount = row.merkle_amount || row.amount;
+        const merkleRoot = batchRows[0].merkle_root;
+        const distributorAddress = batchRows[0].distributor_address;
         
+        // 检查是否已经领取过
+        const claimRows = await query(env, `
+          SELECT claimed, token_tx_hash
+          FROM airdrop_eligible
+          WHERE event_id = ? AND wallet = ?
+          LIMIT 1
+        `, [eventId, wallet]);
+        
+        if (claimRows && claimRows.length > 0 && claimRows[0].claimed) {
+          return withCors(jsonResponse({ 
+            ok: true, 
+            eligible: true,
+            claimed: true,
+            txHash: claimRows[0].token_tx_hash,
+            message: "您已经领取过该活动的代币"
+          }), pickAllowedOrigin(req));
+        }
+        
+        // 每个签到用户可领取的固定金额
+        const amountPerUser = "1000000000000000000000"; // 1000 tokens (18 decimals)
+        
+        // ✅ 使用 SimpleAirdropV2 合约（无需签名，前端直接调用 claim()）
         return withCors(jsonResponse({ 
           ok: true,
           eligible: true,
           ready: true,
-          index: row.item_index,
-          amount: claimableAmount,  // 返回可领取金额（Merkle Tree 中的金额）
-          totalAmount: row.amount,   // 返回累计总金额（仅供显示）
-          checkinCount: row.checkin_count || 0,  // 签到次数
-          proof: JSON.parse(row.proof || "[]"),
-          batch: row.merkle_batch,
-          note: row.merkle_amount ? "本次可领取基于 Merkle Tree 快照的金额" : null
+          amount: amountPerUser,
+          checkinCount: checkinCount,
+          contractType: "SimpleAirdropV2",  // ✅ 标识合约类型
+          eventId: eventId,
+          message: `您已签到 ${checkinCount} 次，可领取 1000 个代币`
         }), pickAllowedOrigin(req));
       }
 
       // POST /admin/generate-merkle - 生成 Merkle Tree（管理员）
+      // 新逻辑：只要活动存在就可以生成，不需要等待签到记录
       if (pathname === "/admin/generate-merkle" && req.method === "POST") {
         const adminCheck = await requireAdmin(req, env);
         if (!adminCheck.ok) return withCors(errorResponse("not allowed", 403), pickAllowedOrigin(req));
         
         const body = await readJson(req);
         const eventInput = body.event_id || body.batch_id;
+        const maxClaimers = body.max_claimers || 10000; // 最大可领取人数，默认 10000
         
         if (!eventInput) {
           return withCors(errorResponse("missing event_id", 400), pickAllowedOrigin(req));
         }
         
         try {
-          // 如果 eventInput 不是纯数字，尝试通过 slug 查找 event_id
+          // 验证活动是否存在
           let eventId = eventInput;
+          let eventName = eventInput;
+          
           if (isNaN(parseInt(eventInput))) {
-            // 是 slug，需要查询 events 表获取数字 id
+            // 是 slug，需要查询 events 表获取 id
             const eventRows = await query(env, `
-              SELECT id FROM events WHERE slug = ? LIMIT 1
+              SELECT id, name FROM events WHERE slug = ? LIMIT 1
             `, [eventInput]);
             
             if (!eventRows || !eventRows.length) {
@@ -2508,70 +2625,75 @@ export default {
             }
             
             eventId = eventRows[0].id;
+            eventName = eventRows[0].name || eventInput;
+          } else {
+            // 是数字 ID，查询活动名称
+            const eventRows = await query(env, `
+              SELECT name FROM events WHERE id = ? LIMIT 1
+            `, [eventInput]);
+            
+            if (!eventRows || !eventRows.length) {
+              return withCors(errorResponse(`Event with id '${eventInput}' not found`, 404), pickAllowedOrigin(req));
+            }
+            
+            eventName = eventRows[0].name || eventInput;
           }
           
-          // 从数据库获取所有签到用户
-          const checkins = await query(env, `
-            SELECT DISTINCT wallet
-            FROM checkins
-            WHERE event_id = ?
-            ORDER BY created_at
-          `, [eventId]);
+          // ✅ 新逻辑：不再检查签到记录，直接生成 Merkle Root
+          // 每个签到用户可领取的代币数量
+          const amountPerUser = "1000000000000000000000"; // 1000 tokens (18 decimals)
           
-          if (!checkins || checkins.length === 0) {
-            return withCors(errorResponse("no checkins found for this event", 404), pickAllowedOrigin(req));
-          }
-          
-          const addresses = checkins.map(c => c.wallet);
-          const amount = "1000000000000000000000"; // 1000 tokens (18 decimals)
-          
-          // 简化的 Merkle Root 计算（使用 Web Crypto API）
+          // 生成一个基于活动的固定 Merkle Root
+          // 这个 Root 对所有签到用户都有效
           const encoder = new TextEncoder();
-          const data = encoder.encode(JSON.stringify({ eventId, addresses, amount }));
+          const data = encoder.encode(JSON.stringify({ 
+            eventId, 
+            eventName,
+            amount: amountPerUser,
+            timestamp: Math.floor(Date.now() / 1000)
+          }));
           const hashBuffer = await crypto.subtle.digest('SHA-256', data);
           const hashArray = Array.from(new Uint8Array(hashBuffer));
-          const simpleRoot = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+          const merkleRoot = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
           
-          // 为每个用户分配索引和空证明（简化版）
-          let index = 0;
-          for (const addr of addresses) {
-            await run(env, `
-              UPDATE airdrop_eligible
-              SET item_index = ?,
-                  proof = ?,
-                  merkle_batch = ?
-              WHERE wallet = ? AND event_id = ?
-            `, [
-              index,
-              JSON.stringify([`0x${simpleRoot.substring(0, 64)}`]),
-              eventId,
-              addr.toLowerCase(),
-              eventId
-            ]);
-            index++;
-          }
+          // 计算总代币量（基于最大可领取人数）
+          const totalAmount = (BigInt(amountPerUser) * BigInt(maxClaimers)).toString();
           
-          // 创建批次记录
+          // 创建或更新批次记录
           await run(env, `
             INSERT INTO merkle_batches (batch_id, merkle_root, distributor_address, total_amount, created_by, created_at)
             VALUES (?, ?, ?, ?, ?, strftime('%s', 'now'))
             ON CONFLICT(batch_id) DO UPDATE SET
               merkle_root = excluded.merkle_root,
-              total_amount = excluded.total_amount
+              total_amount = excluded.total_amount,
+              created_by = excluded.created_by
           `, [
             eventId,
-            '0x' + simpleRoot,
+            '0x' + merkleRoot,
             env.DISTRIBUTOR_ADDRESS || '0x0000000000000000000000000000000000000000',
-            (BigInt(amount) * BigInt(addresses.length)).toString(),
+            totalAmount,
             adminCheck.wallet
           ]);
+          
+          // 查询当前签到人数（仅用于显示）
+          const checkinCount = await query(env, `
+            SELECT COUNT(DISTINCT wallet) as count
+            FROM checkins
+            WHERE event_id = ?
+          `, [eventId]);
+          
+          const currentCheckins = (checkinCount && checkinCount[0]) ? checkinCount[0].count : 0;
           
           return withCors(jsonResponse({
             ok: true,
             eventId,
-            merkleRoot: '0x' + simpleRoot,
-            totalAddresses: addresses.length,
-            totalAmount: (BigInt(amount) * BigInt(addresses.length)).toString()
+            eventName,
+            merkleRoot: '0x' + merkleRoot,
+            amountPerUser,
+            maxClaimers,
+            totalAmount,
+            currentCheckins,
+            message: `Merkle Tree 已生成！当前已有 ${currentCheckins} 人签到，最多支持 ${maxClaimers} 人领取。`
           }), pickAllowedOrigin(req));
           
         } catch (error) {

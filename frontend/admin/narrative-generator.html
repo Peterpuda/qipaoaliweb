@@ -124,6 +124,88 @@
                     </div>
                 </div>
 
+                <!-- 多媒体生成选项 -->
+                <div class="border-t pt-6 mt-6">
+                    <h3 class="font-semibold text-lg mb-4 flex items-center">
+                        <span class="text-2xl mr-2">🎬</span>
+                        多媒体内容生成（可选）
+                    </h3>
+                    
+                    <!-- 音频生成 -->
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 mb-4">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" id="generateAudio" class="w-6 h-6 mt-1" onchange="toggleAudioOptions()">
+                            <div class="flex-1">
+                                <div class="font-medium text-lg mb-1">🎵 生成语音版（TTS）</div>
+                                <div class="text-sm text-gray-600 mb-3">
+                                    使用 AI 将文字转换为自然流畅的中文语音，让用户可以收听文化故事
+                                </div>
+                                <div id="audioOptions" class="hidden ml-0">
+                                    <label class="block text-sm font-medium mb-2">语音风格</label>
+                                    <select id="voiceStyle" class="w-full px-3 py-2 border rounded-lg bg-white">
+                                        <option value="nova">温柔女声 (Nova) - 适合故事叙述</option>
+                                        <option value="alloy">中性专业声 (Alloy) - 适合产品介绍</option>
+                                        <option value="shimmer">清晰女声 (Shimmer) - 适合使用指导</option>
+                                        <option value="onyx">沉稳男声 (Onyx) - 适合文化传承</option>
+                                    </select>
+                                    <div class="mt-2 text-xs text-gray-500 flex items-center gap-2">
+                                        <span>💰 成本: 约 ¥0.06/个叙事</span>
+                                        <span>•</span>
+                                        <span>⏱️ 时长: ~30秒</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- 视频生成 -->
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 mb-4">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" id="generateVideo" class="w-6 h-6 mt-1" onchange="toggleVideoOptions()">
+                            <div class="flex-1">
+                                <div class="font-medium text-lg mb-1">🎬 生成视频版（数字人讲解）</div>
+                                <div class="text-sm text-gray-600 mb-3">
+                                    使用 AI 数字人朗读文化叙事内容，以生动的视频形式展现传统工艺故事
+                                </div>
+                                <div id="videoOptions" class="hidden ml-0">
+                                    <label class="block text-sm font-medium mb-2">数字人风格</label>
+                                    <select id="videoStyle" class="w-full px-3 py-2 border rounded-lg bg-white">
+                                        <option value="Anna_public_3_20240108">Anna - 优雅亚洲女性（推荐）</option>
+                                        <option value="josh_lite3_20230714">Josh - 专业男性形象</option>
+                                        <option value="Tyler-incasual-20220721">Tyler - 年轻活力形象</option>
+                                    </select>
+                                    <div class="mt-2 text-xs text-gray-500 flex items-center gap-2">
+                                        <span>💰 成本: 约 ¥5/个叙事</span>
+                                        <span>•</span>
+                                        <span>⏱️ 时长: 根据文字长度（约30-90秒）</span>
+                                        <span>•</span>
+                                        <span>⚠️ 生成需要 3-10 分钟</span>
+                                    </div>
+                                    <div class="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                                        💡 提示：使用 HeyGen AI 数字人技术，自动朗读文化故事
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- 成本估算 -->
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <span class="text-2xl">💡</span>
+                            <div class="flex-1 text-sm">
+                                <div class="font-medium mb-1">成本提示（HeyGen 数字人视频）</div>
+                                <div id="costEstimate" class="text-gray-700">
+                                    <p>• 仅文字: 约 ¥1.72（4种叙事）</p>
+                                    <p>• 文字 + 语音: 约 ¥1.96（4种叙事）</p>
+                                    <p>• 文字 + 语音 + 数字人视频: 约 ¥21.96（4种叙事）</p>
+                                    <p class="text-xs mt-2 text-gray-600">* 数字人视频成本较高但效果更专业生动</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 生成按钮 -->
                 <button onclick="generateNarratives()" class="w-full px-6 py-4 bg-gradient-to-r from-yellow-500 to-red-600 text-white rounded-lg font-semibold text-lg hover:shadow-lg transition">
                     🚀 开始生成文化叙事
@@ -255,6 +337,28 @@
             }
         }
 
+        // 切换音频选项显示
+        function toggleAudioOptions() {
+            const checkbox = document.getElementById('generateAudio');
+            const options = document.getElementById('audioOptions');
+            if (checkbox.checked) {
+                options.classList.remove('hidden');
+            } else {
+                options.classList.add('hidden');
+            }
+        }
+
+        // 切换视频选项显示
+        function toggleVideoOptions() {
+            const checkbox = document.getElementById('generateVideo');
+            const options = document.getElementById('videoOptions');
+            if (checkbox.checked) {
+                options.classList.remove('hidden');
+            } else {
+                options.classList.add('hidden');
+            }
+        }
+
         async function generateNarratives() {
             const types = Array.from(document.querySelectorAll('input[name="narrativeType"]:checked'))
                 .map(cb => cb.value);
@@ -271,22 +375,40 @@
 
             const lang = document.getElementById('language').value;
             const provider = document.getElementById('provider').value;
+            
+            // 获取多媒体选项
+            const generateAudio = document.getElementById('generateAudio').checked;
+            const generateVideo = document.getElementById('generateVideo').checked;
+            const voiceStyle = generateAudio ? document.getElementById('voiceStyle').value : null;
+            const videoStyle = generateVideo ? document.getElementById('videoStyle').value : null;
 
-            showLoading(true, `正在使用 ${provider === 'openai' ? 'OpenAI GPT-4o' : 'Claude 3.5'} 生成 ${types.length} 个叙事版本...`);
+            let loadingMsg = `正在使用 ${provider === 'openai' ? 'OpenAI GPT-4o' : 'Claude 3.5'} 生成 ${types.length} 个叙事版本`;
+            if (generateAudio) loadingMsg += ' + 语音';
+            if (generateVideo) loadingMsg += ' + 数字人视频';
+            loadingMsg += '...';
+
+            showLoading(true, loadingMsg);
 
             try {
+                const requestBody = {
+                    product_id: currentProductId,
+                    types: types,
+                    lang: lang,
+                    provider: provider,
+                    generate_audio: generateAudio,
+                    generate_video: generateVideo
+                };
+
+                if (voiceStyle) requestBody.voice_style = voiceStyle;
+                if (videoStyle) requestBody.video_style = videoStyle;
+
                 const response = await fetch(`${ADMIN_CONFIG.API_BASE}/ai/narrative/generate`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         ...authHeaders()
                     },
-                    body: JSON.stringify({
-                        product_id: currentProductId,
-                        types: types,
-                        lang: lang,
-                        provider: provider
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
                 const data = await response.json();
@@ -328,6 +450,40 @@
             narratives.forEach(narrative => {
                 const result = results[narrative.type];
                 
+                // 构建多媒体链接
+                let multimediaHTML = '';
+                if (narrative.audio_url || narrative.video_url || narrative.generation_status === 'processing') {
+                    multimediaHTML = '<div class="mt-4 pt-4 border-t">';
+                    multimediaHTML += '<h4 class="font-medium text-sm mb-2">🎬 多媒体内容</h4>';
+                    multimediaHTML += '<div class="flex gap-2 flex-wrap">';
+                    
+                    if (narrative.audio_url) {
+                        multimediaHTML += `
+                            <a href="${narrative.audio_url}" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm">
+                                🎵 收听语音版
+                            </a>
+                        `;
+                    }
+                    
+                    if (narrative.video_url) {
+                        multimediaHTML += `
+                            <a href="${narrative.video_url}" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 text-sm">
+                                🎬 观看视频版
+                            </a>
+                        `;
+                    }
+                    
+                    if (narrative.generation_status === 'processing') {
+                        multimediaHTML += `
+                            <span class="inline-flex items-center gap-2 px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg text-sm">
+                                ⏳ 视频生成中...（2-5分钟）
+                            </span>
+                        `;
+                    }
+                    
+                    multimediaHTML += '</div></div>';
+                }
+                
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-lg shadow p-6';
                 card.innerHTML = `
@@ -350,6 +506,7 @@
                     <div class="prose max-w-none">
                         <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">${narrative.content}</p>
                     </div>
+                    ${multimediaHTML}
                 `;
                 
                 container.appendChild(card);

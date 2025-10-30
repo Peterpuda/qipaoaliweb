@@ -2,8 +2,9 @@
 // 用法：ArtisanChat.open(artisanId, artisanData)
 
 const ArtisanChat = (() => {
+  // 优先使用 POAP_CONFIG.API_BASE，如果不存在则使用 WORKER_BASE_URL，最后使用默认值
   const API_BASE = typeof POAP_CONFIG !== 'undefined' 
-    ? POAP_CONFIG.API_BASE 
+    ? (POAP_CONFIG.API_BASE || POAP_CONFIG.WORKER_BASE_URL)
     : 'https://songbrocade-api.petterbrand03.workers.dev';
 
   let currentArtisanId = null;
@@ -920,6 +921,7 @@ const ArtisanChat = (() => {
 
   // 导出公共API
   return {
+    init: initModal,      // 导出 init 方法
     open,
     close,
     sendQuickQuestion,

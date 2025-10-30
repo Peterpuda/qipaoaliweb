@@ -82,32 +82,42 @@ export async function generateMultimediaNarrative(params) {
     }
   }
 
-  // 生成视频
-  if (generateVideoFlag && env.REPLICATE_API_KEY) {
+  // 生成视频（使用 HeyGen API）
+  if (generateVideoFlag && env.HEYGEN_API_KEY) {
     try {
-      console.log(`Generating video for narrative ${narrativeId}...`);
+      console.log(`Generating video with HeyGen for narrative ${narrativeId}...`);
       
-      const videoStyleConfig = videoStyle 
-        ? { motion_bucket_id: parseInt(videoStyle), duration: 25 }
-        : getRecommendedVideoStyle(narrativeType);
+      // 获取推荐的视频风格配置
+      const videoStyleConfig = getRecommendedVideoStyle(narrativeType);
+      
+      // 如果用户指定了视频风格，解析为 avatar_id
+      // videoStyle 格式: "avatar_id" 或使用默认配置
+      let finalConfig = { ...videoStyleConfig };
+      if (videoStyle) {
+        // 如果 videoStyle 是一个 avatar ID，使用它
+        finalConfig.avatar_id = videoStyle;
+      }
       
       const prompt = buildVideoPrompt(narrativeText, narrativeType, productName);
       
       const videoTask = await generateVideo(prompt, {
-        ...videoStyleConfig,
-        apiKey: env.REPLICATE_API_KEY
+        avatar_id: finalConfig.avatar_id,
+        voice_id: finalConfig.voice_id,
+        background_value: finalConfig.background_value,
+        test_mode: false,  // 生产模式
+        apiKey: env.HEYGEN_API_KEY
       });
       
       // 视频生成是异步的，返回任务 ID
       result.video = {
         status: 'processing',
         task_id: videoTask.id,
-        message: '视频正在生成中，请稍后刷新查看'
+        message: '视频正在生成中（HeyGen），预计需要 3-10 分钟，请稍后刷新查看'
       };
       
-      console.log(`Video generation started: ${videoTask.id}`);
+      console.log(`HeyGen video generation started: ${videoTask.id}`);
     } catch (error) {
-      console.error(`Video generation failed for ${narrativeId}:`, error);
+      console.error(`HeyGen video generation failed for ${narrativeId}:`, error);
       result.video = {
         status: 'failed',
         error: error.message
@@ -119,25 +129,26 @@ export async function generateMultimediaNarrative(params) {
 }
 
 /**
- * 检查并完成视频生成
+ * 检查并完成视频生成（HeyGen）
  * @param {string} narrativeId - 叙事 ID
  * @param {string} taskId - 视频生成任务 ID
  * @param {Object} env - 环境变量
  * @returns {Promise<Object>} 视频信息或状态
  */
 export async function checkAndCompleteVideo(narrativeId, taskId, env) {
-  if (!env.REPLICATE_API_KEY) {
-    throw new Error('Replicate API key not configured');
+  if (!env.HEYGEN_API_KEY) {
+    throw new Error('HeyGen API key not configured');
   }
 
-  const status = await checkVideoStatus(taskId, env.REPLICATE_API_KEY);
+  const status = await checkVideoStatus(taskId, env.HEYGEN_API_KEY);
   
   if (status.status === 'succeeded' && status.output) {
     // 视频生成完成，下载并上传到 R2
     const uploadResult = await downloadAndUploadVideo(
       status.output,
       env,
-      narrativeId
+      narrativeId,
+      status.duration  // HeyGen 提供的视频时长
     );
     
     return {
@@ -145,17 +156,18 @@ export async function checkAndCompleteVideo(narrativeId, taskId, env) {
       key: uploadResult.key,
       url: uploadResult.url,
       size: uploadResult.size,
-      duration: uploadResult.duration
+      duration: uploadResult.duration,
+      thumbnail: status.thumbnail_url  // HeyGen 提供的缩略图
     };
   } else if (status.status === 'failed') {
     return {
       status: 'failed',
-      error: status.error || 'Video generation failed'
+      error: status.error || 'HeyGen video generation failed'
     };
   } else {
     return {
       status: status.status,
-      message: '视频正在生成中...'
+      message: '视频正在生成中（HeyGen）...'
     };
   }
 }
@@ -194,10 +206,12 @@ export function estimateMultimediaCost(options) {
     cost.audio = (avgCharsPerNarrative * 0.0001) * narrativeTypes.length;
   }
 
-  // 视频生成成本（Replicate Stable Video Diffusion）
-  // 约 $0.002/秒，15秒视频 = $0.03 ≈ ¥0.22
+  // 视频生成成本（HeyGen API）
+  // Creator 套餐: $1 ≈ 1分钟视频
+  // 假设每个叙事视频约 30-60 秒，成本约 $0.5-1 ≈ ¥3.6-7.2
+  // 保守估计: ¥5/个视频
   if (generateVideo) {
-    cost.video = 0.22 * narrativeTypes.length;
+    cost.video = 5.0 * narrativeTypes.length;
   }
 
   cost.total = cost.text + cost.audio + cost.video;

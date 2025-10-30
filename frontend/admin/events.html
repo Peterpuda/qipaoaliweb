@@ -58,20 +58,26 @@
     <form id="eventForm">
       <div class="grid grid-2">
         <div class="field">
-          <label>活动 slug</label>
+          <label>活动 slug *</label>
           <input id="evSlug" name="slug" placeholder="如：qipao-20251208" required/>
         </div>
         <div class="field">
-          <label>标题</label>
+          <label>标题 *</label>
           <input id="evTitle" name="title" placeholder="活动标题" required/>
         </div>
         <div class="field">
-          <label>开始时间</label>
-          <input id="evStart" name="start_ts" type="number" placeholder="留空=now"/>
+          <label>开始日期</label>
+          <input id="evStart" name="start_date" type="date" placeholder="选择开始日期"/>
+          <small style="color: var(--muted); font-size: 11px; margin-top: 4px; display: block;">
+            留空则使用今天
+          </small>
         </div>
         <div class="field">
-          <label>结束时间</label>
-          <input id="evEnd" name="end_ts" type="number" placeholder="留空=+1天"/>
+          <label>结束日期</label>
+          <input id="evEnd" name="end_date" type="date" placeholder="选择结束日期"/>
+          <small style="color: var(--muted); font-size: 11px; margin-top: 4px; display: block;">
+            留空则为开始日期 + 1 天
+          </small>
         </div>
       </div>
       
@@ -150,6 +156,40 @@
 
 <script src="common/admin-common.js"></script>
 <script>
+// ===== 日期转换工具函数 =====
+
+/**
+ * 将日期字符串（YYYY-MM-DD）转换为天数时间戳
+ * @param {string} dateStr - 日期字符串，格式：YYYY-MM-DD
+ * @returns {number|null} - 天数时间戳（从 1970-01-01 开始的天数）
+ */
+function dateToTimestamp(dateStr) {
+  if (!dateStr) return null;
+  const date = new Date(dateStr + 'T00:00:00Z'); // UTC 时间
+  return Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * 将天数时间戳转换为日期字符串（YYYY-MM-DD）
+ * @param {number} timestamp - 天数时间戳
+ * @returns {string} - 日期字符串，格式：YYYY-MM-DD
+ */
+function timestampToDate(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp * 24 * 60 * 60 * 1000);
+  return date.toISOString().split('T')[0];
+}
+
+/**
+ * 获取今天的天数时间戳
+ * @returns {number} - 今天的天数时间戳
+ */
+function getTodayTimestamp() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
+}
+
 // 活动管理特定功能
 let currentEventSlug = '';
 
@@ -176,6 +216,16 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#btnSave')?.addEventListener('click', handleSaveEvent);
   $('#btnGetCode')?.addEventListener('click', handleGetCode);
   $('#btnExport')?.addEventListener('click', handleExport);
+  
+  // 开始日期变化时，自动设置结束日期为 +1 天
+  $('#evStart')?.addEventListener('change', function() {
+    const endInput = $('#evEnd');
+    if (!endInput.value && this.value) {
+      const startDate = new Date(this.value);
+      startDate.setDate(startDate.getDate() + 1);
+      endInput.value = startDate.toISOString().split('T')[0];
+    }
+  });
 });
 
 // 定义按钮事件处理函数
@@ -190,6 +240,16 @@ async function handleSaveEvent() {
     return;
   }
   
+  // 转换日期为天数时间戳
+  const startTs = dateToTimestamp(formData.start_date);
+  const endTs = dateToTimestamp(formData.end_date);
+  
+  // 验证日期逻辑
+  if (startTs && endTs && startTs >= endTs) {
+    toast('结束日期必须晚于开始日期', 'error');
+    return;
+  }
+  
   const btn = $('#btnSave');
   const originalText = btn.textContent;
   showLoading(btn);
@@ -198,8 +258,8 @@ async function handleSaveEvent() {
     const payload = {
       slug: formData.slug.trim(),
       title: formData.title.trim(),
-      start_ts: formData.start_ts ? Number(formData.start_ts) : null,
-      end_ts: formData.end_ts ? Number(formData.end_ts) : null
+      start_ts: startTs,  // 天数时间戳
+      end_ts: endTs       // 天数时间戳
     };
     
     const result = await apiJSONmulti(['/admin/event-upsert'], {
@@ -300,25 +360,91 @@ function displayEvents(events) {
     return;
   }
   
+  const todayTs = getTodayTimestamp();
+  
   container.innerHTML = events.map(event => {
-    const isActive = event.start_ts && event.start_ts > Date.now() / 1000;
-    const statusClass = isActive ? 'pill-ok' : 'pill-warning';
-    const statusText = isActive ? '进行中' : '已结束';
+    // 判断活动状态（基于天数时间戳）
+    let statusClass = 'pill-warning';
+    let statusText = '未知';
+    
+    if (event.start_ts && event.end_ts) {
+      if (todayTs < event.start_ts) {
+        statusClass = 'pill-info';
+        statusText = '未开始';
+      } else if (todayTs >= event.start_ts && todayTs <= event.end_ts) {
+        statusClass = 'pill-ok';
+        statusText = '进行中';
+      } else {
+        statusClass = 'pill-error';
+        statusText = '已结束';
+      }
+    } else if (event.start_ts) {
+      statusClass = todayTs >= event.start_ts ? 'pill-ok' : 'pill-info';
+      statusText = todayTs >= event.start_ts ? '进行中' : '未开始';
+    }
+    
+    // 格式化日期显示
+    const startDate = event.start_ts ? timestampToDate(event.start_ts) : '未设置';
+    const endDate = event.end_ts ? timestampToDate(event.end_ts) : '未设置';
     
     return `
       <div class="list-item">
-        <div>
+        <div style="flex: 1;">
           <div style="font-weight: 600;">${event.name || '未命名活动'}</div>
-          <div style="font-size: 12px; color: var(--muted);">
-            ID: ${event.id} | 创建时间: ${event.created_at ? formatDate(event.created_at) : '未知'}
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+            Slug: ${event.slug || 'N/A'}
+          </div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">
+            开始: ${startDate} | 结束: ${endDate}
           </div>
         </div>
-        <div>
+        <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
           <span class="pill ${statusClass}">${statusText}</span>
+          <button 
+            class="btn btn-sm btn-secondary" 
+            onclick="editEvent('${event.slug}')"
+            style="font-size: 11px; padding: 4px 8px;"
+          >
+            编辑
+          </button>
         </div>
       </div>
     `;
   }).join('');
+}
+
+// 编辑活动
+async function editEvent(slug) {
+  if (!ensureAuth()) return;
+  
+  try {
+    // 从活动列表中查找
+    const result = await apiJSONmulti(['/poap/events']);
+    const event = result.events?.find(e => e.slug === slug);
+    
+    if (event) {
+      // 填充表单
+      $('#evSlug').value = event.slug || '';
+      $('#evTitle').value = event.name || '';
+      
+      // 将天数时间戳转换为日期
+      if (event.start_ts) {
+        $('#evStart').value = timestampToDate(event.start_ts);
+      }
+      if (event.end_ts) {
+        $('#evEnd').value = timestampToDate(event.end_ts);
+      }
+      
+      currentEventSlug = slug;
+      
+      // 滚动到表单
+      document.querySelector('#eventForm').scrollIntoView({ behavior: 'smooth' });
+      toast('已加载活动信息，可以编辑');
+    }
+  } catch (error) {
+    console.error('加载活动失败:', error);
+    toast('加载失败：' + error.message, 'error');
+  }
 }
 
 // 刷新按钮事件已在 DOMContentLoaded 回调中绑定

@@ -32,21 +32,31 @@
       <button class="btn btn-secondary" onclick="loadEventInfo()">📋 加载活动信息</button>
     </div>
 
-    <div id="eventInfo" class="merkle-card" style="display:none">
+      <div id="eventInfo" class="merkle-card" style="display:none">
       <h2>活动信息</h2>
       <div class="merkle-info">
         <div><strong>活动名称：</strong><span id="eventName">-</span></div>
         <div><strong>活动 ID：</strong><span id="eventIdDisplay">-</span></div>
-        <div><strong>签到人数：</strong><span id="checkinCount">-</span></div>
+        <div><strong>当前签到人数：</strong><span id="checkinCount">0</span> 人</div>
         <div><strong>Merkle 状态：</strong><span id="merkleStatus" class="status pending">待生成</span></div>
+      </div>
+      <div style="margin-top: 12px; padding: 10px; background: #e0f2fe; border-radius: 8px; color: #075985; font-size: 12px;">
+        ℹ️ 签到人数仅供参考，生成 Merkle Tree 不需要等待签到。
       </div>
     </div>
 
     <div id="generateSection" class="merkle-card" style="display:none">
       <h2>步骤 2：生成 Merkle Tree</h2>
       <p style="color: var(--muted); font-size: 14px;">
-        生成 Merkle Tree 后，每个签到用户将获得一个证明（proof），用于在链上领取代币。
+        生成 Merkle Tree 后，用户签到即可领取代币（无需预先知道签到名单）。
       </p>
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label>预计最大参与人数</label>
+        <input type="number" id="maxClaimers" value="10000" min="1" placeholder="用于计算需要准备的代币总量" />
+        <small style="color: var(--muted); font-size: 12px; display: block; margin-top: 4px;">
+          每人可领取 1000 个代币，此参数用于计算需要转入合约的总代币量
+        </small>
+      </div>
       <button class="btn btn-generate" onclick="generateMerkle()">🚀 生成 Merkle Tree</button>
     </div>
 
@@ -66,12 +76,16 @@
     <div class="merkle-card">
       <h2>📖 使用说明</h2>
       <ol style="color: var(--muted); line-height: 1.8;">
-        <li>输入活动 ID，加载活动信息</li>
-        <li>确认签到人数正确后，点击生成 Merkle Tree</li>
-        <li>记录生成的 Merkle Root</li>
-        <li>使用 Merkle Root 部署 Sha256MerkleDistributor 合约</li>
-        <li>将合约地址告知用户，用户即可领取代币</li>
+        <li><strong>输入活动 ID</strong>，加载活动信息（只要活动存在即可）</li>
+        <li><strong>生成 Merkle Tree</strong>，无需等待用户签到</li>
+        <li><strong>记录 Merkle Root</strong>，用于部署合约</li>
+        <li><strong>部署 ERC20MerkleDistributor 合约</strong>（使用生成的 Root）</li>
+        <li><strong>转账代币到合约</strong>（根据预计参与人数）</li>
+        <li><strong>用户签到后即可领取</strong>，只要合约有足够代币</li>
       </ol>
+      <div style="margin-top: 16px; padding: 12px; background: #fef3c7; border-radius: 8px; color: #92400e; font-size: 13px;">
+        💡 <strong>新逻辑</strong>：不需要等待用户签到！只要活动创建成功，就可以立即生成 Merkle Tree 并部署合约。用户签到后会自动检查资格并允许领取。
+      </div>
     </div>
   </div>
 
@@ -129,16 +143,24 @@
 
     async function generateMerkle() {
       const eventId = document.getElementById('eventId').value.trim();
+      const maxClaimers = parseInt(document.getElementById('maxClaimers').value) || 10000;
+      
       if (!eventId) {
         alert('请先加载活动信息');
         return;
       }
 
-      if (!confirm(`确定要为活动 ${eventId} 生成 Merkle Tree 吗？`)) {
+      if (maxClaimers < 1) {
+        alert('预计参与人数必须大于 0');
+        return;
+      }
+
+      if (!confirm(`确定要为活动 ${eventId} 生成 Merkle Tree 吗？\n\n预计最大参与人数：${maxClaimers} 人\n需要准备代币：${maxClaimers * 1000} 个`)) {
         return;
       }
 
       log(`开始生成 Merkle Tree...`);
+      log(`预计最大参与人数: ${maxClaimers}`);
 
       try {
         const token = sessionStorage.getItem('qipao.admin.token') || 
@@ -158,7 +180,10 @@
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ event_id: eventId })
+          body: JSON.stringify({ 
+            event_id: eventId,
+            max_claimers: maxClaimers
+          })
         });
 
         const data = await response.json();
@@ -168,21 +193,33 @@
           return;
         }
 
-        // 显示结果（使用 camelCase 字段名）
+        // 计算代币数量（从 wei 转换为 tokens）
+        const totalTokens = data.totalAmount ? (BigInt(data.totalAmount) / BigInt('1000000000000000000')).toString() : 'N/A';
+        const amountPerUser = data.amountPerUser ? (BigInt(data.amountPerUser) / BigInt('1000000000000000000')).toString() : '1000';
+
+        // 显示结果
         const resultHtml = `
 <strong>✅ 生成成功！</strong>
 
-活动 ID: ${data.eventId || data.event_id || eventId}
-Merkle Root: ${data.merkleRoot || data.merkle_root || 'N/A'}
-总地址数: ${data.totalAddresses || data.total_addresses || 'N/A'}
-总代币量: ${data.totalAmount || data.total_amount || 'N/A'} wei
+活动 ID: ${data.eventId || eventId}
+活动名称: ${data.eventName || '-'}
+Merkle Root: ${data.merkleRoot || 'N/A'}
 
-<strong>下一步：</strong>
-1. 记录上面的 Merkle Root
-2. 部署 ERC20MerkleDistributor 合约（使用此 Root）
-3. 将足够的代币转入合约地址
-4. 在前端配置合约地址（poap.config.js）
-5. 用户即可在签到页面领取代币
+<strong>代币配置：</strong>
+每人可领取: ${amountPerUser} 个代币
+最大参与人数: ${data.maxClaimers || maxClaimers}
+需要准备代币总量: ${totalTokens} 个代币
+当前已签到: ${data.currentCheckins || 0} 人
+
+<strong>下一步操作：</strong>
+1. 📝 记录 Merkle Root: ${data.merkleRoot || 'N/A'}
+2. 🚀 部署 ERC20MerkleDistributor 合约（使用此 Root）
+3. 💰 转账 ${totalTokens} 个代币到合约地址
+4. ⚙️ 更新 frontend/poap.config.js 中的 DISTRIBUTOR_CONTRACT
+5. ✅ 用户签到后即可领取代币！
+
+<strong>提示：</strong>
+${data.message || ''}
         `;
 
         document.getElementById('merkleResult').innerHTML = resultHtml.replace(/\n/g, '<br>');
@@ -192,10 +229,12 @@ Merkle Root: ${data.merkleRoot || data.merkle_root || 'N/A'}
         statusSpan.textContent = '已生成';
         statusSpan.className = 'status ready';
 
-        log('Merkle Tree 生成成功！', 'success');
-        log(`Merkle Root: ${data.merkleRoot || data.merkle_root || 'N/A'}`);
-        log(`总地址数: ${data.totalAddresses || data.total_addresses || 'N/A'}`);
-        log(`总代币量: ${data.totalAmount || data.total_amount || 'N/A'} wei`);
+        log('✅ Merkle Tree 生成成功！', 'success');
+        log(`Merkle Root: ${data.merkleRoot || 'N/A'}`);
+        log(`每人可领取: ${amountPerUser} 个代币`);
+        log(`最大参与人数: ${data.maxClaimers || maxClaimers}`);
+        log(`需要准备代币: ${totalTokens} 个`);
+        log(`当前已签到: ${data.currentCheckins || 0} 人`);
 
       } catch (error) {
         log(`生成失败：${error.message}`, 'error');
