@@ -91,11 +91,16 @@ export async function generateMultimediaNarrative(params) {
       const videoStyleConfig = getRecommendedVideoStyle(narrativeType);
       
       // 如果用户指定了视频风格，解析为 avatar_id
-      // videoStyle 格式: "avatar_id" 或使用默认配置
+      // videoStyle 格式: "avatar_id" 字符串（如 "Anna_public_3_20240108"）
       let finalConfig = { ...videoStyleConfig };
-      if (videoStyle) {
-        // 如果 videoStyle 是一个 avatar ID，使用它
-        finalConfig.avatar_id = videoStyle;
+      if (videoStyle && typeof videoStyle === 'string') {
+        // 检查是否是有效的 avatar ID（不是纯数字）
+        // 旧的 Replicate motion_bucket_id 是纯数字（如 "60", "80"），需要忽略
+        if (isNaN(videoStyle) && videoStyle.length > 10) {
+          // 是有效的 avatar ID
+          finalConfig.avatar_id = videoStyle;
+        }
+        // 否则使用默认配置
       }
       
       const prompt = buildVideoPrompt(narrativeText, narrativeType, productName);

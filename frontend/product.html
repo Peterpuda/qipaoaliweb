@@ -991,6 +991,11 @@
         
         // 如果有音频（确保 audio_url 存在且不为空）
         if (narrative.audio_url && narrative.audio_url.trim()) {
+          // 处理音频 URL：如果是相对路径，补全为完整 URL
+          const audioUrl = narrative.audio_url.startsWith('http') 
+            ? narrative.audio_url 
+            : `${API_BASE}${narrative.audio_url}`;
+          
           mediaTabsHTML += `
             <button onclick="switchMediaTab('${narrative.id}', 'audio', event)" 
                     class="media-tab media-tab-${narrative.id} px-3 py-2 rounded-lg text-sm bg-gray-200 text-ink hover:bg-gray-300">
@@ -1000,7 +1005,7 @@
           mediaContentHTML += `
             <div id="media-${narrative.id}-audio" class="media-content media-content-${narrative.id}" style="display:none;">
               <audio controls class="w-full mb-4" preload="metadata">
-                <source src="${narrative.audio_url}" type="audio/mpeg">
+                <source src="${audioUrl}" type="audio/mpeg">
                 您的浏览器不支持音频播放
               </audio>
               <div class="text-sm text-secondary text-center">
@@ -1015,6 +1020,11 @@
         
         // 如果有视频（确保 video_url 存在且不为空）
         if (narrative.video_url && narrative.video_url.trim()) {
+          // 处理视频 URL：如果是相对路径，补全为完整 URL
+          const videoUrl = narrative.video_url.startsWith('http') 
+            ? narrative.video_url 
+            : `${API_BASE}${narrative.video_url}`;
+          
           mediaTabsHTML += `
             <button onclick="switchMediaTab('${narrative.id}', 'video', event)" 
                     class="media-tab media-tab-${narrative.id} px-3 py-2 rounded-lg text-sm bg-gray-200 text-ink hover:bg-gray-300">
@@ -1024,14 +1034,14 @@
           mediaContentHTML += `
             <div id="media-${narrative.id}-video" class="media-content media-content-${narrative.id}" style="display:none;">
               <video controls class="w-full rounded-lg mb-4" preload="metadata">
-                <source src="${narrative.video_url}" type="video/mp4">
+                <source src="${videoUrl}" type="video/mp4">
                 您的浏览器不支持视频播放
               </video>
               <div class="text-sm text-secondary text-center">
-                🎬 观看文化叙事视频版
+                🎬 观看文化叙事数字人讲解视频
               </div>
               <div class="text-xs text-gray-400 text-center mt-2">
-                时长约 ${narrative.video_duration || 5} 秒
+                时长约 ${narrative.video_duration || 30} 秒
               </div>
             </div>
           `;
