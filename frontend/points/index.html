@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no" />
 <title>我的积分 · POAP Check-in</title>
 <meta name="theme-color" content="#0a0a0a" />
+<link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 <style>
   :root{
     --bg:#0a0a0a; --card:#111113; --line:#232325; --muted:#9b9ca0; --text:#f4f4f5;
@@ -22,7 +23,14 @@
   .appbar{
     position:sticky;top:0;padding: clamp(10px, 10px + var(--safe-top), 18px) 16px 12px;
     background:rgba(10,10,10,.7); backdrop-filter: blur(10px); border-bottom:1px solid var(--line); z-index:10;
+    display: flex; align-items: center; gap: 12px;
   }
+  .backBtn{
+    width:36px; height:36px; border-radius:50%; background:#232325; 
+    display:flex; align-items:center; justify-content:center; color:var(--text); 
+    cursor:pointer; transition:.2s; border:none; padding:0;
+  }
+  .backBtn:hover{ background:var(--brand); }
   .appTitle{font-size:18px;font-weight:800;letter-spacing:.2px}
   .appSub{font-size:12px;color:var(--muted)}
   .wrap{padding:14px 14px calc(86px + var(--safe-bottom)); max-width:720px; margin:0 auto}
@@ -50,8 +58,13 @@
 </head>
 <body>
   <div class="appbar">
-    <div class="appTitle">我的积分 · POAP Check-in</div>
-    <div class="appSub">连接钱包查看积分与明细</div>
+    <button class="backBtn" onclick="window.location.href='../index.html'" title="返回主页">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <div>
+      <div class="appTitle">我的积分 · POAP Check-in</div>
+      <div class="appSub">连接钱包查看积分与明细</div>
+    </div>
   </div>
 
   <div class="wrap">

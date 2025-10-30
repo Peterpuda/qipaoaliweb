@@ -166,19 +166,25 @@
   <div class="min-h-screen max-w-[600px] mx-auto px-4 py-4">
     <!-- 导航栏 -->
     <header class="flex items-center justify-between py-4 mb-4">
-      <a href="../index.html" class="flex items-center">
-        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-paper mr-3">
-          <i class="fas fa-vote-yea text-lg"></i>
-        </div>
-        <div>
-          <h1 class="text-lg font-bold text-primary">DAO治理</h1>
-          <p class="text-xs text-secondary">社区共治</p>
-        </div>
-      </a>
+      <div class="flex items-center gap-3">
+        <button onclick="window.location.href='../index.html'" 
+                class="w-10 h-10 rounded-full bg-line flex items-center justify-center text-ink hover:bg-primary hover:text-paper transition">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <a href="../index.html" class="flex items-center">
+          <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-paper mr-3">
+            <i class="fas fa-vote-yea text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-primary">DAO治理</h1>
+            <p class="text-xs text-secondary">社区共治</p>
+          </div>
+        </a>
+      </div>
       <div class="flex items-center gap-2">
-        <span id="walletStatus" class="text-sm text-secondary">未连接</span>
-        <button id="connectWallet" class="btn btn-primary">
-          <i class="fab fa-ethereum mr-2"></i>连接钱包
+        <span id="walletStatus" class="text-sm text-secondary hidden md:inline">未连接</span>
+        <button id="connectWallet" class="btn btn-primary text-sm px-3 py-2">
+          <i class="fab fa-ethereum mr-1"></i><span class="hidden sm:inline">连接钱包</span><span class="sm:hidden">连接</span>
         </button>
       </div>
     </header>
