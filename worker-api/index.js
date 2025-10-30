@@ -1029,7 +1029,10 @@ export default {
           let sql = `
             SELECT id, type, content_json, lang, status, version,
                    created_by, reviewed_by, review_notes,
-                   view_count, like_count, created_at, updated_at, published_at
+                   view_count, like_count, created_at, updated_at, published_at,
+                   audio_key, audio_url, audio_duration, audio_size,
+                   video_key, video_url, video_duration, video_size, video_thumbnail,
+                   generation_status, generation_progress
             FROM content_variants
             WHERE product_id = ? AND lang = ?
           `;
@@ -1056,6 +1059,7 @@ export default {
               id: row.id,
               type: row.type,
               content: contentData.content || '',
+              content_json: row.content_json,
               model: contentData.model,
               tokens_used: contentData.tokens_used,
               lang: row.lang,
@@ -1068,7 +1072,19 @@ export default {
               like_count: row.like_count,
               created_at: row.created_at,
               updated_at: row.updated_at,
-              published_at: row.published_at
+              published_at: row.published_at,
+              // 多媒体字段
+              audio_key: row.audio_key,
+              audio_url: row.audio_url,
+              audio_duration: row.audio_duration,
+              audio_size: row.audio_size,
+              video_key: row.video_key,
+              video_url: row.video_url,
+              video_duration: row.video_duration,
+              video_size: row.video_size,
+              video_thumbnail: row.video_thumbnail,
+              generation_status: row.generation_status,
+              generation_progress: row.generation_progress
             };
           });
 

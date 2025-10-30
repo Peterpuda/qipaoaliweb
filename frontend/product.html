@@ -918,7 +918,8 @@
     // 加载文化故事
     async function loadCulturalNarratives(productId) {
       try {
-        const response = await fetch(`${API_BASE}/ai/narrative/product/${productId}?status=published`);
+        // 获取所有状态的叙事内容（包括 draft 和 published）
+        const response = await fetch(`${API_BASE}/ai/narrative/product/${productId}?status=all`);
         const data = await response.json();
         
         if (data.ok && data.narratives && data.narratives.length > 0) {
