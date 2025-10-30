@@ -342,9 +342,10 @@
         preload="metadata"
         poster="/image/hero.png"
       >
-        <source src="https://songbrocade-api.petterbrand03.workers.dev/storage/public/videos/hero-background.mp4" type="video/mp4">
-        <!-- 视频存储在 Cloudflare R2，通过 Worker API 提供 -->
-        <!-- 注意：视频文件 160MB，加载可能较慢 -->
+        <!-- 根据设备选择合适的视频质量 -->
+        <source id="videoSource" src="" type="video/mp4">
+        <!-- 桌面端: hero-background-optimized.mp4 (15MB) -->
+        <!-- 移动端: hero-background-mobile.mp4 (4.1MB) -->
       </video>
     
     <!-- 视频遮罩 -->
@@ -991,11 +992,12 @@
     // ===== 视频背景控制 =====
     (function() {
       const video = document.getElementById('heroVideo');
+      const videoSource = document.getElementById('videoSource');
       const volumeBtn = document.getElementById('volumeBtn');
       const playPauseBtn = document.getElementById('playPauseBtn');
       const videoLoading = document.getElementById('videoLoading');
       
-      if (!video) return;
+      if (!video || !videoSource) return;
       
       let isMuted = true;
       let isPlaying = false;
@@ -1009,6 +1011,20 @@
       console.log('设备:', isMobile ? '移动端' : '桌面端');
       console.log('网络:', slowConnection ? '慢速' : '正常');
       
+      // 智能选择视频质量
+      const API_BASE = 'https://songbrocade-api.petterbrand03.workers.dev';
+      let videoPath;
+      
+      if (isMobile) {
+        videoPath = '/storage/public/videos/hero-background-mobile.mp4'; // 4.1MB
+        console.log('使用移动端视频 (4.1MB)');
+      } else {
+        videoPath = '/storage/public/videos/hero-background-optimized.mp4'; // 15MB
+        console.log('使用桌面端视频 (15MB)');
+      }
+      
+      videoSource.src = API_BASE + videoPath;
+      
       // 智能加载策略：移动端或慢速网络延迟加载
       const shouldDelayLoad = isMobile || slowConnection;
       
@@ -1017,7 +1033,7 @@
         if (hasStartedLoading) return;
         hasStartedLoading = true;
         
-        console.log('开始加载视频...');
+        console.log('开始加载视频:', videoSource.src);
         videoLoading.style.display = 'flex';
         video.load();
       }
