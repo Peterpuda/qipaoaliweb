@@ -334,15 +334,17 @@
   <section class="relative min-h-screen flex items-end justify-center pattern-bg pt-20 pb-16 sm:pb-20">
     <!-- 视频背景 -->
       <video 
-        id="heroVideo" 
+        id="heroVideo"
         class="video-background"
         loop 
         muted 
         playsinline
+        preload="metadata"
         poster="/image/hero.png"
       >
         <source src="https://songbrocade-api.petterbrand03.workers.dev/storage/public/videos/hero-background.mp4" type="video/mp4">
         <!-- 视频存储在 Cloudflare R2，通过 Worker API 提供 -->
+        <!-- 注意：视频文件 160MB，加载可能较慢 -->
       </video>
     
     <!-- 视频遮罩 -->
@@ -997,17 +999,56 @@
       
       let isMuted = true;
       let isPlaying = false;
+      let hasStartedLoading = false;
       
-      // 移动端也加载视频
+      // 检测设备和网络
       const isMobile = window.innerWidth < 768;
-      console.log('设备检测:', isMobile ? '移动端' : '桌面端', '- 视频将正常加载');
+      const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      const slowConnection = connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g' || connection.saveData);
       
-      // 显示加载提示
-      videoLoading.style.display = 'flex';
+      console.log('设备:', isMobile ? '移动端' : '桌面端');
+      console.log('网络:', slowConnection ? '慢速' : '正常');
       
-      // 视频加载完成
-      video.addEventListener('loadeddata', function() {
-        console.log('视频加载完成');
+      // 智能加载策略：移动端或慢速网络延迟加载
+      const shouldDelayLoad = isMobile || slowConnection;
+      
+      // 延迟加载视频（等待用户交互）
+      function startVideoLoading() {
+        if (hasStartedLoading) return;
+        hasStartedLoading = true;
+        
+        console.log('开始加载视频...');
+        videoLoading.style.display = 'flex';
+        video.load();
+      }
+      
+      // 如果需要延迟加载，监听用户交互
+      if (shouldDelayLoad) {
+        console.log('延迟加载视频，等待用户交互');
+        
+        const startLoadingEvents = ['click', 'scroll', 'touchstart'];
+        const startLoadingHandler = function() {
+          startVideoLoading();
+          startLoadingEvents.forEach(event => {
+            document.removeEventListener(event, startLoadingHandler);
+          });
+        };
+        
+        startLoadingEvents.forEach(event => {
+          document.addEventListener(event, startLoadingHandler, { once: true, passive: true });
+        });
+        
+        // 5秒后自动开始加载
+        setTimeout(startVideoLoading, 5000);
+      } else {
+        // 桌面端且网络正常，立即显示加载提示
+        videoLoading.style.display = 'flex';
+        video.load();
+      }
+      
+      // 视频加载完成足够数据可以播放
+      video.addEventListener('canplay', function() {
+        console.log('视频可以播放');
         videoLoading.style.display = 'none';
         
         // 尝试自动播放
