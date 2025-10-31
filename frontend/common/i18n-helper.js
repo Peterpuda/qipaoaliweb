@@ -128,7 +128,7 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
           ${showText ? window.i18n.getLocaleName(currentLocale) : ''}
           <i class="fas fa-chevron-down"></i>
         </button>
-        <div class="lang-dropdown" id="${langDropdownId}" style="display: none;">
+        <div class="lang-dropdown" id="${langDropdownId}">
           ${locales.map(locale => `
             <button class="lang-option ${locale === currentLocale ? 'active' : ''}" 
                     data-locale="${locale}">
@@ -183,9 +183,13 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
           border-radius: 8px;
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
           min-width: 180px;
-          z-index: 1000;
+          z-index: 10000;
           overflow: hidden;
           backdrop-filter: blur(20px);
+          display: none !important;
+        }
+        .lang-dropdown.show {
+          display: block !important;
         }
         .lang-option {
           display: flex;
@@ -237,25 +241,47 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
-      const isVisible = dropdown.style.display === 'block';
-      dropdown.style.display = isVisible ? 'none' : 'block';
-      btn.classList.toggle('active', !isVisible);
+      console.log('Language switcher button clicked');
+      
+      // 使用 class 而不是 style.display，更可靠
+      const isVisible = dropdown.classList.contains('show');
+      console.log('Current dropdown has show class:', isVisible);
+      
+      if (isVisible) {
+        dropdown.classList.remove('show');
+        btn.classList.remove('active');
+        dropdown.style.display = 'none';
+        console.log('Dropdown hidden');
+      } else {
+        dropdown.classList.add('show');
+        dropdown.style.display = 'block';
+        btn.classList.add('active');
+        console.log('Dropdown shown');
+      }
     });
 
-    // 点击外部关闭（使用事件委托，只绑定一次）
+    // 点击外部关闭（使用事件委托，只在冒泡阶段处理，避免与按钮点击冲突）
     if (!window._i18nOutsideClickHandler) {
       window._i18nOutsideClickHandler = (e) => {
-        // 查找所有打开的下拉菜单并关闭它们
+        // 检查点击目标是否在语言切换器内
+        const clickedSwitcher = e.target.closest('.language-switcher-dropdown');
+        
+        // 关闭所有不在点击目标内的下拉菜单
         document.querySelectorAll('.lang-dropdown').forEach(dd => {
           const container = dd.closest('.language-switcher-dropdown');
-          if (container && !container.contains(e.target)) {
+          // 如果点击的不是这个切换器，则关闭它
+          if (container && container !== clickedSwitcher) {
+            dd.classList.remove('show');
             dd.style.display = 'none';
             const btn = container.querySelector('.lang-btn');
             if (btn) btn.classList.remove('active');
           }
         });
       };
-      document.addEventListener('click', window._i18nOutsideClickHandler, true);
+      // 使用延迟处理，确保按钮点击事件先执行
+      setTimeout(() => {
+        document.addEventListener('click', window._i18nOutsideClickHandler, false);
+      }, 100);
     }
 
     // 语言选项点击
@@ -287,6 +313,7 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
           option.classList.add('active');
           
           // 关闭下拉菜单
+          dropdown.classList.remove('show');
           dropdown.style.display = 'none';
           btn.classList.remove('active');
           
