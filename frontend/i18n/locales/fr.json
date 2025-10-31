@@ -267,6 +267,35 @@
       "governance": "Gouvernance",
       "admin": "Administrateur",
       "enter": "Entrer sur la Plateforme"
+    },
+    "title": "Plateforme de Mondialisation Culturelle Alimentée par l'IA",
+    "description": "Intégrer l'Intelligence Artificielle et la Technologie Web3 pour Préserver le Patrimoine Culturel Immatériel Mondial",
+    "hero": {
+      "title": "Mondialisation Culturelle",
+      "subtitle": "Quand le Patrimoine Immatériel Chinois Rencontre à Nouveau les Cultures du Monde",
+      "videoLoading": "Chargement de la vidéo..."
+    },
+    "platform": {
+      "title": "Innovation Culturelle par la Blockchain et l'IA",
+      "subtitle": "Le patrimoine n'est pas seulement le passé — c'est le gardien de notre avenir",
+      "ai": {
+        "title": "Avatar d'Artisan IA",
+        "desc1": "Conversez avec des artisans IA, apprenez l'histoire derrière chaque point.",
+        "desc2": "Le patrimoine n'est plus archivé, mais une conversation chaleureuse",
+        "cta": "Parler aux Artisans"
+      },
+      "blockchain": {
+        "title": "Stockage Permanent sur la Blockchain",
+        "desc1": "Motifs artisanaux, archives d'artisans, chefs-d'œuvre sur la blockchain.",
+        "desc2": "Tant que la chaîne existe, la valeur persiste",
+        "cta": "Découvrir la Technologie"
+      },
+      "nft": {
+        "title": "Certificat d'Authenticité NFT",
+        "desc1": "Chaque pièce possède un certificat unique sur la chaîne.",
+        "desc2": "Contrefaçon impossible, valeur digne de confiance",
+        "cta": "Voir les Certificats"
+      }
     }
   }
 }

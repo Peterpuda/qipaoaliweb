@@ -156,6 +156,35 @@
       "governance": "Tadbir Urus",
       "admin": "Pentadbir",
       "enter": "Masuk ke Platform"
+    },
+    "title": "Platform Globalisasi Budaya Dikuasakan AI",
+    "description": "Mengintegrasikan Kecerdasan Buatan dan Teknologi Web3 untuk Memelihara Warisan Budaya Tak Berwujud Global",
+    "hero": {
+      "title": "Globalisasi Budaya",
+      "subtitle": "Apabila Warisan Tak Berwujud China Bertemu Semula dengan Budaya Dunia",
+      "videoLoading": "Memuatkan video..."
+    },
+    "platform": {
+      "title": "Inovasi Budaya Melalui Blockchain dan AI",
+      "subtitle": "Warisan bukan hanya masa lalu — ia adalah penjaga masa depan kita",
+      "ai": {
+        "title": "Avatar Tukang AI",
+        "desc1": "Berbual dengan tukang AI, pelajari cerita di sebalik setiap jahitan.",
+        "desc2": "Warisan tidak lagi diarkibkan, tetapi perbualan yang hangat",
+        "cta": "Bercakap dengan Tukang"
+      },
+      "blockchain": {
+        "title": "Penyimpanan Kekal di Blockchain",
+        "desc1": "Corak kraf, arkib tukang, karya agung di blockchain.",
+        "desc2": "Selagi rantai wujud, nilai berterusan",
+        "cta": "Ketahui Teknologi"
+      },
+      "nft": {
+        "title": "Sijil Ketulenan NFT",
+        "desc1": "Setiap karya mempunyai sijil unik di rantai.",
+        "desc2": "Pemalsuan mustahil, nilai boleh dipercayai",
+        "cta": "Lihat Sijil"
+      }
     }
   }
 }

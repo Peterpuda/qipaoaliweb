@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title data-i18n="page.title">AI驱动的文化出海平台</title>
-  <meta name="description" content="融合AI智能与Web3技术，保护全球非遗文化，解锁·共创·流转 — 文旅不止于故事" />
+  <title data-i18n="homepage.title">AI驱动的文化出海平台</title>
+  <meta name="description" data-i18n-content="homepage.description" content="融合AI智能与Web3技术，保护全球非遗文化，解锁·共创·流转 — 文旅不止于故事" />
     
     <!-- 预连接到视频 API，加快加载速度 -->
     <link rel="preconnect" href="https://songbrocade-api.petterbrand03.workers.dev" />
@@ -362,7 +362,7 @@
     <!-- 加载提示 -->
     <div id="videoLoading" class="video-loading" style="display: none;">
       <i class="fas fa-circle-notch"></i>
-      <span>加载视频中...</span>
+      <span data-i18n="homepage.hero.videoLoading">加载视频中...</span>
     </div>
     
     <!-- 视频控制按钮 -->
@@ -380,11 +380,11 @@
       
       <!-- 主标题 - 文化出海 -->
       <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-tight mb-6 sm:mb-8">
-        <span class="gradient-text block drop-shadow-[0_4px_20px_rgba(212,175,55,0.6)]">文化出海</span>
+        <span class="gradient-text block drop-shadow-[0_4px_20px_rgba(212,175,55,0.6)]" data-i18n="homepage.hero.title">文化出海</span>
       </h1>
       
       <!-- 副标题 - 诗意表达 -->
-      <p class="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white/90 leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] font-light">
+      <p class="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white/90 leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] font-light" data-i18n="homepage.hero.subtitle">
         当中国的非遗，<br class="sm:hidden">与世界不同文化重新相遇
       </p>
       
@@ -395,10 +395,10 @@
   <section id="platform" class="py-32 sm:py-40 bg-[#0a0a0a]">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
       <div class="text-center mb-20 sm:mb-24">
-        <h2 class="text-4xl sm:text-5xl md:text-6xl font-black mb-8 px-4">
+        <h2 class="text-4xl sm:text-5xl md:text-6xl font-black mb-8 px-4" data-i18n="homepage.platform.title">
           文化裂变，用链与智构建新经济
         </h2>
-        <p class="text-xl sm:text-2xl text-gray-400 max-w-2xl mx-auto leading-relaxed px-4">
+        <p class="text-xl sm:text-2xl text-gray-400 max-w-2xl mx-auto leading-relaxed px-4" data-i18n="homepage.platform.subtitle">
           非遗不只是过去 — <span class="text-[#D4AF37] font-semibold">而是未来的守望</span>
               </p>
             </div>
@@ -410,15 +410,15 @@
             <i class="fas fa-user-astronaut text-white text-2xl"></i>
                   </div>
           <h3 class="text-2xl sm:text-3xl font-bold mb-6">
-            <span class="gradient-text">AI 匠人分身</span>
+            <span class="gradient-text" data-i18n="homepage.platform.ai.title">AI 匠人分身</span>
           </h3>
           <p class="text-gray-400 leading-relaxed text-base sm:text-lg mb-8">
-            与匠人 AI 对话，了解一针一线的故事。<br/>
-            <span class="text-white">传承不再是档案，而是有温度的交流</span>
+            <span data-i18n="homepage.platform.ai.desc1">与匠人 AI 对话，了解一针一线的故事。</span><br/>
+            <span class="text-white" data-i18n="homepage.platform.ai.desc2">传承不再是档案，而是有温度的交流</span>
           </p>
         </p>
           <a href="./mall/" class="inline-block text-[#D4AF37] hover:text-white font-medium text-base transition">
-            与匠人对话 <i class="fas fa-arrow-right ml-2"></i>
+            <span data-i18n="homepage.platform.ai.cta">与匠人对话</span> <i class="fas fa-arrow-right ml-2"></i>
           </a>
                   </div>
         
@@ -428,14 +428,14 @@
             <i class="fas fa-infinity text-white text-2xl"></i>
                 </div>
           <h3 class="text-2xl sm:text-3xl font-bold mb-6">
-            <span class="gradient-text">永久链上存储</span>
+            <span class="gradient-text" data-i18n="homepage.platform.blockchain.title">永久链上存储</span>
           </h3>
           <p class="text-gray-400 leading-relaxed text-base sm:text-lg mb-8">
-            工艺纹样、匠人档案、传世作品上链合约。<br/>
-            <span class="text-white">只要链在，价值就永续</span>
+            <span data-i18n="homepage.platform.blockchain.desc1">工艺纹样、匠人档案、传世作品上链合约。</span><br/>
+            <span class="text-white" data-i18n="homepage.platform.blockchain.desc2">只要链在，价值就永续</span>
           </p>
           <a href="https://songbrocade-app.pages.dev/mint" target="_blank" class="inline-block text-[#D4AF37] hover:text-white font-medium text-base transition">
-            了解技术 <i class="fas fa-arrow-right ml-2"></i>
+            <span data-i18n="homepage.platform.blockchain.cta">了解技术</span> <i class="fas fa-arrow-right ml-2"></i>
           </a>
                   </div>
         
@@ -445,11 +445,11 @@
             <i class="fas fa-fingerprint text-white text-2xl"></i>
           </div>
           <h3 class="text-2xl sm:text-3xl font-bold mb-6">
-            <span class="gradient-text">NFT 真品凭证</span>
+            <span class="gradient-text" data-i18n="homepage.platform.nft.title">NFT 真品凭证</span>
           </h3>
           <p class="text-gray-400 leading-relaxed text-base sm:text-lg mb-8">
-            每件作品都有唯一链上凭证。<br/>
-            <span class="text-white">假冒不可能，价值可信任</span>
+            <span data-i18n="homepage.platform.nft.desc1">每件作品都有唯一链上凭证。</span><br/>
+            <span class="text-white" data-i18n="homepage.platform.nft.desc2">假冒不可能，价值可信任</span>
           </p>
           <a href="./mall/" class="inline-block text-[#D4AF37] hover:text-white font-medium text-base transition">
             探索藏品 <i class="fas fa-arrow-right ml-2"></i>

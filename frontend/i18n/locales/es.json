@@ -267,6 +267,35 @@
       "governance": "Gobernanza",
       "admin": "Administrador",
       "enter": "Entrar a la Plataforma"
+    },
+    "title": "Plataforma de Globalización Cultural Impulsada por IA",
+    "description": "Integrando Inteligencia Artificial y Tecnología Web3 para Preservar el Patrimonio Cultural Inmaterial Global",
+    "hero": {
+      "title": "Globalización Cultural",
+      "subtitle": "Cuando el Patrimonio Inmaterial Chino se Encuentra de Nuevo con las Culturas del Mundo",
+      "videoLoading": "Cargando video..."
+    },
+    "platform": {
+      "title": "Innovación Cultural a través de Blockchain e IA",
+      "subtitle": "El patrimonio no es solo el pasado — es el guardián de nuestro futuro",
+      "ai": {
+        "title": "Avatar de Artesano IA",
+        "desc1": "Conversa con artesanos IA, aprende la historia detrás de cada puntada.",
+        "desc2": "El patrimonio ya no está archivado, sino que es una conversación cálida",
+        "cta": "Hablar con Artesanos"
+      },
+      "blockchain": {
+        "title": "Almacenamiento Permanente en Blockchain",
+        "desc1": "Patrones artesanales, archivos de artesanos, obras maestras en blockchain.",
+        "desc2": "Mientras exista la cadena, el valor persiste",
+        "cta": "Conocer la Tecnología"
+      },
+      "nft": {
+        "title": "Certificado de Autenticidad NFT",
+        "desc1": "Cada pieza tiene un certificado único en la cadena.",
+        "desc2": "Falsificación imposible, valor confiable",
+        "cta": "Ver Certificados"
+      }
     }
   }
 }

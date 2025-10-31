@@ -267,7 +267,35 @@
       "governance": "Governance",
       "admin": "Admin",
       "enter": "Enter Platform"
+    },
+    "title": "AI-Powered Cultural Globalization Platform",
+    "description": "Integrating AI Intelligence and Web3 Technology to Preserve Global Intangible Cultural Heritage",
+    "hero": {
+      "title": "Cultural Globalization",
+      "subtitle": "When Chinese Intangible Heritage Meets World Cultures Anew",
+      "videoLoading": "Loading video..."
+    },
+    "platform": {
+      "title": "Cultural Innovation Through Blockchain and AI",
+      "subtitle": "Heritage is not just the past — it's the guardian of our future",
+      "ai": {
+        "title": "AI Artisan Avatar",
+        "desc1": "Converse with AI artisans, learn the story behind every stitch.",
+        "desc2": "Heritage is no longer archived, but a warm conversation",
+        "cta": "Talk to Artisans"
+      },
+      "blockchain": {
+        "title": "Permanent On-Chain Storage",
+        "desc1": "Craft patterns, artisan archives, masterpieces on blockchain.",
+        "desc2": "As long as the chain exists, value persists",
+        "cta": "Learn Technology"
+      },
+      "nft": {
+        "title": "NFT Authenticity Certificate",
+        "desc1": "Every piece has a unique on-chain certificate.",
+        "desc2": "Counterfeiting impossible, value trustworthy",
+        "cta": "View Certificates"
+      }
     }
   }
 }
-
