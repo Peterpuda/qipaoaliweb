@@ -327,7 +327,18 @@
       "resourcesTitle": "Sumber",
       "copyright": "Hak cipta terpelihara.",
       "privacy": "Dasar Privasi",
-      "terms": "Terma Perkhidmatan"
+      "terms": "Terma Perkhidmatan",
+      "description": "Mengintegrasikan <span class=\"text-[#D4AF37]\">Kecerdasan Buatan</span> dan <span class=\"text-[#D4AF37]\">Teknologi Web3</span>, membina ekosistem perlindungan digital warisan budaya tidak ketara global, merealisasikan warisan budaya, panduan pintar AI dan autonomi komuniti DAO.",
+      "linkAbout": "Tentang Platform",
+      "linkArtisans": "Pusat Tukang",
+      "linkMall": "Pasar NFT",
+      "linkDAO": "Tadbir Urus DAO",
+      "linkRewards": "Pusat Ganjaran",
+      "resourceWhitepaper": "Kertas Putih",
+      "resourceDocs": "Dokumentasi",
+      "resourceBrand": "Aset Jenama",
+      "resourcePrivacy": "Dasar Privasi",
+      "resourceTerms": "Terma Perkhidmatan"
     },
     "dao": {
       "title": "Perlindungan Budaya, Tadbir Urus Global",

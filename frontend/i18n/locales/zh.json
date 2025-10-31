@@ -468,7 +468,18 @@
       "resourcesTitle": "资源文档",
       "copyright": "保留所有权利.",
       "privacy": "隐私政策",
-      "terms": "服务条款"
+      "terms": "服务条款",
+      "description": "融合 <span class=\"text-[#D4AF37]\">人工智能</span> 与 <span class=\"text-[#D4AF37]\">Web3 技术</span>，构建全球非遗文化数字保护生态，实现文化传承、AI 智能导览与 DAO 社区自治。",
+      "linkAbout": "关于平台",
+      "linkArtisans": "匠人中心",
+      "linkMall": "NFT 链商",
+      "linkDAO": "DAO 治理",
+      "linkRewards": "奖励中心",
+      "resourceWhitepaper": "白皮书",
+      "resourceDocs": "开发文档",
+      "resourceBrand": "品牌资产",
+      "resourcePrivacy": "隐私政策",
+      "resourceTerms": "服务条款"
     },
     "dao": {
       "title": "文化保护，全球共治",

@@ -468,7 +468,18 @@
       "resourcesTitle": "Resources",
       "copyright": "All rights reserved.",
       "privacy": "Privacy Policy",
-      "terms": "Terms of Service"
+      "terms": "Terms of Service",
+      "description": "Integrating <span class=\"text-[#D4AF37]\">Artificial Intelligence</span> and <span class=\"text-[#D4AF37]\">Web3 Technology</span>, building a global intangible cultural heritage digital protection ecosystem, realizing cultural inheritance, AI intelligent guidance, and DAO community autonomy.",
+      "linkAbout": "About Platform",
+      "linkArtisans": "Artisan Center",
+      "linkMall": "NFT Marketplace",
+      "linkDAO": "DAO Governance",
+      "linkRewards": "Reward Center",
+      "resourceWhitepaper": "Whitepaper",
+      "resourceDocs": "Development Docs",
+      "resourceBrand": "Brand Assets",
+      "resourcePrivacy": "Privacy Policy",
+      "resourceTerms": "Terms of Service"
     },
     "dao": {
       "title": "Cultural Protection, Global Governance",

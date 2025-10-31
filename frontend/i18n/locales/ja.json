@@ -468,7 +468,18 @@
       "resourcesTitle": "リソース",
       "copyright": "全著作権所有。",
       "privacy": "プライバシーポリシー",
-      "terms": "利用規約"
+      "terms": "利用規約",
+      "description": "<span class=\"text-[#D4AF37]\">人工知能</span>と<span class=\"text-[#D4AF37]\">Web3技術</span>を融合し、グローバルな無形文化遺産デジタル保護エコシステムを構築し、文化継承、AIインテリジェントガイダンス、DAOコミュニティ自律を実現。",
+      "linkAbout": "プラットフォームについて",
+      "linkArtisans": "職人センター",
+      "linkMall": "NFTマーケットプレイス",
+      "linkDAO": "DAOガバナンス",
+      "linkRewards": "報酬センター",
+      "resourceWhitepaper": "ホワイトペーパー",
+      "resourceDocs": "開発ドキュメント",
+      "resourceBrand": "ブランド資産",
+      "resourcePrivacy": "プライバシーポリシー",
+      "resourceTerms": "利用規約"
     },
     "dao": {
       "title": "文化保護、グローバルガバナンス",

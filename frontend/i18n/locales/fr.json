@@ -468,7 +468,18 @@
       "resourcesTitle": "Ressources",
       "copyright": "Tous droits réservés.",
       "privacy": "Politique de Confidentialité",
-      "terms": "Conditions d'Utilisation"
+      "terms": "Conditions d'Utilisation",
+      "description": "Intégration de l'<span class=\"text-[#D4AF37]\">Intelligence Artificielle</span> et de la <span class=\"text-[#D4AF37]\">Technologie Web3</span>, construction d'un écosystème mondial de protection numérique du patrimoine culturel immatériel, réalisation de l'héritage culturel, du guidage intelligent par IA et de l'autonomie de la communauté DAO.",
+      "linkAbout": "À Propos",
+      "linkArtisans": "Centre des Artisans",
+      "linkMall": "Marché NFT",
+      "linkDAO": "Gouvernance DAO",
+      "linkRewards": "Centre de Récompenses",
+      "resourceWhitepaper": "Livre Blanc",
+      "resourceDocs": "Documentation",
+      "resourceBrand": "Actifs de Marque",
+      "resourcePrivacy": "Politique de Confidentialité",
+      "resourceTerms": "Conditions d'Utilisation"
     },
     "dao": {
       "title": "Protection Culturelle, Gouvernance Mondiale",

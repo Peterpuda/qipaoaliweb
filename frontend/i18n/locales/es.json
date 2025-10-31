@@ -468,7 +468,18 @@
       "resourcesTitle": "Recursos",
       "copyright": "Todos los derechos reservados.",
       "privacy": "Política de Privacidad",
-      "terms": "Términos de Servicio"
+      "terms": "Términos de Servicio",
+      "description": "Integrando <span class=\"text-[#D4AF37]\">Inteligencia Artificial</span> y <span class=\"text-[#D4AF37]\">Tecnología Web3</span>, construyendo un ecosistema global de protección digital del patrimonio cultural inmaterial, realizando herencia cultural, guía inteligente por IA y autonomía de la comunidad DAO.",
+      "linkAbout": "Acerca de la Plataforma",
+      "linkArtisans": "Centro de Artesanos",
+      "linkMall": "Mercado NFT",
+      "linkDAO": "Gobernanza DAO",
+      "linkRewards": "Centro de Recompensas",
+      "resourceWhitepaper": "Libro Blanco",
+      "resourceDocs": "Documentación",
+      "resourceBrand": "Activos de Marca",
+      "resourcePrivacy": "Política de Privacidad",
+      "resourceTerms": "Términos de Servicio"
     },
     "dao": {
       "title": "Protección Cultural, Gobernanza Global",
