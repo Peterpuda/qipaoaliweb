@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title data-i18n="page.title">AI驱动的文化出海平台</title>
   <meta name="description" content="融合AI智能与Web3技术，保护全球非遗文化，解锁·共创·流转 — 文旅不止于故事" />
+    
+    <!-- 预连接到视频 API，加快加载速度 -->
+    <link rel="preconnect" href="https://songbrocade-api.petterbrand03.workers.dev" />
+    <link rel="dns-prefetch" href="https://songbrocade-api.petterbrand03.workers.dev" />
+    
     <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
@@ -1009,7 +1014,7 @@
       // 检测设备和网络
       const isMobile = window.innerWidth < 768;
       const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-      const slowConnection = connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g' || connection.saveData);
+      const slowConnection = connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g' || connection.effectiveType === '3g' || connection.saveData);
       
       console.log('设备:', isMobile ? '移动端' : '桌面端');
       console.log('网络:', slowConnection ? '慢速' : '正常');
@@ -1018,13 +1023,18 @@
       const API_BASE = 'https://songbrocade-api.petterbrand03.workers.dev';
       let videoPath;
       
-      if (isMobile) {
-        videoPath = '/storage/public/videos/hero-background-mobile.mp4'; // 4.1MB
-        console.log('使用移动端视频 (4.1MB)');
+      // 优先级：移动端 > 慢速网络 > 桌面端
+      if (isMobile || slowConnection) {
+        // 移动端或慢速网络：使用 4.1MB 压缩版
+        videoPath = '/storage/public/videos/hero-background-mobile.mp4';
+        console.log('使用移动端/慢速网络视频 (4.1MB)');
       } else {
-        videoPath = '/storage/public/videos/hero-background-optimized.mp4'; // 15MB
+        // 桌面端且网络正常：使用 15MB 优化版
+        videoPath = '/storage/public/videos/hero-background-optimized.mp4';
         console.log('使用桌面端视频 (15MB)');
       }
+      
+      // 注意：永远不使用 160MB 的原始文件 hero-background.mp4
       
       videoSource.src = API_BASE + videoPath;
       
