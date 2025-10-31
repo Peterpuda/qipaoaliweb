@@ -26,7 +26,8 @@
     "viewMore": "查看更多",
     "loadMore": "加载更多",
     "noData": "暂无数据",
-    "comingSoon": "敬请期待"
+    "comingSoon": "敬请期待",
+    "customerService": "客服"
   },
   "nav": {
     "artisans": "认证匠人",
@@ -57,6 +58,7 @@
     "artisan": "匠人"
   },
   "product": {
+    "title": "商品详情 - 非遗上链平台",
     "price": "价格",
     "stock": "库存",
     "artisan": "传承人",
@@ -75,7 +77,8 @@
     "quantity": "数量",
     "selectSpec": "选择规格",
     "outOfStock": "缺货",
-    "inStock": "有货"
+    "inStock": "有货",
+    "buyNow": "立即购买"
   },
   "cart": {
     "title": "购物车",

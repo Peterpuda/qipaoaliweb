@@ -26,7 +26,8 @@
     "viewMore": "Lihat Lagi",
     "loadMore": "Muat Lagi",
     "noData": "Tiada Data",
-    "comingSoon": "Akan Datang"
+    "comingSoon": "Akan Datang",
+    "customerService": "Perkhidmatan Pelanggan"
   },
   "nav": {
     "artisans": "Tukang Bertauliah",
@@ -75,7 +76,9 @@
     "quantity": "Kuantiti",
     "selectSpec": "Pilih Spesifikasi",
     "outOfStock": "Kehabisan Stok",
-    "inStock": "Ada Stok"
+    "inStock": "Ada Stok",
+    "title": "Butiran Produk - Warisan di Rantai",
+    "buyNow": "Beli Sekarang"
   },
   "cart": {
     "title": "Troli Beli-belah",

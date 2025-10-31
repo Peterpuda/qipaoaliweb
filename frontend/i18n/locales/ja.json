@@ -26,7 +26,8 @@
     "viewMore": "もっと見る",
     "loadMore": "さらに読み込む",
     "noData": "データがありません",
-    "comingSoon": "近日公開"
+    "comingSoon": "近日公開",
+    "customerService": "カスタマーサービス"
   },
   "nav": {
     "artisans": "認定職人",
@@ -75,7 +76,9 @@
     "quantity": "数量",
     "selectSpec": "仕様を選択",
     "outOfStock": "在庫切れ",
-    "inStock": "在庫あり"
+    "inStock": "在庫あり",
+    "title": "商品詳細 - 伝統文化チェーン",
+    "buyNow": "今すぐ購入"
   },
   "cart": {
     "title": "ショッピングカート",
@@ -257,4 +260,3 @@
     "subscribe": "購読"
   }
 }
-

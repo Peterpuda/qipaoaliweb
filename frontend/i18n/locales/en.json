@@ -26,7 +26,8 @@
     "viewMore": "View More",
     "loadMore": "Load More",
     "noData": "No Data",
-    "comingSoon": "Coming Soon"
+    "comingSoon": "Coming Soon",
+    "customerService": "Customer Service"
   },
   "nav": {
     "artisans": "Certified Artisans",
@@ -57,6 +58,7 @@
     "artisan": "Artisan"
   },
   "product": {
+    "title": "Product Details - Heritage on Chain",
     "price": "Price",
     "stock": "Stock",
     "artisan": "Artisan",
@@ -75,7 +77,8 @@
     "quantity": "Quantity",
     "selectSpec": "Select Specification",
     "outOfStock": "Out of Stock",
-    "inStock": "In Stock"
+    "inStock": "In Stock",
+    "buyNow": "Buy Now"
   },
   "cart": {
     "title": "Shopping Cart",

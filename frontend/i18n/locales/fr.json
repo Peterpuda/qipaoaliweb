@@ -26,7 +26,8 @@
     "viewMore": "Voir plus",
     "loadMore": "Charger plus",
     "noData": "Aucune donnée",
-    "comingSoon": "Bientôt disponible"
+    "comingSoon": "Bientôt disponible",
+    "customerService": "Service Client"
   },
   "nav": {
     "artisans": "Artisans Certifiés",
@@ -75,7 +76,9 @@
     "quantity": "Quantité",
     "selectSpec": "Sélectionner les spécifications",
     "outOfStock": "Rupture de stock",
-    "inStock": "En stock"
+    "inStock": "En stock",
+    "title": "Détails du Produit - Patrimoine sur Chaîne",
+    "buyNow": "Acheter Maintenant"
   },
   "cart": {
     "title": "Panier",
@@ -257,4 +260,3 @@
     "subscribe": "S'abonner"
   }
 }
-

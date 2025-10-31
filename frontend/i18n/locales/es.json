@@ -26,7 +26,8 @@
     "viewMore": "Ver más",
     "loadMore": "Cargar más",
     "noData": "Sin datos",
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "customerService": "Servicio al Cliente"
   },
   "nav": {
     "artisans": "Artesanos Certificados",
@@ -75,7 +76,9 @@
     "quantity": "Cantidad",
     "selectSpec": "Seleccionar Especificación",
     "outOfStock": "Agotado",
-    "inStock": "En Stock"
+    "inStock": "En Stock",
+    "title": "Detalles del Producto - Patrimonio en Cadena",
+    "buyNow": "Comprar Ahora"
   },
   "cart": {
     "title": "Carrito de Compras",
@@ -257,4 +260,3 @@
     "subscribe": "Suscribirse"
   }
 }
-
