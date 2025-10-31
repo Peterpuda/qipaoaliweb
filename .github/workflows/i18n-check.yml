@@ -1,0 +1,50 @@
+name: i18n Completeness Check
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  check-i18n:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Check language pack completeness
+      run: node check-i18n-completeness.js
+      continue-on-error: false
+    
+    - name: Scan for hardcoded Chinese
+      run: node scan-hardcoded-chinese.js
+      continue-on-error: true
+    
+    - name: Generate report
+      if: failure()
+      run: |
+        echo "## ❌ i18n Check Failed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Found issues with internationalization:" >> $GITHUB_STEP_SUMMARY
+        echo "- Language packs may be incomplete" >> $GITHUB_STEP_SUMMARY
+        echo "- Hardcoded Chinese text detected" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Please run \`node check-i18n-completeness.js\` locally to see details." >> $GITHUB_STEP_SUMMARY
+    
+    - name: Success message
+      if: success()
+      run: |
+        echo "## ✅ i18n Check Passed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "All language packs are complete and consistent!" >> $GITHUB_STEP_SUMMARY
+
