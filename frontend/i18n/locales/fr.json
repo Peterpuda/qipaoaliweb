@@ -364,7 +364,8 @@
       "techLabel1": "Blockchain",
       "techLabel2": "Stockage Décentralisé",
       "feature3DescFull": "Chaque participation est enregistrée on-chain. Frapper POAP, enregistrement quotidien, réclamer $QI — chaque étape de protection de la culture est inscrite de façon permanente",
-      "feature4DescFull": "L'avenir de la culture, décidé mondialement. Proposer, voter, exécuter — chaque vote a du pouvoir, chacun est un gardien"
+      "feature4DescFull": "L'avenir de la culture, décidé mondialement. Proposer, voter, exécuter — chaque vote a du pouvoir, chacun est un gardien",
+      "mainTitle": "Du Hors-Ligne à la Blockchain, du Dialogue à l'Éternité"
     },
     "tech": {
       "title": "Architecture Technique",
@@ -372,7 +373,8 @@
       "ipfsDesc": "Stockage Distribué",
       "arweaveDesc": "Stockage Permanent",
       "openaiDesc": "Agent IA",
-      "cloudflareDesc": "Edge Computing"
+      "cloudflareDesc": "Edge Computing",
+      "mainTitle": "Solution Technologique Web3 Full-Stack"
     },
     "governance": {
       "title": "Gouvernance & Avenir",

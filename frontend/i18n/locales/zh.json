@@ -364,7 +364,8 @@
       "techLabel1": "区块链",
       "techLabel2": "去中心化存储",
       "feature3DescFull": "每次参与都有链上记录。铸造 POAP、每日签到、领取 $QI — 守护文化的每一步，都被永久铭刻",
-      "feature4DescFull": "文化的未来，由全球决定。提案、投票、执行 — 每一票都有力量，每个人都是守护者"
+      "feature4DescFull": "文化的未来，由全球决定。提案、投票、执行 — 每一票都有力量，每个人都是守护者",
+      "mainTitle": "从线下到链上，从对话到永恒"
     },
     "tech": {
       "title": "技术架构",
@@ -372,7 +373,8 @@
       "ipfsDesc": "分布式存储",
       "arweaveDesc": "永久存储",
       "openaiDesc": "AI 智能体",
-      "cloudflareDesc": "边缘计算"
+      "cloudflareDesc": "边缘计算",
+      "mainTitle": "Web3 全栈技术方案"
     },
     "governance": {
       "title": "治理与未来",

@@ -224,7 +224,8 @@
       "techLabel1": "Blockchain",
       "techLabel2": "Penyimpanan Terdesentralisasi",
       "feature3DescFull": "Setiap penyertaan direkodkan di rantaian. Cetak POAP, daftar masuk harian, tuntut $QI — setiap langkah melindungi budaya terukir secara kekal",
-      "feature4DescFull": "Masa depan budaya, diputuskan secara global. Cadang, undi, laksana — setiap undi mempunyai kuasa, semua orang adalah penjaga"
+      "feature4DescFull": "Masa depan budaya, diputuskan secara global. Cadang, undi, laksana — setiap undi mempunyai kuasa, semua orang adalah penjaga",
+      "mainTitle": "Dari Luar Talian ke Rantaian, Dari Dialog ke Keabadian"
     },
     "tech": {
       "title": "Seni Bina Teknikal",
@@ -232,7 +233,8 @@
       "ipfsDesc": "Penyimpanan Teragih",
       "arweaveDesc": "Penyimpanan Kekal",
       "openaiDesc": "Agen AI",
-      "cloudflareDesc": "Pengkomputeran Tepi"
+      "cloudflareDesc": "Pengkomputeran Tepi",
+      "mainTitle": "Penyelesaian Teknologi Web3 Penuh"
     },
     "governance": {
       "title": "Tadbir Urus & Masa Depan",

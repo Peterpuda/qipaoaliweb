@@ -364,7 +364,8 @@
       "techLabel1": "Blockchain",
       "techLabel2": "Almacenamiento Descentralizado",
       "feature3DescFull": "Cada participación se registra en la cadena. Acuñar POAP, registro diario, reclamar $QI — cada paso de proteger la cultura se inscribe permanentemente",
-      "feature4DescFull": "El futuro de la cultura, decidido globalmente. Proponer, votar, ejecutar — cada voto tiene poder, todos son guardianes"
+      "feature4DescFull": "El futuro de la cultura, decidido globalmente. Proponer, votar, ejecutar — cada voto tiene poder, todos son guardianes",
+      "mainTitle": "De lo Offline a la Blockchain, del Diálogo a la Eternidad"
     },
     "tech": {
       "title": "Arquitectura Técnica",
@@ -372,7 +373,8 @@
       "ipfsDesc": "Almacenamiento Distribuido",
       "arweaveDesc": "Almacenamiento Permanente",
       "openaiDesc": "Agente IA",
-      "cloudflareDesc": "Computación en el Borde"
+      "cloudflareDesc": "Computación en el Borde",
+      "mainTitle": "Solución Tecnológica Web3 Full-Stack"
     },
     "governance": {
       "title": "Gobernanza y Futuro",

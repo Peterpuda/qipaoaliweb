@@ -238,6 +238,9 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
         // 关闭下拉菜单
         langDropdown.style.display = 'none';
         langBtn.classList.remove('active');
+        
+        // 重新翻译页面
+        translatePage();
       });
     });
   } else {
@@ -299,6 +302,9 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
           btn.classList.remove('active');
         });
         button.classList.add('active');
+        
+        // 重新翻译页面
+        translatePage();
       });
     });
   }

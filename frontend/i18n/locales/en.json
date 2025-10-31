@@ -364,7 +364,8 @@
       "techLabel1": "Blockchain",
       "techLabel2": "Decentralized Storage",
       "feature3DescFull": "Every participation is recorded on-chain. Mint POAP, daily check-in, claim $QI — every step of protecting culture is permanently inscribed",
-      "feature4DescFull": "The future of culture, decided globally. Propose, vote, execute — every vote has power, everyone is a guardian"
+      "feature4DescFull": "The future of culture, decided globally. Propose, vote, execute — every vote has power, everyone is a guardian",
+      "mainTitle": "From Offline to On-Chain, From Dialogue to Eternity"
     },
     "tech": {
       "title": "Technical Architecture",
@@ -372,7 +373,8 @@
       "ipfsDesc": "Distributed Storage",
       "arweaveDesc": "Permanent Storage",
       "openaiDesc": "AI Agent",
-      "cloudflareDesc": "Edge Computing"
+      "cloudflareDesc": "Edge Computing",
+      "mainTitle": "Full-Stack Web3 Technology"
     },
     "governance": {
       "title": "Governance & Future",
