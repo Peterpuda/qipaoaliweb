@@ -273,7 +273,8 @@
     "hero": {
       "title": "文化のグローバル化",
       "subtitle": "中国の無形文化遺産が世界の文化と新たに出会う時",
-      "videoLoading": "動画を読み込み中..."
+      "videoLoading": "動画を読み込み中...",
+      "notJustStory": "未来の守り人として"
     },
     "platform": {
       "title": "ブロックチェーンとAIによる文化革新",
@@ -296,6 +297,75 @@
         "desc2": "偽造不可能、価値は信頼できる",
         "cta": "証明書を見る"
       }
+    },
+    "token": {
+      "communityEngagement": "コミュニティ参加度",
+      "title": "$QI · 文化守護者の証",
+      "subtitle": "$QIは投機トークンではなく、文化保護への参加証明です",
+      "role1Title": "文化の意思決定者",
+      "role1Desc": "あなたの一票が文化の未来を決める",
+      "role2Title": "伝承貢献者",
+      "role2Desc": "毎日のチェックイン、物語の共有、コンテンツ創作",
+      "role3Title": "文化コレクター",
+      "role3Desc": "限定NFT真品の優先購入、あなたのウォレットが博物館に",
+      "compliance": "コンプライアンス声明：",
+      "stat1Label": "総供給量",
+      "stat2Label": "流通量",
+      "stat3Label": "保有者",
+      "stat4Label": "ネットワーク"
+    },
+    "ecosystem": {
+      "title": "完全なエコシステム、文化に力を",
+      "subtitle": "文化持続可能性の未来",
+      "description": "単なるマーケットプレイスではなく、文明の架け橋",
+      "feature1Badge": "AI対話",
+      "feature1Desc": "すべての職人にAIアバターがあり、いつでも質問に答えます。",
+      "feature2Desc": "すべての作品に唯一のNFT証明書があります。",
+      "feature3Desc": "すべての参加がチェーン上に記録されます。",
+      "feature4Desc": "文化の未来は、世界中で決定されます。",
+      "techLabel1": "ブロックチェーン",
+      "techLabel2": "分散型ストレージ"
+    },
+    "tech": {
+      "title": "技術アーキテクチャ",
+      "baseChainDesc": "L2ブロックチェーン",
+      "ipfsDesc": "分散型ストレージ",
+      "arweaveDesc": "永久ストレージ",
+      "openaiDesc": "AIエージェント",
+      "cloudflareDesc": "エッジコンピューティング"
+    },
+    "governance": {
+      "title": "ガバナンスと未来",
+      "ctaButton": "DAOガバナンスに参加",
+      "heroTitle": "あなたが参加するのはプロジェクトではない",
+      "heroSubtitle": "文化保護革命です",
+      "audience1": "伝統を愛する文化守護者",
+      "audience2": "技を持つ職人",
+      "audience3": "未来を信じるWeb3ビルダー",
+      "audience4": "ルールを変えたいDAOガバナー",
+      "audienceCta": "ここがあなたのステージ",
+      "stat1Label": "オンチェーン",
+      "stat2Label": "オープンソース",
+      "stat3Label": "永久保存"
+    },
+    "footer": {
+      "brandName": "非遺上鏈",
+      "brandDesc": "AI × Web3 文化保護プラットフォーム",
+      "aiLabel": "人工知能",
+      "web3Label": "Web3技術",
+      "quickLinksTitle": "クイックリンク",
+      "resourcesTitle": "リソース",
+      "copyright": "全著作権所有。",
+      "privacy": "プライバシーポリシー",
+      "terms": "利用規約"
+    },
+    "dao": {
+      "title": "文化保護、グローバルガバナンス",
+      "description": "DAO分散型自治により、$QIを保有することが未来の伝承への鍵",
+      "ctaButton": "ガバナンスに参加",
+      "stat1Label": "提案数",
+      "stat2Label": "アクティブ投票者",
+      "stat3Label": "実行済み"
     }
   }
 }

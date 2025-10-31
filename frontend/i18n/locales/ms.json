@@ -162,7 +162,8 @@
     "hero": {
       "title": "Globalisasi Budaya",
       "subtitle": "Apabila Warisan Tak Berwujud China Bertemu Semula dengan Budaya Dunia",
-      "videoLoading": "Memuatkan video..."
+      "videoLoading": "Memuatkan video...",
+      "notJustStory": "Tetapi penjaga masa depan"
     },
     "platform": {
       "title": "Inovasi Budaya Melalui Blockchain dan AI",
@@ -185,6 +186,75 @@
         "desc2": "Pemalsuan mustahil, nilai boleh dipercayai",
         "cta": "Lihat Sijil"
       }
+    },
+    "token": {
+      "communityEngagement": "Penglibatan Komuniti",
+      "title": "$QI · Sijil Penjaga",
+      "subtitle": "$QI bukan token spekulatif, tetapi bukti penyertaan dalam pemeliharaan budaya",
+      "role1Title": "Pembuat Keputusan Budaya",
+      "role1Desc": "Undi anda membentuk masa depan budaya",
+      "role2Title": "Penyumbang Warisan",
+      "role2Desc": "Daftar masuk harian, kongsi cerita, cipta kandungan",
+      "role3Title": "Pengumpul Budaya",
+      "role3Desc": "Akses keutamaan kepada NFT edisi terhad, dompet anda adalah muzium",
+      "compliance": "Kenyataan Pematuhan:",
+      "stat1Label": "Jumlah Bekalan",
+      "stat2Label": "Bekalan Beredar",
+      "stat3Label": "Pemegang",
+      "stat4Label": "Rangkaian"
+    },
+    "ecosystem": {
+      "title": "Ekosistem Lengkap, Memperkasa Budaya",
+      "subtitle": "Masa Depan Kemampanan Budaya",
+      "description": "Bukan sekadar pasaran, tetapi jambatan tamadun",
+      "feature1Badge": "Dialog AI",
+      "feature1Desc": "Setiap tukang ada avatar AI bersedia menjawab soalan anda.",
+      "feature2Desc": "Setiap karya mempunyai sijil NFT unik.",
+      "feature3Desc": "Setiap penyertaan direkodkan di rantaian.",
+      "feature4Desc": "Masa depan budaya, diputuskan secara global.",
+      "techLabel1": "Blockchain",
+      "techLabel2": "Penyimpanan Terdesentralisasi"
+    },
+    "tech": {
+      "title": "Seni Bina Teknikal",
+      "baseChainDesc": "Blockchain L2",
+      "ipfsDesc": "Penyimpanan Teragih",
+      "arweaveDesc": "Penyimpanan Kekal",
+      "openaiDesc": "Agen AI",
+      "cloudflareDesc": "Pengkomputeran Tepi"
+    },
+    "governance": {
+      "title": "Tadbir Urus & Masa Depan",
+      "ctaButton": "Sertai Tadbir Urus DAO",
+      "heroTitle": "Anda tidak menyertai projek",
+      "heroSubtitle": "Anda menyertai revolusi pemeliharaan budaya",
+      "audience1": "Penjaga budaya tradisional",
+      "audience2": "Tukang mahir dengan kemahiran",
+      "audience3": "Pembina Web3 yang percaya pada masa depan",
+      "audience4": "Inovator tadbir urus DAO",
+      "audienceCta": "Ini pentas anda",
+      "stat1Label": "Di Rantaian",
+      "stat2Label": "Sumber Terbuka",
+      "stat3Label": "Kekal"
+    },
+    "footer": {
+      "brandName": "Warisan di Rantaian",
+      "brandDesc": "Platform Pemeliharaan Budaya AI × Web3",
+      "aiLabel": "Kecerdasan Buatan",
+      "web3Label": "Teknologi Web3",
+      "quickLinksTitle": "Pautan Pantas",
+      "resourcesTitle": "Sumber",
+      "copyright": "Hak cipta terpelihara.",
+      "privacy": "Dasar Privasi",
+      "terms": "Terma Perkhidmatan"
+    },
+    "dao": {
+      "title": "Perlindungan Budaya, Tadbir Urus Global",
+      "description": "Dikuasakan oleh tadbir urus terdesentralisasi DAO, memegang $QI adalah kunci anda untuk membentuk warisan",
+      "ctaButton": "Sertai Tadbir Urus",
+      "stat1Label": "Cadangan",
+      "stat2Label": "Pengundi Aktif",
+      "stat3Label": "Dilaksanakan"
     }
   }
 }

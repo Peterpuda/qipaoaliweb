@@ -273,7 +273,8 @@
     "hero": {
       "title": "Globalización Cultural",
       "subtitle": "Cuando el Patrimonio Inmaterial Chino se Encuentra de Nuevo con las Culturas del Mundo",
-      "videoLoading": "Cargando video..."
+      "videoLoading": "Cargando video...",
+      "notJustStory": "Sino guardianes del futuro"
     },
     "platform": {
       "title": "Innovación Cultural a través de Blockchain e IA",
@@ -296,6 +297,75 @@
         "desc2": "Falsificación imposible, valor confiable",
         "cta": "Ver Certificados"
       }
+    },
+    "token": {
+      "communityEngagement": "Participación Comunitaria",
+      "title": "$QI · Certificado del Guardián",
+      "subtitle": "$QI no es un token especulativo, sino una prueba de participación en la preservación cultural",
+      "role1Title": "Tomador de Decisiones Culturales",
+      "role1Desc": "Tu voto da forma al futuro de la cultura",
+      "role2Title": "Contribuidor Patrimonial",
+      "role2Desc": "Registros diarios, compartir historias, crear contenido",
+      "role3Title": "Coleccionista Cultural",
+      "role3Desc": "Acceso prioritario a NFTs de edición limitada, tu billetera es un museo",
+      "compliance": "Declaración de Cumplimiento:",
+      "stat1Label": "Suministro Total",
+      "stat2Label": "Suministro Circulante",
+      "stat3Label": "Titulares",
+      "stat4Label": "Red"
+    },
+    "ecosystem": {
+      "title": "Ecosistema Completo, Empoderando la Cultura",
+      "subtitle": "El Futuro de la Sostenibilidad Cultural",
+      "description": "No solo un mercado, sino un puente de civilización",
+      "feature1Badge": "Diálogo IA",
+      "feature1Desc": "Cada artesano tiene un avatar IA listo para responder tus preguntas.",
+      "feature2Desc": "Cada pieza tiene un certificado NFT único.",
+      "feature3Desc": "Cada participación se registra en la cadena.",
+      "feature4Desc": "El futuro de la cultura, decidido globalmente.",
+      "techLabel1": "Blockchain",
+      "techLabel2": "Almacenamiento Descentralizado"
+    },
+    "tech": {
+      "title": "Arquitectura Técnica",
+      "baseChainDesc": "Blockchain L2",
+      "ipfsDesc": "Almacenamiento Distribuido",
+      "arweaveDesc": "Almacenamiento Permanente",
+      "openaiDesc": "Agente IA",
+      "cloudflareDesc": "Computación en el Borde"
+    },
+    "governance": {
+      "title": "Gobernanza y Futuro",
+      "ctaButton": "Unirse a la Gobernanza DAO",
+      "heroTitle": "No te unes a un proyecto",
+      "heroSubtitle": "Te unes a una revolución de preservación cultural",
+      "audience1": "Guardianes de la cultura tradicional",
+      "audience2": "Maestros artesanos con habilidades",
+      "audience3": "Constructores Web3 que creen en el futuro",
+      "audience4": "Innovadores de gobernanza DAO",
+      "audienceCta": "Este es tu escenario",
+      "stat1Label": "En Cadena",
+      "stat2Label": "Código Abierto",
+      "stat3Label": "Permanente"
+    },
+    "footer": {
+      "brandName": "Patrimonio en Cadena",
+      "brandDesc": "Plataforma de Preservación Cultural IA × Web3",
+      "aiLabel": "Inteligencia Artificial",
+      "web3Label": "Tecnología Web3",
+      "quickLinksTitle": "Enlaces Rápidos",
+      "resourcesTitle": "Recursos",
+      "copyright": "Todos los derechos reservados.",
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio"
+    },
+    "dao": {
+      "title": "Protección Cultural, Gobernanza Global",
+      "description": "Impulsado por la gobernanza descentralizada DAO, tener $QI es tu llave para dar forma al patrimonio",
+      "ctaButton": "Unirse a la Gobernanza",
+      "stat1Label": "Propuestas",
+      "stat2Label": "Votantes Activos",
+      "stat3Label": "Ejecutadas"
     }
   }
 }

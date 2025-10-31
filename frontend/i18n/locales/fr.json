@@ -273,7 +273,8 @@
     "hero": {
       "title": "Mondialisation Culturelle",
       "subtitle": "Quand le Patrimoine Immatériel Chinois Rencontre à Nouveau les Cultures du Monde",
-      "videoLoading": "Chargement de la vidéo..."
+      "videoLoading": "Chargement de la vidéo...",
+      "notJustStory": "Mais gardiens de l'avenir"
     },
     "platform": {
       "title": "Innovation Culturelle par la Blockchain et l'IA",
@@ -296,6 +297,75 @@
         "desc2": "Contrefaçon impossible, valeur digne de confiance",
         "cta": "Voir les Certificats"
       }
+    },
+    "token": {
+      "communityEngagement": "Engagement Communautaire",
+      "title": "$QI · Certificat du Gardien",
+      "subtitle": "$QI n'est pas un jeton spéculatif, mais une preuve de participation à la préservation culturelle",
+      "role1Title": "Décideur Culturel",
+      "role1Desc": "Votre vote façonne l'avenir de la culture",
+      "role2Title": "Contributeur Patrimonial",
+      "role2Desc": "Enregistrements quotidiens, partage d'histoires, création de contenu",
+      "role3Title": "Collectionneur Culturel",
+      "role3Desc": "Accès prioritaire aux NFT d'exception, votre portefeuille est un musée",
+      "compliance": "Déclaration de Conformité:",
+      "stat1Label": "Offre Totale",
+      "stat2Label": "Offre en Circulation",
+      "stat3Label": "Détenteurs",
+      "stat4Label": "Réseau"
+    },
+    "ecosystem": {
+      "title": "Écosystème Complet, Autonomiser la Culture",
+      "subtitle": "L'Avenir de la Durabilité Culturelle",
+      "description": "Pas seulement une marketplace, mais un pont de civilisation",
+      "feature1Badge": "Dialogue IA",
+      "feature1Desc": "Chaque artisan a un avatar IA prêt à répondre à vos questions.",
+      "feature2Desc": "Chaque pièce a un certificat NFT unique.",
+      "feature3Desc": "Chaque participation est enregistrée on-chain.",
+      "feature4Desc": "L'avenir de la culture, décidé mondialement.",
+      "techLabel1": "Blockchain",
+      "techLabel2": "Stockage Décentralisé"
+    },
+    "tech": {
+      "title": "Architecture Technique",
+      "baseChainDesc": "Blockchain L2",
+      "ipfsDesc": "Stockage Distribué",
+      "arweaveDesc": "Stockage Permanent",
+      "openaiDesc": "Agent IA",
+      "cloudflareDesc": "Edge Computing"
+    },
+    "governance": {
+      "title": "Gouvernance & Avenir",
+      "ctaButton": "Rejoindre la Gouvernance DAO",
+      "heroTitle": "Vous ne rejoignez pas un projet",
+      "heroSubtitle": "Vous rejoignez une révolution de préservation culturelle",
+      "audience1": "Gardiens de la culture traditionnelle",
+      "audience2": "Artisans maîtres de leur art",
+      "audience3": "Bâtisseurs Web3 croyant en l'avenir",
+      "audience4": "Innovateurs de gouvernance DAO",
+      "audienceCta": "C'est votre scène",
+      "stat1Label": "On-Chain",
+      "stat2Label": "Open Source",
+      "stat3Label": "Permanent"
+    },
+    "footer": {
+      "brandName": "Patrimoine sur Chaîne",
+      "brandDesc": "Plateforme de Préservation Culturelle IA × Web3",
+      "aiLabel": "Intelligence Artificielle",
+      "web3Label": "Technologie Web3",
+      "quickLinksTitle": "Liens Rapides",
+      "resourcesTitle": "Ressources",
+      "copyright": "Tous droits réservés.",
+      "privacy": "Politique de Confidentialité",
+      "terms": "Conditions d'Utilisation"
+    },
+    "dao": {
+      "title": "Protection Culturelle, Gouvernance Mondiale",
+      "description": "Propulsé par la gouvernance décentralisée DAO, détenir $QI est votre clé pour façonner le patrimoine",
+      "ctaButton": "Rejoindre la Gouvernance",
+      "stat1Label": "Propositions",
+      "stat2Label": "Votants Actifs",
+      "stat3Label": "Exécutées"
     }
   }
 }

@@ -273,7 +273,8 @@
     "hero": {
       "title": "文化出海",
       "subtitle": "当中国的非遗，与世界不同文化重新相遇",
-      "videoLoading": "加载视频中..."
+      "videoLoading": "加载视频中...",
+      "notJustStory": "而是未来的守望"
     },
     "platform": {
       "title": "文化裂变，用链与智构建新经济",
@@ -296,6 +297,75 @@
         "desc2": "假冒不可能，价值可信任",
         "cta": "查看凭证"
       }
+    },
+    "token": {
+      "communityEngagement": "社区参与度",
+      "title": "$QI · 文化守护者的凭证",
+      "subtitle": "$QI 不是炒币的筹码，而是参与文化守护的身份证明",
+      "role1Title": "文化决策者",
+      "role1Desc": "你的一票决定文化的走向",
+      "role2Title": "传承贡献者",
+      "role2Desc": "每日签到、分享故事、创作内容",
+      "role3Title": "文化收藏家",
+      "role3Desc": "优先购买限量 NFT 真品、你的钱包，就是博物馆",
+      "compliance": "合规声明：",
+      "stat1Label": "总供应量",
+      "stat2Label": "流通量",
+      "stat3Label": "持有人",
+      "stat4Label": "链上网络"
+    },
+    "ecosystem": {
+      "title": "完整生态，赋能文化",
+      "subtitle": "文化永续的未来",
+      "description": "这不是商城，而是文明的传送带",
+      "feature1Badge": "AI 对话",
+      "feature1Desc": "每位匠人都有 AI 分身，随时回答你的问题。",
+      "feature2Desc": "每件作品都有唯一 NFT 凭证。",
+      "feature3Desc": "每次参与都有链上记录。",
+      "feature4Desc": "文化的未来，由全球决定。",
+      "techLabel1": "区块链",
+      "techLabel2": "去中心化存储"
+    },
+    "tech": {
+      "title": "技术架构",
+      "baseChainDesc": "L2 区块链",
+      "ipfsDesc": "分布式存储",
+      "arweaveDesc": "永久存储",
+      "openaiDesc": "AI 智能体",
+      "cloudflareDesc": "边缘计算"
+    },
+    "governance": {
+      "title": "治理与未来",
+      "ctaButton": "参与 DAO 治理",
+      "heroTitle": "你参与的，不是项目",
+      "heroSubtitle": "是一场文化永续的革命",
+      "audience1": "热爱传统的文化守护者",
+      "audience2": "手握技艺的传承匠人",
+      "audience3": "相信未来的 Web3 建设者",
+      "audience4": "想改变规则的 DAO 治理者",
+      "audienceCta": "这里，就是你的舞台",
+      "stat1Label": "链上运行",
+      "stat2Label": "开源透明",
+      "stat3Label": "永久存储"
+    },
+    "footer": {
+      "brandName": "非遗上链",
+      "brandDesc": "AI × Web3 文化保护平台",
+      "aiLabel": "人工智能",
+      "web3Label": "Web3 技术",
+      "quickLinksTitle": "快速链接",
+      "resourcesTitle": "资源文档",
+      "copyright": "保留所有权利.",
+      "privacy": "隐私政策",
+      "terms": "服务条款"
+    },
+    "dao": {
+      "title": "文化保护，全球共治",
+      "description": "采用 DAO 去中心化自治 模式，持有 $QI 就是参与未来传承的钥匙",
+      "ctaButton": "参与治理",
+      "stat1Label": "提案数量",
+      "stat2Label": "活跃投票人",
+      "stat3Label": "已执行提案"
     }
   }
 }

@@ -273,7 +273,8 @@
     "hero": {
       "title": "Cultural Globalization",
       "subtitle": "When Chinese Intangible Heritage Meets World Cultures Anew",
-      "videoLoading": "Loading video..."
+      "videoLoading": "Loading video...",
+      "notJustStory": "But guardians of the future"
     },
     "platform": {
       "title": "Cultural Innovation Through Blockchain and AI",
@@ -296,6 +297,75 @@
         "desc2": "Counterfeiting impossible, value trustworthy",
         "cta": "View Certificates"
       }
+    },
+    "token": {
+      "communityEngagement": "Community Engagement",
+      "title": "$QI · Guardian's Certificate",
+      "subtitle": "$QI is not a speculative token, but a proof of participation in cultural preservation",
+      "role1Title": "Cultural Decision Maker",
+      "role1Desc": "Your vote shapes the future of culture",
+      "role2Title": "Heritage Contributor",
+      "role2Desc": "Daily check-ins, share stories, create content",
+      "role3Title": "Cultural Collector",
+      "role3Desc": "Priority access to limited NFT masterpieces, your wallet is a museum",
+      "compliance": "Compliance Statement:",
+      "stat1Label": "Total Supply",
+      "stat2Label": "Circulating Supply",
+      "stat3Label": "Holders",
+      "stat4Label": "Network"
+    },
+    "ecosystem": {
+      "title": "Complete Ecosystem, Empowering Culture",
+      "subtitle": "The Future of Cultural Sustainability",
+      "description": "Not just a marketplace, but a bridge of civilization",
+      "feature1Badge": "AI Dialogue",
+      "feature1Desc": "Every artisan has an AI avatar ready to answer your questions.",
+      "feature2Desc": "Every piece has a unique NFT certificate.",
+      "feature3Desc": "Every participation is recorded on-chain.",
+      "feature4Desc": "The future of culture, decided globally.",
+      "techLabel1": "Blockchain",
+      "techLabel2": "Decentralized Storage"
+    },
+    "tech": {
+      "title": "Technical Architecture",
+      "baseChainDesc": "L2 Blockchain",
+      "ipfsDesc": "Distributed Storage",
+      "arweaveDesc": "Permanent Storage",
+      "openaiDesc": "AI Agent",
+      "cloudflareDesc": "Edge Computing"
+    },
+    "governance": {
+      "title": "Governance & Future",
+      "ctaButton": "Join DAO Governance",
+      "heroTitle": "You're not joining a project",
+      "heroSubtitle": "You're joining a cultural preservation revolution",
+      "audience1": "Traditional culture guardians",
+      "audience2": "Master artisans with skills",
+      "audience3": "Web3 believers in the future",
+      "audience4": "DAO governance innovators",
+      "audienceCta": "This is your stage",
+      "stat1Label": "On-Chain",
+      "stat2Label": "Open Source",
+      "stat3Label": "Permanent"
+    },
+    "footer": {
+      "brandName": "Heritage on Chain",
+      "brandDesc": "AI × Web3 Cultural Preservation Platform",
+      "aiLabel": "Artificial Intelligence",
+      "web3Label": "Web3 Technology",
+      "quickLinksTitle": "Quick Links",
+      "resourcesTitle": "Resources",
+      "copyright": "All rights reserved.",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    },
+    "dao": {
+      "title": "Cultural Protection, Global Governance",
+      "description": "Powered by DAO decentralized governance, holding $QI is your key to shaping heritage",
+      "ctaButton": "Join Governance",
+      "stat1Label": "Proposals",
+      "stat2Label": "Active Voters",
+      "stat3Label": "Executed"
     }
   }
 }
