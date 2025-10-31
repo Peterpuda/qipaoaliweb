@@ -1,0 +1,388 @@
+/**
+ * i18n 辅助函数
+ * 提供页面翻译、语言切换器等实用功能
+ */
+
+/**
+ * 翻译页面上的所有元素
+ */
+function translatePage() {
+  // 翻译所有带 data-i18n 属性的元素
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const params = el.getAttribute('data-i18n-params');
+    
+    try {
+      const parsedParams = params ? JSON.parse(params) : {};
+      el.textContent = t(key, parsedParams);
+    } catch (error) {
+      console.error(`Error translating element with key: ${key}`, error);
+      el.textContent = t(key);
+    }
+  });
+
+  // 翻译所有带 data-i18n-html 属性的元素（支持 HTML）
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.getAttribute('data-i18n-html');
+    const params = el.getAttribute('data-i18n-params');
+    
+    try {
+      const parsedParams = params ? JSON.parse(params) : {};
+      el.innerHTML = t(key, parsedParams);
+    } catch (error) {
+      console.error(`Error translating HTML element with key: ${key}`, error);
+      el.innerHTML = t(key);
+    }
+  });
+
+  // 翻译所有带 data-i18n-placeholder 属性的元素
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    el.placeholder = t(key);
+  });
+
+  // 翻译所有带 data-i18n-title 属性的元素
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    el.title = t(key);
+  });
+
+  // 翻译所有带 data-i18n-value 属性的元素
+  document.querySelectorAll('[data-i18n-value]').forEach(el => {
+    const key = el.getAttribute('data-i18n-value');
+    el.value = t(key);
+  });
+
+  // 翻译所有带 data-i18n-aria-label 属性的元素
+  document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+    const key = el.getAttribute('data-i18n-aria-label');
+    el.setAttribute('aria-label', t(key));
+  });
+
+  console.log('✅ Page translated');
+}
+
+/**
+ * 获取国旗 emoji
+ * @param {string} locale - 语言代码
+ * @returns {string} 国旗 emoji
+ */
+function getFlagEmoji(locale) {
+  const flags = {
+    zh: '🇨🇳',
+    en: '🇺🇸',
+    ja: '🇯🇵',
+    fr: '🇫🇷',
+    es: '🇪🇸',
+    ru: '🇷🇺',
+    ms: '🇲🇾'
+  };
+  return flags[locale] || '🌍';
+}
+
+/**
+ * 创建语言切换器组件
+ * @param {string} containerId - 容器元素 ID
+ * @param {object} options - 配置选项
+ */
+function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) {
+  const {
+    showFlag = true,
+    showText = true,
+    position = 'top-right',
+    style = 'dropdown' // 'dropdown' 或 'buttons'
+  } = options;
+
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.error(`Container #${containerId} not found`);
+    return;
+  }
+
+  const locales = window.i18n.getAvailableLocales();
+  const currentLocale = window.i18n.getLocale();
+
+  if (style === 'dropdown') {
+    // 下拉菜单样式
+    container.innerHTML = `
+      <div class="language-switcher-dropdown">
+        <button class="lang-btn" id="langBtn">
+          ${showFlag ? getFlagEmoji(currentLocale) : ''}
+          ${showText ? window.i18n.getLocaleName(currentLocale) : ''}
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="lang-dropdown" id="langDropdown" style="display: none;">
+          ${locales.map(locale => `
+            <button class="lang-option ${locale === currentLocale ? 'active' : ''}" 
+                    data-locale="${locale}">
+              ${showFlag ? getFlagEmoji(locale) : ''} ${window.i18n.getLocaleName(locale)}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    // 添加样式
+    if (!document.getElementById('i18n-switcher-styles')) {
+      const style = document.createElement('style');
+      style.id = 'i18n-switcher-styles';
+      style.textContent = `
+        .language-switcher-dropdown {
+          position: relative;
+          display: inline-block;
+        }
+        .lang-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          background: white;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          color: #333;
+          transition: all 0.3s;
+        }
+        .lang-btn:hover {
+          background: #f5f5f5;
+          border-color: #9E2A2B;
+        }
+        .lang-btn i {
+          font-size: 12px;
+          transition: transform 0.3s;
+        }
+        .lang-btn.active i {
+          transform: rotate(180deg);
+        }
+        .lang-dropdown {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          margin-top: 8px;
+          background: white;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          min-width: 180px;
+          z-index: 1000;
+          overflow: hidden;
+        }
+        .lang-option {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+          padding: 12px 16px;
+          background: white;
+          border: none;
+          border-bottom: 1px solid #f0f0f0;
+          cursor: pointer;
+          font-size: 14px;
+          color: #333;
+          text-align: left;
+          transition: all 0.3s;
+        }
+        .lang-option:last-child {
+          border-bottom: none;
+        }
+        .lang-option:hover {
+          background: #f5f5f5;
+        }
+        .lang-option.active {
+          background: #9E2A2B;
+          color: white;
+          font-weight: bold;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // 添加事件监听
+    const langBtn = document.getElementById('langBtn');
+    const langDropdown = document.getElementById('langDropdown');
+
+    langBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = langDropdown.style.display === 'block';
+      langDropdown.style.display = isVisible ? 'none' : 'block';
+      langBtn.classList.toggle('active', !isVisible);
+    });
+
+    // 点击外部关闭
+    document.addEventListener('click', () => {
+      langDropdown.style.display = 'none';
+      langBtn.classList.remove('active');
+    });
+
+    // 语言选项点击
+    langDropdown.querySelectorAll('.lang-option').forEach(option => {
+      option.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const locale = option.getAttribute('data-locale');
+        await window.i18n.setLocale(locale);
+        
+        // 更新按钮文本
+        langBtn.innerHTML = `
+          ${showFlag ? getFlagEmoji(locale) : ''}
+          ${showText ? window.i18n.getLocaleName(locale) : ''}
+          <i class="fas fa-chevron-down"></i>
+        `;
+        
+        // 更新选中状态
+        langDropdown.querySelectorAll('.lang-option').forEach(opt => {
+          opt.classList.remove('active');
+        });
+        option.classList.add('active');
+        
+        // 关闭下拉菜单
+        langDropdown.style.display = 'none';
+        langBtn.classList.remove('active');
+      });
+    });
+  } else {
+    // 按钮组样式
+    container.innerHTML = `
+      <div class="language-switcher-buttons">
+        ${locales.map(locale => `
+          <button class="lang-button ${locale === currentLocale ? 'active' : ''}" 
+                  data-locale="${locale}"
+                  title="${window.i18n.getLocaleName(locale)}">
+            ${showFlag ? getFlagEmoji(locale) : window.i18n.getLocaleName(locale)}
+          </button>
+        `).join('')}
+      </div>
+    `;
+
+    // 添加样式
+    if (!document.getElementById('i18n-buttons-styles')) {
+      const style = document.createElement('style');
+      style.id = 'i18n-buttons-styles';
+      style.textContent = `
+        .language-switcher-buttons {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .lang-button {
+          padding: 6px 12px;
+          background: white;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          color: #333;
+          transition: all 0.3s;
+        }
+        .lang-button:hover {
+          background: #f5f5f5;
+          border-color: #9E2A2B;
+        }
+        .lang-button.active {
+          background: #9E2A2B;
+          color: white;
+          border-color: #9E2A2B;
+          font-weight: bold;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // 添加事件监听
+    container.querySelectorAll('.lang-button').forEach(button => {
+      button.addEventListener('click', async () => {
+        const locale = button.getAttribute('data-locale');
+        await window.i18n.setLocale(locale);
+        
+        // 更新选中状态
+        container.querySelectorAll('.lang-button').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        button.classList.add('active');
+      });
+    });
+  }
+
+  console.log('✅ Language switcher created');
+}
+
+/**
+ * 初始化 i18n（推荐在页面加载时调用）
+ * @param {object} options - 配置选项
+ */
+async function initI18n(options = {}) {
+  const {
+    autoDetect = true,
+    defaultLocale = 'zh',
+    translateOnInit = true,
+    createSwitcher = false,
+    switcherContainerId = 'languageSwitcher',
+    switcherOptions = {}
+  } = options;
+
+  try {
+    // 检测或使用默认语言
+    const locale = autoDetect ? window.i18n.autoDetectLocale() : defaultLocale;
+    
+    // 初始化 i18n
+    await window.i18n.init(locale);
+    
+    // 翻译页面
+    if (translateOnInit) {
+      translatePage();
+    }
+    
+    // 创建语言切换器
+    if (createSwitcher) {
+      createLanguageSwitcher(switcherContainerId, switcherOptions);
+    }
+    
+    // 监听语言切换事件
+    window.addEventListener('localeChanged', () => {
+      translatePage();
+    });
+    
+    console.log('✅ i18n initialized successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to initialize i18n:', error);
+    return false;
+  }
+}
+
+/**
+ * 获取当前语言的文本方向
+ * @returns {string} 'ltr' 或 'rtl'
+ */
+function getTextDirection() {
+  return window.i18n.getDirection();
+}
+
+/**
+ * 设置页面语言属性
+ */
+function setPageLanguageAttributes() {
+  const locale = window.i18n.getLocale();
+  const direction = getTextDirection();
+  
+  document.documentElement.setAttribute('lang', locale);
+  document.documentElement.setAttribute('dir', direction);
+}
+
+// 监听语言切换，更新页面属性
+if (typeof window !== 'undefined') {
+  window.addEventListener('localeChanged', () => {
+    setPageLanguageAttributes();
+  });
+}
+
+// 导出函数
+if (typeof window !== 'undefined') {
+  window.translatePage = translatePage;
+  window.getFlagEmoji = getFlagEmoji;
+  window.createLanguageSwitcher = createLanguageSwitcher;
+  window.initI18n = initI18n;
+  window.getTextDirection = getTextDirection;
+  window.setPageLanguageAttributes = setPageLanguageAttributes;
+}
+
