@@ -333,7 +333,11 @@
         <a href="./admin/" class="block text-gray-300 hover:text-[#D4AF37] py-2 flex items-center">
           <i class="fas fa-user-shield mr-2"></i><span data-i18n="homepage.nav.admin">管理员</span>
         </a>
-        <a href="./mall/" class="block px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#9E2A2B] rounded-full text-white text-center font-medium">
+        <!-- 移动端语言切换器 -->
+        <div class="py-2">
+          <div id="languageSwitcherMobile"></div>
+        </div>
+        <a href="./mall/" class="block px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#9E2A2B] rounded-full text-white text-center font-medium" data-i18n="homepage.nav.enter">
           进入平台
                 </a>
               </div>
@@ -1244,6 +1248,16 @@
             style: 'dropdown'
           }
         });
+        
+        // 为移动端也创建语言切换器
+        if (window.i18n && document.getElementById('languageSwitcherMobile')) {
+          window.createLanguageSwitcher('languageSwitcherMobile', {
+            showFlag: true,
+            showText: true,
+            style: 'dropdown'
+          });
+        }
+        
         console.log('Homepage i18n initialized, default language: English');
       });
     </script>
