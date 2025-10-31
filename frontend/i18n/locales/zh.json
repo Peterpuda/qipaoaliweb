@@ -29,7 +29,11 @@
     "comingSoon": "敬请期待",
     "customerService": "客服",
     "toggleSound": "开启/关闭声音",
-    "playPause": "播放/暂停"
+    "playPause": "播放/暂停",
+    "unmute": "开启声音",
+    "mute": "关闭声音",
+    "play": "播放",
+    "pause": "暂停"
   },
   "nav": {
     "artisans": "认证匠人",
@@ -448,7 +452,12 @@
       "stat3Label": "永久存储",
       "stat1Desc": "链上运行",
       "stat2Desc": "开源透明",
-      "stat3Desc": "永久存储"
+      "stat3Desc": "永久存储",
+      "badge": "文化守护运动 · 全球召集",
+      "connector1": "无论你是",
+      "connector2": "还是",
+      "button1": "探索匠人世界",
+      "button2": "成为文化守护者"
     },
     "footer": {
       "brandName": "非遗上链",
@@ -469,7 +478,8 @@
       "stat2Label": "活跃投票人",
       "stat3Label": "已执行提案",
       "intro1": "文化保护不再是少数人的使命，而是全球社区的共识。",
-      "intro2": "你的每一票，都在决定哪些文化值得被永续守护"
+      "intro2": "你的每一票，都在决定哪些文化值得被永续守护",
+      "keyPhrase": "参与未来传承的钥匙"
     }
   }
 }

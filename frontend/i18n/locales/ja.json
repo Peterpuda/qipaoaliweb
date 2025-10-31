@@ -29,7 +29,11 @@
     "comingSoon": "近日公開",
     "customerService": "カスタマーサービス",
     "toggleSound": "音量切り替え",
-    "playPause": "再生/一時停止"
+    "playPause": "再生/一時停止",
+    "unmute": "音量をオン",
+    "mute": "音量をオフ",
+    "play": "再生",
+    "pause": "一時停止"
   },
   "nav": {
     "artisans": "認定職人",
@@ -448,7 +452,12 @@
       "stat3Label": "永久保存",
       "stat1Desc": "24/7オンチェーン",
       "stat2Desc": "100%オープンソース",
-      "stat3Desc": "永久保存"
+      "stat3Desc": "永久保存",
+      "badge": "文化保存運動 · グローバル募集",
+      "connector1": "あなたが",
+      "connector2": "または",
+      "button1": "職人の世界を探索",
+      "button2": "文化の守護者になる"
     },
     "footer": {
       "brandName": "非遺上鏈",
@@ -469,7 +478,8 @@
       "stat2Label": "アクティブ投票者",
       "stat3Label": "実行済み",
       "intro1": "文化保護はもはや少数の使命ではなく、グローバルコミュニティの合意です。",
-      "intro2": "あなたの投票一つ一つが、どの文化が永続的に守る価値があるかを決定します"
+      "intro2": "あなたの投票一つ一つが、どの文化が永続的に守る価値があるかを決定します",
+      "keyPhrase": "未来の遺産への参加の鍵"
     }
   }
 }

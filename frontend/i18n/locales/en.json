@@ -29,7 +29,11 @@
     "comingSoon": "Coming Soon",
     "customerService": "Customer Service",
     "toggleSound": "Toggle Sound",
-    "playPause": "Play/Pause"
+    "playPause": "Play/Pause",
+    "unmute": "Unmute",
+    "mute": "Mute",
+    "play": "Play",
+    "pause": "Pause"
   },
   "nav": {
     "artisans": "Certified Artisans",
@@ -448,7 +452,12 @@
       "stat3Label": "Permanent",
       "stat1Desc": "On-Chain 24/7",
       "stat2Desc": "100% Open Source",
-      "stat3Desc": "Permanent Storage"
+      "stat3Desc": "Permanent Storage",
+      "badge": "Cultural Preservation Movement · Global Call",
+      "connector1": "Whether you are",
+      "connector2": "or",
+      "button1": "Explore Artisan World",
+      "button2": "Become a Cultural Guardian"
     },
     "footer": {
       "brandName": "Heritage on Chain",
@@ -469,7 +478,8 @@
       "stat2Label": "Active Voters",
       "stat3Label": "Executed",
       "intro1": "Cultural preservation is no longer a mission for a few, but a consensus of the global community.",
-      "intro2": "Every vote you cast decides which cultures deserve to be protected forever"
+      "intro2": "Every vote you cast decides which cultures deserve to be protected forever",
+      "keyPhrase": "the key to participating in future heritage"
     }
   }
 }

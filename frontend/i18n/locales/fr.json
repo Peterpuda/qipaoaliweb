@@ -29,7 +29,11 @@
     "comingSoon": "Bientôt disponible",
     "customerService": "Service Client",
     "toggleSound": "Activer/Désactiver le son",
-    "playPause": "Lecture/Pause"
+    "playPause": "Lecture/Pause",
+    "unmute": "Activer le son",
+    "mute": "Désactiver le son",
+    "play": "Lire",
+    "pause": "Pause"
   },
   "nav": {
     "artisans": "Artisans Certifiés",
@@ -448,7 +452,12 @@
       "stat3Label": "Permanent",
       "stat1Desc": "On-Chain 24/7",
       "stat2Desc": "100% Open Source",
-      "stat3Desc": "Stockage Permanent"
+      "stat3Desc": "Stockage Permanent",
+      "badge": "Mouvement de Préservation Culturelle · Appel Mondial",
+      "connector1": "Que vous soyez",
+      "connector2": "ou",
+      "button1": "Explorer le Monde Artisanal",
+      "button2": "Devenir un Gardien Culturel"
     },
     "footer": {
       "brandName": "Patrimoine sur Chaîne",
@@ -469,7 +478,8 @@
       "stat2Label": "Votants Actifs",
       "stat3Label": "Exécutées",
       "intro1": "La préservation culturelle n'est plus la mission de quelques-uns, mais le consensus de la communauté mondiale.",
-      "intro2": "Chaque vote que vous exprimez détermine quelles cultures méritent d'être protégées pour toujours"
+      "intro2": "Chaque vote que vous exprimez détermine quelles cultures méritent d'être protégées pour toujours",
+      "keyPhrase": "la clé pour participer au patrimoine futur"
     }
   }
 }

@@ -29,7 +29,11 @@
     "comingSoon": "Akan Datang",
     "customerService": "Perkhidmatan Pelanggan",
     "toggleSound": "Tukar Bunyi",
-    "playPause": "Main/Jeda"
+    "playPause": "Main/Jeda",
+    "unmute": "Hidupkan bunyi",
+    "mute": "Matikan bunyi",
+    "play": "Main",
+    "pause": "Jeda"
   },
   "nav": {
     "artisans": "Tukang Bertauliah",
@@ -307,7 +311,12 @@
       "stat3Label": "Kekal",
       "stat1Desc": "Di Rantaian 24/7",
       "stat2Desc": "100% Sumber Terbuka",
-      "stat3Desc": "Penyimpanan Kekal"
+      "stat3Desc": "Penyimpanan Kekal",
+      "badge": "Gerakan Pemeliharaan Budaya · Seruan Global",
+      "connector1": "Sama ada anda",
+      "connector2": "atau",
+      "button1": "Terokai Dunia Tukang",
+      "button2": "Menjadi Penjaga Budaya"
     },
     "footer": {
       "brandName": "Warisan di Rantaian",
@@ -328,7 +337,8 @@
       "stat2Label": "Pengundi Aktif",
       "stat3Label": "Dilaksanakan",
       "intro1": "Pemeliharaan budaya bukan lagi misi segelintir orang, tetapi konsensus komuniti global.",
-      "intro2": "Setiap undi yang anda berikan menentukan budaya mana yang layak dilindungi selamanya"
+      "intro2": "Setiap undi yang anda berikan menentukan budaya mana yang layak dilindungi selamanya",
+      "keyPhrase": "kunci untuk mengambil bahagian dalam warisan masa depan"
     }
   },
   "auth": {

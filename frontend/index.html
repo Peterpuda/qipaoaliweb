@@ -794,7 +794,7 @@
       <div class="mb-6">
         <span class="web3-badge">
           <i class="fas fa-hands-helping mr-2"></i>
-          文化守护运动 · 全球召集
+          <span data-i18n="homepage.governance.badge">文化守护运动 · 全球召集</span>
         </span>
       </div>
       
@@ -804,19 +804,19 @@
       </h2>
       
       <p class="text-base sm:text-xl md:text-2xl text-gray-300 mb-10 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-4">
-        无论你是 <strong class="text-white" data-i18n="homepage.governance.audience1">热爱传统的文化守护者</strong>、
+        <span data-i18n="homepage.governance.connector1">无论你是</span> <strong class="text-white" data-i18n="homepage.governance.audience1">热爱传统的文化守护者</strong>、
         <strong class="text-white" data-i18n="homepage.governance.audience2">手握技艺的传承匠人</strong>、
         <strong class="text-white" data-i18n="homepage.governance.audience3">相信未来的 Web3 建设者</strong>，
-        还是 <strong class="text-white" data-i18n="homepage.governance.audience4">想改变规则的 DAO 治理者</strong> — 
+        <span data-i18n="homepage.governance.connector2">还是</span> <strong class="text-white" data-i18n="homepage.governance.audience4">想改变规则的 DAO 治理者</strong> — 
         <span class="text-[#D4AF37] font-semibold"><span data-i18n="homepage.governance.audienceCta">这里，就是你的舞台</span></span>
       </p>
       
       <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12 px-4">
         <a href="./mall/" class="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-[#D4AF37] to-[#9E2A2B] rounded-full text-white text-base sm:text-lg font-bold hover:opacity-90 transition shadow-2xl pulse-glow">
-          <i class="fas fa-compass mr-2"></i>探索匠人世界
+          <i class="fas fa-compass mr-2"></i><span data-i18n="homepage.governance.button1">探索匠人世界</span>
         </a>
         <a href="./dao/" class="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-white/5 border-2 border-white/20 rounded-full text-white text-base sm:text-lg font-bold hover:bg-white/10 transition">
-          <i class="fas fa-hand-holding-heart mr-2"></i>成为文化守护者
+          <i class="fas fa-hand-holding-heart mr-2"></i><span data-i18n="homepage.governance.button2">成为文化守护者</span>
         </a>
       </div>
       
@@ -995,6 +995,18 @@
     
     // ===== 视频背景控制 =====
     (function() {
+      // 安全翻译函数，如果 i18n 未初始化则返回 key
+      function tSafe(key, params = {}) {
+        if (window.i18n && typeof window.i18n.t === 'function') {
+          return window.i18n.t(key, params);
+        }
+        if (window.t && typeof window.t === 'function') {
+          return window.t(key, params);
+        }
+        // 如果都没有，返回 key 本身
+        return key;
+      }
+      
       const video = document.getElementById('heroVideo');
       const videoSource = document.getElementById('videoSource');
       const volumeBtn = document.getElementById('volumeBtn');
@@ -1182,10 +1194,10 @@
         const icon = volumeBtn.querySelector('i');
         if (isMuted) {
           icon.className = 'fas fa-volume-mute';
-          volumeBtn.title = '开启声音';
+          volumeBtn.title = tSafe('common.unmute');
         } else {
           icon.className = 'fas fa-volume-up';
-          volumeBtn.title = '关闭声音';
+          volumeBtn.title = tSafe('common.mute');
         }
       }
       
@@ -1195,10 +1207,10 @@
         const icon = playPauseBtn.querySelector('i');
         if (isPlaying) {
           icon.className = 'fas fa-pause';
-          playPauseBtn.title = '暂停';
+          playPauseBtn.title = tSafe('common.pause');
         } else {
           icon.className = 'fas fa-play';
-          playPauseBtn.title = '播放';
+          playPauseBtn.title = tSafe('common.play');
         }
       }
       

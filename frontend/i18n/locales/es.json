@@ -29,7 +29,11 @@
     "comingSoon": "Próximamente",
     "customerService": "Servicio al Cliente",
     "toggleSound": "Activar/Desactivar Sonido",
-    "playPause": "Reproducir/Pausar"
+    "playPause": "Reproducir/Pausar",
+    "unmute": "Activar sonido",
+    "mute": "Silenciar",
+    "play": "Reproducir",
+    "pause": "Pausar"
   },
   "nav": {
     "artisans": "Artesanos Certificados",
@@ -448,7 +452,12 @@
       "stat3Label": "Permanente",
       "stat1Desc": "On-Chain 24/7",
       "stat2Desc": "100% Código Abierto",
-      "stat3Desc": "Almacenamiento Permanente"
+      "stat3Desc": "Almacenamiento Permanente",
+      "badge": "Movimiento de Preservación Cultural · Llamado Global",
+      "connector1": "Ya seas",
+      "connector2": "o",
+      "button1": "Explorar el Mundo Artesanal",
+      "button2": "Convertirse en Guardián Cultural"
     },
     "footer": {
       "brandName": "Patrimonio en Cadena",
@@ -469,7 +478,8 @@
       "stat2Label": "Votantes Activos",
       "stat3Label": "Ejecutadas",
       "intro1": "La preservación cultural ya no es la misión de unos pocos, sino el consenso de la comunidad global.",
-      "intro2": "Cada voto que emites decide qué culturas merecen ser protegidas para siempre"
+      "intro2": "Cada voto que emites decide qué culturas merecen ser protegidas para siempre",
+      "keyPhrase": "la clave para participar en el patrimonio futuro"
     }
   }
 }
