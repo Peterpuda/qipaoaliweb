@@ -27,7 +27,9 @@
     "loadMore": "Muat Lagi",
     "noData": "Tiada Data",
     "comingSoon": "Akan Datang",
-    "customerService": "Perkhidmatan Pelanggan"
+    "customerService": "Perkhidmatan Pelanggan",
+    "toggleSound": "Tukar Bunyi",
+    "playPause": "Main/Jeda"
   },
   "nav": {
     "artisans": "Tukang Bertauliah",
@@ -267,7 +269,17 @@
       "techLabel2": "Penyimpanan Terdesentralisasi",
       "feature3DescFull": "Setiap penyertaan direkodkan di rantaian. Cetak POAP, daftar masuk harian, tuntut $QI — setiap langkah melindungi budaya terukir secara kekal",
       "feature4DescFull": "Masa depan budaya, diputuskan secara global. Cadang, undi, laksana — setiap undi mempunyai kuasa, semua orang adalah penjaga",
-      "mainTitle": "Dari Luar Talian ke Rantaian, Dari Dialog ke Keabadian"
+      "mainTitle": "Dari Luar Talian ke Rantaian, Dari Dialog ke Keabadian",
+      "artisanCenter": "Pusat Tukang",
+      "feature1Desc2": "Dari laluan benang ke warisan milenium — lebih terperinci daripada video, lebih jelas daripada muzium",
+      "talkToArtisan": "Bercakap dengan Tukang",
+      "authenticGallery": "Galeri Asli di Rantaian",
+      "feature2Desc2": "Palsu tidak mungkin, nilai boleh dipercayai — dompet anda adalah muzium peribadi anda",
+      "exploreCollection": "Terokai Koleksi",
+      "participationProof": "Bukti Penyertaan",
+      "inscribeParticipation": "Tulis Penyertaan",
+      "globalGovernance": "Tadbir Urus Bersama Global",
+      "joinDAO": "Sertai DAO"
     },
     "tech": {
       "title": "Seni Bina Teknikal",
@@ -276,7 +288,9 @@
       "arweaveDesc": "Penyimpanan Kekal",
       "openaiDesc": "Agen AI",
       "cloudflareDesc": "Pengkomputeran Tepi",
-      "mainTitle": "Penyelesaian Teknologi Web3 Penuh"
+      "mainTitle": "Penyelesaian Teknologi Web3 Penuh",
+      "label": "Timbunan Teknologi",
+      "desc": "dan teknologi canggih lain, membina platform perlindungan budaya yang selamat dan boleh dipercayai"
     },
     "governance": {
       "title": "Tadbir Urus & Masa Depan",
@@ -312,7 +326,9 @@
       "ctaButton": "Sertai Tadbir Urus",
       "stat1Label": "Cadangan",
       "stat2Label": "Pengundi Aktif",
-      "stat3Label": "Dilaksanakan"
+      "stat3Label": "Dilaksanakan",
+      "intro1": "Pemeliharaan budaya bukan lagi misi segelintir orang, tetapi konsensus komuniti global.",
+      "intro2": "Setiap undi yang anda berikan menentukan budaya mana yang layak dilindungi selamanya"
     }
   },
   "auth": {

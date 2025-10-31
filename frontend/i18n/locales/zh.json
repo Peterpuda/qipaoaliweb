@@ -27,7 +27,9 @@
     "loadMore": "加载更多",
     "noData": "暂无数据",
     "comingSoon": "敬请期待",
-    "customerService": "客服"
+    "customerService": "客服",
+    "toggleSound": "开启/关闭声音",
+    "playPause": "播放/暂停"
   },
   "nav": {
     "artisans": "认证匠人",
@@ -408,7 +410,17 @@
       "techLabel2": "去中心化存储",
       "feature3DescFull": "每次参与都有链上记录。铸造 POAP、每日签到、领取 $QI — 守护文化的每一步，都被永久铭刻",
       "feature4DescFull": "文化的未来，由全球决定。提案、投票、执行 — 每一票都有力量，每个人都是守护者",
-      "mainTitle": "从线下到链上，从对话到永恒"
+      "mainTitle": "从线下到链上，从对话到永恒",
+      "artisanCenter": "匠人中心",
+      "feature1Desc2": "从一针的走向，到千年的传承 — 比视频更细致，比博物馆更生动",
+      "talkToArtisan": "与匠人对话",
+      "authenticGallery": "链上真品馆",
+      "feature2Desc2": "假货不可能，价值才可信 — 你的钱包，就是你的私人博物馆",
+      "exploreCollection": "探索藏品",
+      "participationProof": "参与证明",
+      "inscribeParticipation": "铭刻参与",
+      "globalGovernance": "全球共治",
+      "joinDAO": "加入 DAO"
     },
     "tech": {
       "title": "技术架构",
@@ -417,7 +429,9 @@
       "arweaveDesc": "永久存储",
       "openaiDesc": "AI 智能体",
       "cloudflareDesc": "边缘计算",
-      "mainTitle": "Web3 全栈技术方案"
+      "mainTitle": "Web3 全栈技术方案",
+      "label": "技术栈",
+      "desc": "等前沿技术，打造安全可靠的文化保护平台"
     },
     "governance": {
       "title": "治理与未来",
@@ -453,7 +467,9 @@
       "ctaButton": "参与治理",
       "stat1Label": "提案数量",
       "stat2Label": "活跃投票人",
-      "stat3Label": "已执行提案"
+      "stat3Label": "已执行提案",
+      "intro1": "文化保护不再是少数人的使命，而是全球社区的共识。",
+      "intro2": "你的每一票，都在决定哪些文化值得被永续守护"
     }
   }
 }

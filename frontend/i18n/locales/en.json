@@ -27,7 +27,9 @@
     "loadMore": "Load More",
     "noData": "No Data",
     "comingSoon": "Coming Soon",
-    "customerService": "Customer Service"
+    "customerService": "Customer Service",
+    "toggleSound": "Toggle Sound",
+    "playPause": "Play/Pause"
   },
   "nav": {
     "artisans": "Certified Artisans",
@@ -408,7 +410,17 @@
       "techLabel2": "Decentralized Storage",
       "feature3DescFull": "Every participation is recorded on-chain. Mint POAP, daily check-in, claim $QI — every step of protecting culture is permanently inscribed",
       "feature4DescFull": "The future of culture, decided globally. Propose, vote, execute — every vote has power, everyone is a guardian",
-      "mainTitle": "From Offline to On-Chain, From Dialogue to Eternity"
+      "mainTitle": "From Offline to On-Chain, From Dialogue to Eternity",
+      "artisanCenter": "Artisan Center",
+      "feature1Desc2": "From the thread's path to the heritage of a millennium — more detailed than video, more vivid than museums",
+      "talkToArtisan": "Talk to Artisan",
+      "authenticGallery": "Authentic Gallery on Chain",
+      "feature2Desc2": "Fakes are impossible, value is trustworthy — your wallet is your private museum",
+      "exploreCollection": "Explore Collection",
+      "participationProof": "Participation Proof",
+      "inscribeParticipation": "Inscribe Participation",
+      "globalGovernance": "Global Co-Governance",
+      "joinDAO": "Join DAO"
     },
     "tech": {
       "title": "Technical Architecture",
@@ -417,7 +429,9 @@
       "arweaveDesc": "Permanent Storage",
       "openaiDesc": "AI Agent",
       "cloudflareDesc": "Edge Computing",
-      "mainTitle": "Full-Stack Web3 Technology"
+      "mainTitle": "Full-Stack Web3 Technology",
+      "label": "Tech Stack",
+      "desc": "and other cutting-edge technologies, building a secure and reliable cultural protection platform"
     },
     "governance": {
       "title": "Governance & Future",
@@ -453,7 +467,9 @@
       "ctaButton": "Join Governance",
       "stat1Label": "Proposals",
       "stat2Label": "Active Voters",
-      "stat3Label": "Executed"
+      "stat3Label": "Executed",
+      "intro1": "Cultural preservation is no longer a mission for a few, but a consensus of the global community.",
+      "intro2": "Every vote you cast decides which cultures deserve to be protected forever"
     }
   }
 }

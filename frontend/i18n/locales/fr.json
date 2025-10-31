@@ -27,7 +27,9 @@
     "loadMore": "Charger plus",
     "noData": "Aucune donnée",
     "comingSoon": "Bientôt disponible",
-    "customerService": "Service Client"
+    "customerService": "Service Client",
+    "toggleSound": "Activer/Désactiver le son",
+    "playPause": "Lecture/Pause"
   },
   "nav": {
     "artisans": "Artisans Certifiés",
@@ -408,7 +410,17 @@
       "techLabel2": "Stockage Décentralisé",
       "feature3DescFull": "Chaque participation est enregistrée on-chain. Frapper POAP, enregistrement quotidien, réclamer $QI — chaque étape de protection de la culture est inscrite de façon permanente",
       "feature4DescFull": "L'avenir de la culture, décidé mondialement. Proposer, voter, exécuter — chaque vote a du pouvoir, chacun est un gardien",
-      "mainTitle": "Du Hors-Ligne à la Blockchain, du Dialogue à l'Éternité"
+      "mainTitle": "Du Hors-Ligne à la Blockchain, du Dialogue à l'Éternité",
+      "artisanCenter": "Centre des Artisans",
+      "feature1Desc2": "Du chemin du fil au patrimoine millénaire — plus détaillé que la vidéo, plus vivant que les musées",
+      "talkToArtisan": "Parler à l'Artisan",
+      "authenticGallery": "Galerie Authentique sur la Chaîne",
+      "feature2Desc2": "Les contrefaçons sont impossibles, la valeur est digne de confiance — votre portefeuille est votre musée privé",
+      "exploreCollection": "Explorer la Collection",
+      "participationProof": "Preuve de Participation",
+      "inscribeParticipation": "Graver la Participation",
+      "globalGovernance": "Co-Gouvernance Mondiale",
+      "joinDAO": "Rejoindre le DAO"
     },
     "tech": {
       "title": "Architecture Technique",
@@ -417,7 +429,9 @@
       "arweaveDesc": "Stockage Permanent",
       "openaiDesc": "Agent IA",
       "cloudflareDesc": "Edge Computing",
-      "mainTitle": "Solution Technologique Web3 Full-Stack"
+      "mainTitle": "Solution Technologique Web3 Full-Stack",
+      "label": "Pile Technologique",
+      "desc": "et autres technologies de pointe, construisant une plateforme de protection culturelle sécurisée et fiable"
     },
     "governance": {
       "title": "Gouvernance & Avenir",
@@ -453,7 +467,9 @@
       "ctaButton": "Rejoindre la Gouvernance",
       "stat1Label": "Propositions",
       "stat2Label": "Votants Actifs",
-      "stat3Label": "Exécutées"
+      "stat3Label": "Exécutées",
+      "intro1": "La préservation culturelle n'est plus la mission de quelques-uns, mais le consensus de la communauté mondiale.",
+      "intro2": "Chaque vote que vous exprimez détermine quelles cultures méritent d'être protégées pour toujours"
     }
   }
 }

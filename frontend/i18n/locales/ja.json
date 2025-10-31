@@ -27,7 +27,9 @@
     "loadMore": "さらに読み込む",
     "noData": "データがありません",
     "comingSoon": "近日公開",
-    "customerService": "カスタマーサービス"
+    "customerService": "カスタマーサービス",
+    "toggleSound": "音量切り替え",
+    "playPause": "再生/一時停止"
   },
   "nav": {
     "artisans": "認定職人",
@@ -408,7 +410,17 @@
       "techLabel2": "分散型ストレージ",
       "feature3DescFull": "すべての参加がチェーン上に記録されます。POAPを鋳造、毎日チェックイン、$QIを受け取る — 文化を守るすべてのステップが永久に刻まれます",
       "feature4DescFull": "文化の未来は、世界中で決定されます。提案、投票、実行 — すべての票に力があり、誰もが守護者です",
-      "mainTitle": "オフラインからオンチェーンへ、対話から永遠へ"
+      "mainTitle": "オフラインからオンチェーンへ、対話から永遠へ",
+      "artisanCenter": "職人センター",
+      "feature1Desc2": "一針の進路から千年の継承へ — ビデオよりも詳細、博物館よりも鮮明",
+      "talkToArtisan": "職人と話す",
+      "authenticGallery": "チェーン上の真品館",
+      "feature2Desc2": "偽物は不可能、価値が信頼できる — あなたのウォレットがあなたのプライベート博物館",
+      "exploreCollection": "コレクションを探索",
+      "participationProof": "参加証明",
+      "inscribeParticipation": "参加を刻印",
+      "globalGovernance": "グローバル共治",
+      "joinDAO": "DAOに参加"
     },
     "tech": {
       "title": "技術アーキテクチャ",
@@ -417,7 +429,9 @@
       "arweaveDesc": "永久ストレージ",
       "openaiDesc": "AIエージェント",
       "cloudflareDesc": "エッジコンピューティング",
-      "mainTitle": "Web3 フルスタック技術ソリューション"
+      "mainTitle": "Web3 フルスタック技術ソリューション",
+      "label": "技術スタック",
+      "desc": "などの最先端技術で、安全で信頼性の高い文化保護プラットフォームを構築"
     },
     "governance": {
       "title": "ガバナンスと未来",
@@ -453,7 +467,9 @@
       "ctaButton": "ガバナンスに参加",
       "stat1Label": "提案数",
       "stat2Label": "アクティブ投票者",
-      "stat3Label": "実行済み"
+      "stat3Label": "実行済み",
+      "intro1": "文化保護はもはや少数の使命ではなく、グローバルコミュニティの合意です。",
+      "intro2": "あなたの投票一つ一つが、どの文化が永続的に守る価値があるかを決定します"
     }
   }
 }

@@ -27,7 +27,9 @@
     "loadMore": "Cargar más",
     "noData": "Sin datos",
     "comingSoon": "Próximamente",
-    "customerService": "Servicio al Cliente"
+    "customerService": "Servicio al Cliente",
+    "toggleSound": "Activar/Desactivar Sonido",
+    "playPause": "Reproducir/Pausar"
   },
   "nav": {
     "artisans": "Artesanos Certificados",
@@ -408,7 +410,17 @@
       "techLabel2": "Almacenamiento Descentralizado",
       "feature3DescFull": "Cada participación se registra en la cadena. Acuñar POAP, registro diario, reclamar $QI — cada paso de proteger la cultura se inscribe permanentemente",
       "feature4DescFull": "El futuro de la cultura, decidido globalmente. Proponer, votar, ejecutar — cada voto tiene poder, todos son guardianes",
-      "mainTitle": "De lo Offline a la Blockchain, del Diálogo a la Eternidad"
+      "mainTitle": "De lo Offline a la Blockchain, del Diálogo a la Eternidad",
+      "artisanCenter": "Centro de Artesanos",
+      "feature1Desc2": "Desde el camino del hilo hasta el patrimonio milenario — más detallado que el video, más vívido que los museos",
+      "talkToArtisan": "Hablar con el Artesano",
+      "authenticGallery": "Galería Auténtica en la Cadena",
+      "feature2Desc2": "Las falsificaciones son imposibles, el valor es confiable — tu billetera es tu museo privado",
+      "exploreCollection": "Explorar Colección",
+      "participationProof": "Prueba de Participación",
+      "inscribeParticipation": "Inscribir Participación",
+      "globalGovernance": "Co-Gobernanza Global",
+      "joinDAO": "Unirse al DAO"
     },
     "tech": {
       "title": "Arquitectura Técnica",
@@ -417,7 +429,9 @@
       "arweaveDesc": "Almacenamiento Permanente",
       "openaiDesc": "Agente IA",
       "cloudflareDesc": "Computación en el Borde",
-      "mainTitle": "Solución Tecnológica Web3 Full-Stack"
+      "mainTitle": "Solución Tecnológica Web3 Full-Stack",
+      "label": "Pila Tecnológica",
+      "desc": "y otras tecnologías de vanguardia, construyendo una plataforma de protección cultural segura y confiable"
     },
     "governance": {
       "title": "Gobernanza y Futuro",
@@ -453,7 +467,9 @@
       "ctaButton": "Unirse a la Gobernanza",
       "stat1Label": "Propuestas",
       "stat2Label": "Votantes Activos",
-      "stat3Label": "Ejecutadas"
+      "stat3Label": "Ejecutadas",
+      "intro1": "La preservación cultural ya no es la misión de unos pocos, sino el consenso de la comunidad global.",
+      "intro2": "Cada voto que emites decide qué culturas merecen ser protegidas para siempre"
     }
   }
 }
