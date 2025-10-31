@@ -312,7 +312,16 @@
       "stat1Label": "Offre Totale",
       "stat2Label": "Offre en Circulation",
       "stat3Label": "Détenteurs",
-      "stat4Label": "Réseau"
+      "stat4Label": "Réseau",
+      "introText1": "n'est pas un jeton spéculatif, mais une",
+      "proofText": "preuve de participation à la préservation culturelle",
+      "introText2": ". Émis sur",
+      "introText3": ", détenir $QI signifie que vous devenez :",
+      "role1DescFull": "Quels projets patrimoniaux méritent d'être sur la chaîne, comment les fonds sont alloués, comment l'avenir se développe — votre vote façonne la direction de la culture. Ce n'est pas une formalité, mais un vrai pouvoir décisionnel",
+      "role2DescFull": "Enregistrements quotidiens, partage d'histoires, création de contenu — chaque participation rapporte des récompenses en jetons. Le processus de protection de la culture est aussi le processus d'accumulation de valeur",
+      "role3DescFull": "Accès prioritaire aux chefs-d'œuvre NFT limités, expériences patrimoniales hors ligne, conversations approfondies avec des artisans IA — votre portefeuille est un musée",
+      "complianceLabel": "Déclaration de Conformité :",
+      "complianceText": "$QI est un jeton utilitaire communautaire, pas un titre et n'a aucune fonction d'investissement. Il ne prend pas en charge les échanges ou les transferts sur le marché secondaire. Il est uniquement utilisé pour la gouvernance de l'écosystème et les droits d'accès."
     },
     "ecosystem": {
       "title": "Écosystème Complet, Autonomiser la Culture",
@@ -324,7 +333,9 @@
       "feature3Desc": "Chaque participation est enregistrée on-chain.",
       "feature4Desc": "L'avenir de la culture, décidé mondialement.",
       "techLabel1": "Blockchain",
-      "techLabel2": "Stockage Décentralisé"
+      "techLabel2": "Stockage Décentralisé",
+      "feature3DescFull": "Chaque participation est enregistrée on-chain. Frapper POAP, enregistrement quotidien, réclamer $QI — chaque étape de protection de la culture est inscrite de façon permanente",
+      "feature4DescFull": "L'avenir de la culture, décidé mondialement. Proposer, voter, exécuter — chaque vote a du pouvoir, chacun est un gardien"
     },
     "tech": {
       "title": "Architecture Technique",
@@ -346,7 +357,10 @@
       "audienceCta": "C'est votre scène",
       "stat1Label": "On-Chain",
       "stat2Label": "Open Source",
-      "stat3Label": "Permanent"
+      "stat3Label": "Permanent",
+      "stat1Desc": "On-Chain 24/7",
+      "stat2Desc": "100% Open Source",
+      "stat3Desc": "Stockage Permanent"
     },
     "footer": {
       "brandName": "Patrimoine sur Chaîne",

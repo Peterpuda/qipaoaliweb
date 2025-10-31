@@ -312,7 +312,16 @@
       "stat1Label": "Total Supply",
       "stat2Label": "Circulating Supply",
       "stat3Label": "Holders",
-      "stat4Label": "Network"
+      "stat4Label": "Network",
+      "introText1": "is not a speculative token, but a",
+      "proofText": "proof of participation in cultural preservation",
+      "introText2": ". Issued on",
+      "introText3": ", holding $QI means you become:",
+      "role1DescFull": "Which heritage projects deserve to be on-chain, how funds are allocated, how the future develops — your vote shapes the direction of culture. This is not a formality, but real decision-making power",
+      "role2DescFull": "Daily check-ins, sharing stories, creating content — every participation earns token rewards. The process of protecting culture is also the process of accumulating value",
+      "role3DescFull": "Priority access to limited NFT masterpieces, offline heritage experiences, deep conversations with AI artisans — your wallet is a museum",
+      "complianceLabel": "Compliance Statement:",
+      "complianceText": "$QI is a community utility token, not a security and has no investment function. It does not support secondary market trading or transfer. It is only used for ecosystem governance and access rights."
     },
     "ecosystem": {
       "title": "Complete Ecosystem, Empowering Culture",
@@ -324,7 +333,9 @@
       "feature3Desc": "Every participation is recorded on-chain.",
       "feature4Desc": "The future of culture, decided globally.",
       "techLabel1": "Blockchain",
-      "techLabel2": "Decentralized Storage"
+      "techLabel2": "Decentralized Storage",
+      "feature3DescFull": "Every participation is recorded on-chain. Mint POAP, daily check-in, claim $QI — every step of protecting culture is permanently inscribed",
+      "feature4DescFull": "The future of culture, decided globally. Propose, vote, execute — every vote has power, everyone is a guardian"
     },
     "tech": {
       "title": "Technical Architecture",
@@ -346,7 +357,10 @@
       "audienceCta": "This is your stage",
       "stat1Label": "On-Chain",
       "stat2Label": "Open Source",
-      "stat3Label": "Permanent"
+      "stat3Label": "Permanent",
+      "stat1Desc": "On-Chain 24/7",
+      "stat2Desc": "100% Open Source",
+      "stat3Desc": "Permanent Storage"
     },
     "footer": {
       "brandName": "Heritage on Chain",

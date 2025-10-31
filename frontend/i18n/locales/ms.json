@@ -201,7 +201,16 @@
       "stat1Label": "Jumlah Bekalan",
       "stat2Label": "Bekalan Beredar",
       "stat3Label": "Pemegang",
-      "stat4Label": "Rangkaian"
+      "stat4Label": "Rangkaian",
+      "introText1": "bukan token spekulatif, tetapi",
+      "proofText": "bukti penyertaan dalam pemeliharaan budaya",
+      "introText2": ". Diterbitkan di",
+      "introText3": ", memegang $QI bermakna anda menjadi:",
+      "role1DescFull": "Projek warisan mana yang layak berada di rantaian, bagaimana dana diagihkan, bagaimana masa depan berkembang — undi anda membentuk arah budaya. Ini bukan formaliti, tetapi kuasa membuat keputusan sebenar",
+      "role2DescFull": "Daftar masuk harian, berkongsi cerita, mencipta kandungan — setiap penyertaan mendapat ganjaran token. Proses melindungi budaya juga merupakan proses mengumpul nilai",
+      "role3DescFull": "Akses keutamaan kepada karya agung NFT terhad, pengalaman warisan luar talian, perbualan mendalam dengan tukang AI — dompet anda adalah muzium",
+      "complianceLabel": "Kenyataan Pematuhan:",
+      "complianceText": "$QI adalah token utiliti komuniti, bukan sekuriti dan tidak mempunyai fungsi pelaburan. Ia tidak menyokong perdagangan atau pemindahan pasaran sekunder. Ia hanya digunakan untuk tadbir urus ekosistem dan hak akses."
     },
     "ecosystem": {
       "title": "Ekosistem Lengkap, Memperkasa Budaya",
@@ -213,7 +222,9 @@
       "feature3Desc": "Setiap penyertaan direkodkan di rantaian.",
       "feature4Desc": "Masa depan budaya, diputuskan secara global.",
       "techLabel1": "Blockchain",
-      "techLabel2": "Penyimpanan Terdesentralisasi"
+      "techLabel2": "Penyimpanan Terdesentralisasi",
+      "feature3DescFull": "Setiap penyertaan direkodkan di rantaian. Cetak POAP, daftar masuk harian, tuntut $QI — setiap langkah melindungi budaya terukir secara kekal",
+      "feature4DescFull": "Masa depan budaya, diputuskan secara global. Cadang, undi, laksana — setiap undi mempunyai kuasa, semua orang adalah penjaga"
     },
     "tech": {
       "title": "Seni Bina Teknikal",
@@ -235,7 +246,10 @@
       "audienceCta": "Ini pentas anda",
       "stat1Label": "Di Rantaian",
       "stat2Label": "Sumber Terbuka",
-      "stat3Label": "Kekal"
+      "stat3Label": "Kekal",
+      "stat1Desc": "Di Rantaian 24/7",
+      "stat2Desc": "100% Sumber Terbuka",
+      "stat3Desc": "Penyimpanan Kekal"
     },
     "footer": {
       "brandName": "Warisan di Rantaian",

@@ -312,7 +312,16 @@
       "stat1Label": "总供应量",
       "stat2Label": "流通量",
       "stat3Label": "持有人",
-      "stat4Label": "链上网络"
+      "stat4Label": "链上网络",
+      "introText1": "不是炒币的筹码，而是",
+      "proofText": "参与文化守护的身份证明",
+      "introText2": "。基于",
+      "introText3": "发行，持有 $QI 意味着你成为了：",
+      "role1DescFull": "对哪些非遗项目值得上链、资金如何分配、未来如何发展 — 你的一票决定文化的走向。这不是形式，而是真正的话语权",
+      "role2DescFull": "每日签到、分享故事、创作内容 — 每一次参与都会获得通证奖励。守护文化的过程，也是价值累积的过程",
+      "role3DescFull": "优先购买限量 NFT 真品、参加线下非遗体验、与 AI 匠人深度对话 — 你的钱包，就是博物馆",
+      "complianceLabel": "合规声明：",
+      "complianceText": "$QI 为社区功能凭证，非证券且不具备投资功能，不支持二级市场交易或转让。仅用于生态治理和权益访问。"
     },
     "ecosystem": {
       "title": "完整生态，赋能文化",
@@ -324,7 +333,9 @@
       "feature3Desc": "每次参与都有链上记录。",
       "feature4Desc": "文化的未来，由全球决定。",
       "techLabel1": "区块链",
-      "techLabel2": "去中心化存储"
+      "techLabel2": "去中心化存储",
+      "feature3DescFull": "每次参与都有链上记录。铸造 POAP、每日签到、领取 $QI — 守护文化的每一步，都被永久铭刻",
+      "feature4DescFull": "文化的未来，由全球决定。提案、投票、执行 — 每一票都有力量，每个人都是守护者"
     },
     "tech": {
       "title": "技术架构",
@@ -346,7 +357,10 @@
       "audienceCta": "这里，就是你的舞台",
       "stat1Label": "链上运行",
       "stat2Label": "开源透明",
-      "stat3Label": "永久存储"
+      "stat3Label": "永久存储",
+      "stat1Desc": "链上运行",
+      "stat2Desc": "开源透明",
+      "stat3Desc": "永久存储"
     },
     "footer": {
       "brandName": "非遗上链",

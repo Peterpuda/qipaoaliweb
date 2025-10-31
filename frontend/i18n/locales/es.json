@@ -312,7 +312,16 @@
       "stat1Label": "Suministro Total",
       "stat2Label": "Suministro Circulante",
       "stat3Label": "Titulares",
-      "stat4Label": "Red"
+      "stat4Label": "Red",
+      "introText1": "no es un token especulativo, sino una",
+      "proofText": "prueba de participación en la preservación cultural",
+      "introText2": ". Emitido en",
+      "introText3": ", tener $QI significa que te conviertes en:",
+      "role1DescFull": "Qué proyectos patrimoniales merecen estar en la cadena, cómo se asignan los fondos, cómo se desarrolla el futuro — tu voto da forma a la dirección de la cultura. Esto no es una formalidad, sino un poder de decisión real",
+      "role2DescFull": "Registros diarios, compartir historias, crear contenido — cada participación gana recompensas en tokens. El proceso de proteger la cultura es también el proceso de acumular valor",
+      "role3DescFull": "Acceso prioritario a obras maestras NFT limitadas, experiencias patrimoniales fuera de línea, conversaciones profundas con artesanos IA — tu billetera es un museo",
+      "complianceLabel": "Declaración de Cumplimiento:",
+      "complianceText": "$QI es un token de utilidad comunitaria, no un valor y no tiene función de inversión. No admite comercio o transferencia en el mercado secundario. Solo se utiliza para la gobernanza del ecosistema y los derechos de acceso."
     },
     "ecosystem": {
       "title": "Ecosistema Completo, Empoderando la Cultura",
@@ -324,7 +333,9 @@
       "feature3Desc": "Cada participación se registra en la cadena.",
       "feature4Desc": "El futuro de la cultura, decidido globalmente.",
       "techLabel1": "Blockchain",
-      "techLabel2": "Almacenamiento Descentralizado"
+      "techLabel2": "Almacenamiento Descentralizado",
+      "feature3DescFull": "Cada participación se registra en la cadena. Acuñar POAP, registro diario, reclamar $QI — cada paso de proteger la cultura se inscribe permanentemente",
+      "feature4DescFull": "El futuro de la cultura, decidido globalmente. Proponer, votar, ejecutar — cada voto tiene poder, todos son guardianes"
     },
     "tech": {
       "title": "Arquitectura Técnica",
@@ -346,7 +357,10 @@
       "audienceCta": "Este es tu escenario",
       "stat1Label": "En Cadena",
       "stat2Label": "Código Abierto",
-      "stat3Label": "Permanente"
+      "stat3Label": "Permanente",
+      "stat1Desc": "On-Chain 24/7",
+      "stat2Desc": "100% Código Abierto",
+      "stat3Desc": "Almacenamiento Permanente"
     },
     "footer": {
       "brandName": "Patrimonio en Cadena",
