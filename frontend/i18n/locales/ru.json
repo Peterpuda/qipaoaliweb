@@ -147,5 +147,15 @@
       "daysAgo": "{days} дней назад",
       "monthsAgo": "{months} месяцев назад"
     }
+  },
+  "homepage": {
+    "nav": {
+      "platform": "Платформа",
+      "token": "Токен",
+      "ecosystem": "Экосистема",
+      "governance": "Управление",
+      "admin": "Администратор",
+      "enter": "Войти на Платформу"
+    }
   }
 }

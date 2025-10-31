@@ -258,5 +258,15 @@
     "newsletter": "ニュースレター",
     "emailPlaceholder": "メールアドレスを入力",
     "subscribe": "購読"
+  },
+  "homepage": {
+    "nav": {
+      "platform": "プラットフォーム",
+      "token": "トークン",
+      "ecosystem": "エコシステム",
+      "governance": "ガバナンス",
+      "admin": "管理者",
+      "enter": "プラットフォームに入る"
+    }
   }
 }

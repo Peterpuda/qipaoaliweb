@@ -258,5 +258,15 @@
     "newsletter": "Boletín",
     "emailPlaceholder": "Ingresa tu correo",
     "subscribe": "Suscribirse"
+  },
+  "homepage": {
+    "nav": {
+      "platform": "Plataforma",
+      "token": "Token",
+      "ecosystem": "Ecosistema",
+      "governance": "Gobernanza",
+      "admin": "Administrador",
+      "enter": "Entrar a la Plataforma"
+    }
   }
 }

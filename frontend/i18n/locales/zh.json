@@ -258,6 +258,16 @@
     "newsletter": "订阅新闻",
     "emailPlaceholder": "输入您的邮箱",
     "subscribe": "订阅"
+  },
+  "homepage": {
+    "nav": {
+      "platform": "平台",
+      "token": "通证",
+      "ecosystem": "生态系统",
+      "governance": "治理",
+      "admin": "管理员",
+      "enter": "进入平台"
+    }
   }
 }
 

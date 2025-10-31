@@ -147,5 +147,15 @@
       "daysAgo": "{days} hari yang lalu",
       "monthsAgo": "{months} bulan yang lalu"
     }
+  },
+  "homepage": {
+    "nav": {
+      "platform": "Platform",
+      "token": "Token",
+      "ecosystem": "Ekosistem",
+      "governance": "Tadbir Urus",
+      "admin": "Pentadbir",
+      "enter": "Masuk ke Platform"
+    }
   }
 }

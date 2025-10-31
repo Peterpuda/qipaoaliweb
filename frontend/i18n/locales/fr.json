@@ -258,5 +258,15 @@
     "newsletter": "Newsletter",
     "emailPlaceholder": "Entrez votre email",
     "subscribe": "S'abonner"
+  },
+  "homepage": {
+    "nav": {
+      "platform": "Plateforme",
+      "token": "Jeton",
+      "ecosystem": "Écosystème",
+      "governance": "Gouvernance",
+      "admin": "Administrateur",
+      "enter": "Entrer sur la Plateforme"
+    }
   }
 }
