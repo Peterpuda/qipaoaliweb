@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>非遗商城 - 传承千年工艺</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: #f5f5f5;
+      padding-bottom: 70px;
+    }
+    
+    /* 顶部搜索栏 */
+    .top-search-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: linear-gradient(135deg, #9E2A2B 0%, #7a1b1c 100%);
+      padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 24px;
+      padding: 10px 16px;
+      gap: 8px;
+    }
+    
+    .search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      color: #333;
+    }
+    
+    .search-input::placeholder {
+      color: #999;
+    }
+    
+    /* 导航栏 */
+    .nav-bar {
+      background: white;
+      padding: 12px 0;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .nav-bar::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .nav-item {
+      display: inline-block;
+      padding: 8px 20px;
+      margin: 0 8px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
+      background: #f5f5f5;
+      transition: all 0.3s;
+    }
+    
+    .nav-item.active {
+      background: #9E2A2B;
+      color: white;
+    }
+    
+    /* 英雄轮播 */
+    .hero-swiper {
+      margin: 12px 16px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .hero-slide {
+      position: relative;
+      height: 180px;
+      background: linear-gradient(135deg, #9E2A2B 0%, #D5BDAF 100%);
+    }
+    
+    .hero-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .hero-content {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      color: white;
+    }
+    
+    .hero-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .hero-subtitle {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    
+    /* 入口卡片网格 */
+    .entry-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding: 16px;
+      background: white;
+      margin: 12px 16px;
+      border-radius: 12px;
+    }
+    
+    .entry-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 8px;
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+    
+    .entry-card:active {
+      background: #f5f5f5;
+      transform: scale(0.95);
+    }
+    
+    .entry-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+    }
+    
+    .entry-label {
+      font-size: 12px;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    /* 商品分类 */
+    .category-section {
+      background: white;
+      margin: 12px 16px;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .section-more {
+      font-size: 13px;
+      color: #9E2A2B;
+      font-weight: normal;
+    }
+    
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .product-card {
+      background: #f9f9f9;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    
+    .product-card:active {
+      transform: scale(0.98);
+    }
+    
+    .product-image {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: #e0e0e0;
+    }
+    
+    .product-info {
+      padding: 12px;
+    }
+    
+    .product-name {
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .product-price {
+      font-size: 18px;
+      color: #9E2A2B;
+      font-weight: bold;
+    }
+    
+    .product-price-unit {
+      font-size: 12px;
+      margin-left: 2px;
+    }
+    
+    /* 底部导航栏 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      z-index: 1000;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      color: #999;
+      font-size: 11px;
+      transition: all 0.3s;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+    
+    .nav-btn.active {
+      color: #9E2A2B;
+    }
+    
+    .nav-btn i {
+      font-size: 22px;
+    }
+    
+    .nav-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #ff4444;
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      min-width: 18px;
+      text-align: center;
+    }
+    
+    /* 加载动画 */
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+    
+    .loading i {
+      font-size: 32px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Swiper 自定义样式 */
+    .swiper-pagination-bullet {
+      background: white;
+      opacity: 0.5;
+    }
+    
+    .swiper-pagination-bullet-active {
+      opacity: 1;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部搜索栏 -->
+  <div class="top-search-bar">
+    <div class="search-box">
+      <i class="fas fa-search" style="color: #999;"></i>
+      <input type="text" class="search-input" placeholder="搜索商品、匠人、工艺..." id="searchInput">
+      <i class="fas fa-qrcode" style="color: #999;"></i>
+    </div>
+  </div>
+
+  <!-- 导航栏 -->
+  <div class="nav-bar">
+    <button class="nav-item active" data-category="all">全部</button>
+    <button class="nav-item" data-category="qipao">旗袍</button>
+    <button class="nav-item" data-category="ceramics">陶瓷</button>
+    <button class="nav-item" data-category="silk">丝绸</button>
+    <button class="nav-item" data-category="jewelry">首饰</button>
+    <button class="nav-item" data-category="tea">茶具</button>
+    <button class="nav-item" data-category="art">艺术品</button>
+  </div>
+
+  <!-- 英雄轮播 -->
+  <div class="hero-swiper swiper">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide hero-slide">
+        <img src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=800" alt="传统工艺">
+        <div class="hero-content">
+          <div class="hero-title">非遗传承 · 匠心之作</div>
+          <div class="hero-subtitle">每一件作品都有故事</div>
+        </div>
+      </div>
+      <div class="swiper-slide hero-slide">
+        <img src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800" alt="手工艺品">
+        <div class="hero-content">
+          <div class="hero-title">限量手作 · 真实传承</div>
+          <div class="hero-subtitle">链上认证 · 永久保真</div>
+        </div>
+      </div>
+      <div class="swiper-slide hero-slide">
+        <img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800" alt="文化艺术">
+        <div class="hero-content">
+          <div class="hero-title">文化出海 · 全球共享</div>
+          <div class="hero-subtitle">Web3 赋能非遗文化</div>
+        </div>
+      </div>
+    </div>
+    <div class="swiper-pagination"></div>
+  </div>
+
+  <!-- 入口卡片 -->
+  <div class="entry-grid">
+    <a href="../market/" class="entry-card">
+      <div class="entry-icon" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53);">
+        <i class="fas fa-store"></i>
+      </div>
+      <div class="entry-label">全部商品</div>
+    </a>
+    <a href="../checkin/" class="entry-card">
+      <div class="entry-icon" style="background: linear-gradient(135deg, #4ECDC4, #44A08D);">
+        <i class="fas fa-calendar-check"></i>
+      </div>
+      <div class="entry-label">每日签到</div>
+    </a>
+    <a href="../claim/" class="entry-card">
+      <div class="entry-icon" style="background: linear-gradient(135deg, #A8E6CF, #56AB91);">
+        <i class="fas fa-gift"></i>
+      </div>
+      <div class="entry-label">空投领取</div>
+    </a>
+    <a href="../artisans/" class="entry-card">
+      <div class="entry-icon" style="background: linear-gradient(135deg, #FFD93D, #F4A261);">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="entry-label">认证匠人</div>
+    </a>
+    <a href="../heritage/" class="entry-card">
+      <div class="entry-icon" style="background: linear-gradient(135deg, #C77DFF, #9D4EDD);">
+        <i class="fas fa-landmark"></i>
+      </div>
+      <div class="entry-label">非遗项目</div>
+    </a>
+    <a href="../dao/" class="entry-card">
+      <div class="entry-icon" style="background: linear-gradient(135deg, #06BEE1, #0582CA);">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="entry-label">社区治理</div>
+    </a>
+    <a href="../rewards/" class="entry-card">
+      <div class="entry-icon" style="background: linear-gradient(135deg, #FF6B9D, #C06C84);">
+        <i class="fas fa-trophy"></i>
+      </div>
+      <div class="entry-label">我的奖励</div>
+    </a>
+    <a href="../points/" class="entry-card">
+      <div class="entry-icon" style="background: linear-gradient(135deg, #FFA500, #FF6347);">
+        <i class="fas fa-coins"></i>
+      </div>
+      <div class="entry-label">积分中心</div>
+    </a>
+  </div>
+
+  <!-- 热门商品 -->
+  <div class="category-section">
+    <div class="section-title">
+      <span><i class="fas fa-fire" style="color: #FF6B6B; margin-right: 8px;"></i>热门商品</span>
+      <a href="../market/" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
+    </div>
+    <div class="product-grid" id="hotProducts">
+      <div class="loading">
+        <i class="fas fa-spinner"></i>
+        <p>加载中...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新品上架 -->
+  <div class="category-section">
+    <div class="section-title">
+      <span><i class="fas fa-star" style="color: #FFD700; margin-right: 8px;"></i>新品上架</span>
+      <a href="../market/" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
+    </div>
+    <div class="product-grid" id="newProducts">
+      <div class="loading">
+        <i class="fas fa-spinner"></i>
+        <p>加载中...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 认证商品 -->
+  <div class="category-section">
+    <div class="section-title">
+      <span><i class="fas fa-certificate" style="color: #4ECDC4; margin-right: 8px;"></i>链上认证</span>
+      <a href="../market/?filter=certified" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
+    </div>
+    <div class="product-grid" id="certifiedProducts">
+      <div class="loading">
+        <i class="fas fa-spinner"></i>
+        <p>加载中...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航栏 -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="navigateTo('home')">
+      <i class="fas fa-home"></i>
+      <span>首页</span>
+    </button>
+    <button class="nav-btn" onclick="navigateTo('community')">
+      <i class="fas fa-comments"></i>
+      <span>互动</span>
+    </button>
+    <button class="nav-btn" onclick="navigateTo('cart')">
+      <div style="position: relative;">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="nav-badge" id="cartBadge" style="display: none;">0</span>
+      </div>
+      <span>购物车</span>
+    </button>
+    <button class="nav-btn" onclick="navigateTo('profile')">
+      <i class="fas fa-user"></i>
+      <span>我的</span>
+    </button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="../common/auth.js"></script>
+  <script>
+    // 初始化 Swiper
+    const swiper = new Swiper('.hero-swiper', {
+      loop: true,
+      autoplay: {
+        delay: 3000,
+        disableOnInteraction: false,
+      },
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+    });
+
+    // 导航切换
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', function() {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+        const category = this.dataset.category;
+        loadProductsByCategory(category);
+      });
+    });
+
+    // 搜索功能
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+      if (query.length > 0) {
+        searchProducts(query);
+      }
+    });
+
+    // 加载商品
+    async function loadProducts() {
+      try {
+        const res = await fetch(API_BASE + "/products");
+        const data = await res.json();
+        
+        if (data.ok && data.products) {
+          const products = data.products;
+          
+          // 热门商品（前4个）
+          renderProducts('hotProducts', products.slice(0, 4));
+          
+          // 新品上架（接下来4个）
+          renderProducts('newProducts', products.slice(4, 8));
+          
+          // 认证商品（筛选已认证的）
+          const certified = products.filter(p => p.badge_contract).slice(0, 4);
+          renderProducts('certifiedProducts', certified);
+          
+          // 更新购物车数量
+          updateCartBadge();
+        }
+      } catch (error) {
+        console.error('加载商品失败:', error);
+      }
+    }
+
+    // 渲染商品列表
+    function renderProducts(containerId, products) {
+      const container = document.getElementById(containerId);
+      
+      if (!products || products.length === 0) {
+        container.innerHTML = '<div class="loading"><p style="color: #999;">暂无商品</p></div>';
+        return;
+      }
+      
+      container.innerHTML = products.map(p => `
+        <a href="../product.html?id=${p.id}" class="product-card">
+          ${p.image_key ? 
+            `<img src="${API_BASE}/image/${p.image_key}" alt="${p.title_zh}" class="product-image">` :
+            `<div class="product-image" style="display: flex; align-items: center; justify-content: center; color: #ccc;">
+              <i class="fas fa-image" style="font-size: 32px;"></i>
+            </div>`
+          }
+          <div class="product-info">
+            <div class="product-name">${p.title_zh || '商品'}</div>
+            <div class="product-price">
+              ¥${p.price_native}
+              <span class="product-price-unit">${p.price_currency}</span>
+            </div>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    // 按分类加载
+    function loadProductsByCategory(category) {
+      // TODO: 实现分类筛选
+      console.log('加载分类:', category);
+    }
+
+    // 搜索商品
+    function searchProducts(query) {
+      // TODO: 实现搜索功能
+      console.log('搜索:', query);
+    }
+
+    // 更新购物车数量
+    function updateCartBadge() {
+      const cart = JSON.parse(localStorage.getItem('shopping_cart') || '[]');
+      const badge = document.getElementById('cartBadge');
+      if (cart.length > 0) {
+        badge.textContent = cart.length;
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    // 导航
+    function navigateTo(page) {
+      const routes = {
+        home: '/mall/',
+        community: '/mall/community.html',
+        cart: '/mall/cart.html',
+        profile: '/mall/profile.html'
+      };
+      
+      if (routes[page]) {
+        window.location.href = routes[page];
+      }
+    }
+
+    // 页面加载
+    window.addEventListener('DOMContentLoaded', () => {
+      loadProducts();
+    });
+  </script>
+</body>
+</html>
+

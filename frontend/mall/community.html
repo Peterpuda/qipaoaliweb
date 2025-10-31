@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>互动中心 - 分享你的非遗故事</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      padding-bottom: 70px;
+    }
+    
+    /* 顶部栏 */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 12px 16px;
+    }
+    
+    .top-bar-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    /* 发帖按钮 */
+    .post-btn {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #9E2A2B, #7a1b1c);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(158, 42, 43, 0.4);
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 999;
+      transition: all 0.3s;
+    }
+    
+    .post-btn:active {
+      transform: scale(0.95);
+    }
+    
+    /* 帖子卡片 */
+    .post-card {
+      background: white;
+      margin-bottom: 8px;
+      padding: 16px;
+    }
+    
+    .post-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .post-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #9E2A2B, #D5BDAF);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      margin-right: 12px;
+    }
+    
+    .post-user-info {
+      flex: 1;
+    }
+    
+    .post-username {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .post-time {
+      font-size: 12px;
+      color: #999;
+    }
+    
+    .post-content {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 12px;
+    }
+    
+    .post-images {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    
+    .post-image {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #f0f0f0;
+    }
+    
+    .post-actions {
+      display: flex;
+      justify-content: space-around;
+      padding-top: 12px;
+      border-top: 1px solid #f0f0f0;
+    }
+    
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #666;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .action-btn:active {
+      background: #f5f5f5;
+    }
+    
+    .action-btn.liked {
+      color: #ff4444;
+    }
+    
+    /* 发帖弹窗 */
+    .post-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      z-index: 1001;
+      display: none;
+      flex-direction: column;
+    }
+    
+    .post-modal.active {
+      display: flex;
+    }
+    
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .modal-textarea {
+      flex: 1;
+      padding: 16px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      resize: none;
+    }
+    
+    .modal-footer {
+      padding: 16px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    /* 底部导航栏 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      z-index: 1000;
+    }
+    
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      color: #999;
+      font-size: 11px;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+    
+    .nav-btn.active {
+      color: #9E2A2B;
+    }
+    
+    .nav-btn i {
+      font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部栏 -->
+  <div class="top-bar">
+    <div class="top-bar-title">
+      <i class="fas fa-comments" style="color: #9E2A2B; margin-right: 8px;"></i>
+      互动中心
+    </div>
+  </div>
+
+  <!-- 帖子列表 -->
+  <div id="postList">
+    <!-- 示例帖子 -->
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-avatar">张</div>
+        <div class="post-user-info">
+          <div class="post-username">张师傅</div>
+          <div class="post-time">2小时前</div>
+        </div>
+        <button class="action-btn">
+          <i class="fas fa-ellipsis-h"></i>
+        </button>
+      </div>
+      <div class="post-content">
+        今天完成了一件苏绣作品，历时三个月。每一针每一线都倾注了心血，希望能将这门技艺传承下去。#非遗传承 #苏绣
+      </div>
+      <div class="post-images">
+        <img src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400" alt="作品" class="post-image">
+        <img src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400" alt="作品" class="post-image">
+        <img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400" alt="作品" class="post-image">
+      </div>
+      <div class="post-actions">
+        <button class="action-btn">
+          <i class="far fa-heart"></i>
+          <span>128</span>
+        </button>
+        <button class="action-btn">
+          <i class="far fa-comment"></i>
+          <span>32</span>
+        </button>
+        <button class="action-btn">
+          <i class="fas fa-share"></i>
+          <span>分享</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-avatar">李</div>
+        <div class="post-user-info">
+          <div class="post-username">李匠人</div>
+          <div class="post-time">5小时前</div>
+        </div>
+      </div>
+      <div class="post-content">
+        景德镇青花瓷新作，传统工艺与现代设计的完美结合。每一件都是独一无二的艺术品。
+      </div>
+      <div class="post-images">
+        <img src="https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=400" alt="作品" class="post-image">
+      </div>
+      <div class="post-actions">
+        <button class="action-btn liked">
+          <i class="fas fa-heart"></i>
+          <span>256</span>
+        </button>
+        <button class="action-btn">
+          <i class="far fa-comment"></i>
+          <span>45</span>
+        </button>
+        <button class="action-btn">
+          <i class="fas fa-share"></i>
+          <span>分享</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 发帖按钮 -->
+  <button class="post-btn" onclick="openPostModal()">
+    <i class="fas fa-plus"></i>
+  </button>
+
+  <!-- 发帖弹窗 -->
+  <div class="post-modal" id="postModal">
+    <div class="modal-header">
+      <button onclick="closePostModal()" style="color: #666; border: none; background: none; font-size: 16px;">
+        取消
+      </button>
+      <span style="font-weight: 600; font-size: 16px;">发布动态</span>
+      <button onclick="submitPost()" style="color: #9E2A2B; border: none; background: none; font-size: 16px; font-weight: 600;">
+        发布
+      </button>
+    </div>
+    <textarea class="modal-textarea" id="postContent" placeholder="分享你的非遗故事..."></textarea>
+    <div class="modal-footer">
+      <button style="border: none; background: none; color: #666; font-size: 20px;">
+        <i class="far fa-image"></i>
+      </button>
+      <button style="border: none; background: none; color: #666; font-size: 20px;">
+        <i class="fas fa-hashtag"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- 底部导航栏 -->
+  <div class="bottom-nav">
+    <button class="nav-btn" onclick="navigateTo('home')">
+      <i class="fas fa-home"></i>
+      <span>首页</span>
+    </button>
+    <button class="nav-btn active" onclick="navigateTo('community')">
+      <i class="fas fa-comments"></i>
+      <span>互动</span>
+    </button>
+    <button class="nav-btn" onclick="navigateTo('cart')">
+      <i class="fas fa-shopping-cart"></i>
+      <span>购物车</span>
+    </button>
+    <button class="nav-btn" onclick="navigateTo('profile')">
+      <i class="fas fa-user"></i>
+      <span>我的</span>
+    </button>
+  </div>
+
+  <script>
+    function openPostModal() {
+      document.getElementById('postModal').classList.add('active');
+    }
+
+    function closePostModal() {
+      document.getElementById('postModal').classList.remove('active');
+      document.getElementById('postContent').value = '';
+    }
+
+    function submitPost() {
+      const content = document.getElementById('postContent').value.trim();
+      if (!content) {
+        alert('请输入内容');
+        return;
+      }
+      
+      // TODO: 提交到后端
+      console.log('发布:', content);
+      alert('发布成功！');
+      closePostModal();
+    }
+
+    function navigateTo(page) {
+      const routes = {
+        home: '/mall/',
+        community: '/mall/community.html',
+        cart: '/mall/cart.html',
+        profile: '/mall/profile.html'
+      };
+      
+      if (routes[page]) {
+        window.location.href = routes[page];
+      }
+    }
+  </script>
+</body>
+</html>
+
