@@ -490,7 +490,11 @@
       "stat3Label": "Executed",
       "intro1": "Cultural preservation is no longer a mission for a few, but a consensus of the global community.",
       "intro2": "Every vote you cast decides which cultures deserve to be protected forever",
-      "keyPhrase": "the key to participating in future heritage"
+      "keyPhrase": "the key to participating in future heritage",
+      "connector1": "Adopting",
+      "connector2": "mode,",
+      "connector3": "holding",
+      "connector4": "is"
     }
   }
 }

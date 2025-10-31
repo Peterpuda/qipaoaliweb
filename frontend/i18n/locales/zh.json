@@ -490,7 +490,11 @@
       "stat3Label": "已执行提案",
       "intro1": "文化保护不再是少数人的使命，而是全球社区的共识。",
       "intro2": "你的每一票，都在决定哪些文化值得被永续守护",
-      "keyPhrase": "参与未来传承的钥匙"
+      "keyPhrase": "参与未来传承的钥匙",
+      "connector1": "采用",
+      "connector2": "模式，",
+      "connector3": "持有",
+      "connector4": "就是"
     }
   }
 }

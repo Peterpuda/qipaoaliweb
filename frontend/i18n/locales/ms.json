@@ -349,7 +349,11 @@
       "stat3Label": "Dilaksanakan",
       "intro1": "Pemeliharaan budaya bukan lagi misi segelintir orang, tetapi konsensus komuniti global.",
       "intro2": "Setiap undi yang anda berikan menentukan budaya mana yang layak dilindungi selamanya",
-      "keyPhrase": "kunci untuk mengambil bahagian dalam warisan masa depan"
+      "keyPhrase": "kunci untuk mengambil bahagian dalam warisan masa depan",
+      "connector1": "Mengguna pakai",
+      "connector2": "mod,",
+      "connector3": "memegang",
+      "connector4": "adalah"
     }
   },
   "auth": {

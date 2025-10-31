@@ -490,7 +490,11 @@
       "stat3Label": "Exécutées",
       "intro1": "La préservation culturelle n'est plus la mission de quelques-uns, mais le consensus de la communauté mondiale.",
       "intro2": "Chaque vote que vous exprimez détermine quelles cultures méritent d'être protégées pour toujours",
-      "keyPhrase": "la clé pour participer au patrimoine futur"
+      "keyPhrase": "la clé pour participer au patrimoine futur",
+      "connector1": "Adoptant",
+      "connector2": "mode,",
+      "connector3": "détenir",
+      "connector4": "est"
     }
   }
 }
