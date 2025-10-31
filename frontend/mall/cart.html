@@ -390,9 +390,13 @@
       <i class="fas fa-shopping-cart" style="color: #9E2A2B; margin-right: 8px;"></i>
       购物车 (<span id="cartCount">0</span>)
     </div>
-    <button onclick="clearCart()" style="color: #666; border: none; background: none; font-size: 14px;">
-      <i class="fas fa-trash-alt"></i> <span data-i18n="cart.clear">清空</span>
-    </button>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <!-- 语言切换器 -->
+      <div id="languageSwitcher"></div>
+      <button onclick="clearCart()" style="color: #666; border: none; background: none; font-size: 14px;">
+        <i class="fas fa-trash-alt"></i> <span data-i18n="cart.clear">清空</span>
+      </button>
+    </div>
   </div>
 
   <!-- 购物车列表 -->
