@@ -173,7 +173,20 @@
       "cancelled": "キャンセル済み",
       "refunding": "返金処理中",
       "refunded": "返金済み"
-    }
+    },
+    "trackOrder": "注文を追跡",
+    "returnOrder": "返品",
+    "pending": "保留中",
+    "processing": "処理中",
+    "shipped": "発送済み",
+    "delivered": "配達済み",
+    "cancelled": "キャンセル済み",
+    "returned": "返品済み",
+    "orderDetails": "注文詳細",
+    "billingAddress": "請求先住所",
+    "orderItems": "注文商品",
+    "confirmCancel": "この注文をキャンセルしてもよろしいですか？",
+    "refundAmount": "返金額"
   },
   "checkout": {
     "title": "注文確認",
@@ -189,7 +202,11 @@
     "placeOrder": "注文を確定",
     "agreeToTerms": "同意します",
     "termsAndConditions": "利用規約",
-    "privacyPolicy": "プライバシーポリシー"
+    "privacyPolicy": "プライバシーポリシー",
+    "tax": "税金",
+    "processing": "処理中...",
+    "orderPlaced": "注文が完了しました",
+    "paymentFailed": "支払いに失敗しました"
   },
   "auth": {
     "login": "ログイン",
@@ -210,7 +227,13 @@
     "invalidCredentials": "メールアドレスまたはパスワードが正しくありません",
     "emailRequired": "メールアドレスを入力してください",
     "passwordRequired": "パスワードを入力してください",
-    "passwordMismatch": "パスワードが一致しません"
+    "passwordMismatch": "パスワードが一致しません",
+    "haveAccount": "すでにアカウントをお持ちですか？",
+    "resetPassword": "パスワードをリセット",
+    "sendResetLink": "リセットリンクを送信",
+    "backToLogin": "ログインに戻る",
+    "invalidEmail": "無効なメールアドレス",
+    "weakPassword": "パスワードが弱すぎます"
   },
   "wallet": {
     "connect": "ウォレット接続",
@@ -227,7 +250,13 @@
     "address": "アドレス",
     "copyAddress": "アドレスをコピー",
     "addressCopied": "アドレスをコピーしました",
-    "transactionHistory": "取引履歴"
+    "transactionHistory": "取引履歴",
+    "connecting": "接続中...",
+    "switchNetwork": "ネットワークを切り替え",
+    "viewOnExplorer": "エクスプローラーで表示",
+    "transactionPending": "トランザクション保留中",
+    "transactionSuccess": "トランザクション成功",
+    "transactionFailed": "トランザクション失敗"
   },
   "error": {
     "general": "エラーが発生しました。しばらくしてから再度お試しください",

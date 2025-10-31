@@ -173,7 +173,20 @@
       "cancelled": "Annulé",
       "refunding": "Remboursement en cours",
       "refunded": "Remboursé"
-    }
+    },
+    "trackOrder": "Suivre la commande",
+    "returnOrder": "Retourner la commande",
+    "pending": "En attente",
+    "processing": "En cours de traitement",
+    "shipped": "Expédié",
+    "delivered": "Livré",
+    "cancelled": "Annulé",
+    "returned": "Retourné",
+    "orderDetails": "Détails de la commande",
+    "billingAddress": "Adresse de facturation",
+    "orderItems": "Articles de la commande",
+    "confirmCancel": "Êtes-vous sûr de vouloir annuler cette commande?",
+    "refundAmount": "Montant du remboursement"
   },
   "checkout": {
     "title": "Passer commande",
@@ -189,7 +202,11 @@
     "placeOrder": "Confirmer la commande",
     "agreeToTerms": "J'accepte les",
     "termsAndConditions": "Conditions générales",
-    "privacyPolicy": "Politique de confidentialité"
+    "privacyPolicy": "Politique de confidentialité",
+    "tax": "Taxe",
+    "processing": "Traitement en cours...",
+    "orderPlaced": "Commande passée avec succès",
+    "paymentFailed": "Paiement échoué"
   },
   "auth": {
     "login": "Connexion",
@@ -210,7 +227,13 @@
     "invalidCredentials": "Email ou mot de passe incorrect",
     "emailRequired": "L'email est requis",
     "passwordRequired": "Le mot de passe est requis",
-    "passwordMismatch": "Les mots de passe ne correspondent pas"
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "haveAccount": "Vous avez déjà un compte?",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "sendResetLink": "Envoyer le lien de réinitialisation",
+    "backToLogin": "Retour à la connexion",
+    "invalidEmail": "Adresse e-mail invalide",
+    "weakPassword": "Le mot de passe est trop faible"
   },
   "wallet": {
     "connect": "Connecter le portefeuille",
@@ -227,7 +250,13 @@
     "address": "Adresse",
     "copyAddress": "Copier l'adresse",
     "addressCopied": "Adresse copiée",
-    "transactionHistory": "Historique des transactions"
+    "transactionHistory": "Historique des transactions",
+    "connecting": "Connexion en cours...",
+    "switchNetwork": "Changer de réseau",
+    "viewOnExplorer": "Voir sur l'explorateur",
+    "transactionPending": "Transaction en attente",
+    "transactionSuccess": "Transaction réussie",
+    "transactionFailed": "Transaction échouée"
   },
   "error": {
     "general": "Une erreur s'est produite, veuillez réessayer",

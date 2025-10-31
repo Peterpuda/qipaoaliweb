@@ -173,7 +173,20 @@
       "cancelled": "已取消",
       "refunding": "退款中",
       "refunded": "已退款"
-    }
+    },
+    "trackOrder": "追踪订单",
+    "returnOrder": "退货",
+    "pending": "待处理",
+    "processing": "处理中",
+    "shipped": "已发货",
+    "delivered": "已送达",
+    "cancelled": "已取消",
+    "returned": "已退货",
+    "orderDetails": "订单详情",
+    "billingAddress": "账单地址",
+    "orderItems": "订单商品",
+    "confirmCancel": "确定要取消此订单吗？",
+    "refundAmount": "退款金额"
   },
   "checkout": {
     "title": "确认订单",
@@ -189,7 +202,11 @@
     "placeOrder": "提交订单",
     "agreeToTerms": "我已阅读并同意",
     "termsAndConditions": "服务条款",
-    "privacyPolicy": "隐私政策"
+    "privacyPolicy": "隐私政策",
+    "tax": "税费",
+    "processing": "处理中...",
+    "orderPlaced": "订单已提交",
+    "paymentFailed": "支付失败"
   },
   "auth": {
     "login": "登录",
@@ -210,7 +227,13 @@
     "invalidCredentials": "用户名或密码错误",
     "emailRequired": "请输入邮箱",
     "passwordRequired": "请输入密码",
-    "passwordMismatch": "两次密码不一致"
+    "passwordMismatch": "两次密码不一致",
+    "haveAccount": "已有账号？",
+    "resetPassword": "重置密码",
+    "sendResetLink": "发送重置链接",
+    "backToLogin": "返回登录",
+    "invalidEmail": "无效的邮箱地址",
+    "weakPassword": "密码太弱"
   },
   "wallet": {
     "connect": "连接钱包",
@@ -227,7 +250,13 @@
     "address": "地址",
     "copyAddress": "复制地址",
     "addressCopied": "地址已复制",
-    "transactionHistory": "交易记录"
+    "transactionHistory": "交易记录",
+    "connecting": "连接中...",
+    "switchNetwork": "切换网络",
+    "viewOnExplorer": "在浏览器中查看",
+    "transactionPending": "交易待处理",
+    "transactionSuccess": "交易成功",
+    "transactionFailed": "交易失败"
   },
   "error": {
     "general": "出错了，请稍后重试",

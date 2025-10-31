@@ -173,7 +173,20 @@
       "cancelled": "Cancelled",
       "refunding": "Refunding",
       "refunded": "Refunded"
-    }
+    },
+    "trackOrder": "Track Order",
+    "returnOrder": "Return Order",
+    "pending": "Pending",
+    "processing": "Processing",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled",
+    "returned": "Returned",
+    "orderDetails": "Order Details",
+    "billingAddress": "Billing Address",
+    "orderItems": "Order Items",
+    "confirmCancel": "Are you sure you want to cancel this order?",
+    "refundAmount": "Refund Amount"
   },
   "checkout": {
     "title": "Checkout",
@@ -189,7 +202,11 @@
     "placeOrder": "Place Order",
     "agreeToTerms": "I agree to the",
     "termsAndConditions": "Terms and Conditions",
-    "privacyPolicy": "Privacy Policy"
+    "privacyPolicy": "Privacy Policy",
+    "tax": "Tax",
+    "processing": "Processing...",
+    "orderPlaced": "Order Placed Successfully",
+    "paymentFailed": "Payment Failed"
   },
   "auth": {
     "login": "Login",
@@ -210,7 +227,13 @@
     "invalidCredentials": "Invalid username or password",
     "emailRequired": "Email is required",
     "passwordRequired": "Password is required",
-    "passwordMismatch": "Passwords do not match"
+    "passwordMismatch": "Passwords do not match",
+    "haveAccount": "Already have an account?",
+    "resetPassword": "Reset Password",
+    "sendResetLink": "Send Reset Link",
+    "backToLogin": "Back to Login",
+    "invalidEmail": "Invalid email address",
+    "weakPassword": "Password is too weak"
   },
   "wallet": {
     "connect": "Connect Wallet",
@@ -227,7 +250,13 @@
     "address": "Address",
     "copyAddress": "Copy Address",
     "addressCopied": "Address Copied",
-    "transactionHistory": "Transaction History"
+    "transactionHistory": "Transaction History",
+    "connecting": "Connecting...",
+    "switchNetwork": "Switch Network",
+    "viewOnExplorer": "View on Explorer",
+    "transactionPending": "Transaction Pending",
+    "transactionSuccess": "Transaction Successful",
+    "transactionFailed": "Transaction Failed"
   },
   "error": {
     "general": "Something went wrong, please try again later",

@@ -173,7 +173,20 @@
       "cancelled": "Cancelado",
       "refunding": "Reembolsando",
       "refunded": "Reembolsado"
-    }
+    },
+    "trackOrder": "Rastrear pedido",
+    "returnOrder": "Devolver pedido",
+    "pending": "Pendiente",
+    "processing": "Procesando",
+    "shipped": "Enviado",
+    "delivered": "Entregado",
+    "cancelled": "Cancelado",
+    "returned": "Devuelto",
+    "orderDetails": "Detalles del pedido",
+    "billingAddress": "Dirección de facturación",
+    "orderItems": "Artículos del pedido",
+    "confirmCancel": "¿Estás seguro de que quieres cancelar este pedido?",
+    "refundAmount": "Monto del reembolso"
   },
   "checkout": {
     "title": "Finalizar Compra",
@@ -189,7 +202,11 @@
     "placeOrder": "Realizar Pedido",
     "agreeToTerms": "Acepto los",
     "termsAndConditions": "Términos y Condiciones",
-    "privacyPolicy": "Política de Privacidad"
+    "privacyPolicy": "Política de Privacidad",
+    "tax": "Impuesto",
+    "processing": "Procesando...",
+    "orderPlaced": "Pedido realizado con éxito",
+    "paymentFailed": "Pago fallido"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -210,7 +227,13 @@
     "invalidCredentials": "Correo o contraseña incorrectos",
     "emailRequired": "El correo es requerido",
     "passwordRequired": "La contraseña es requerida",
-    "passwordMismatch": "Las contraseñas no coinciden"
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "resetPassword": "Restablecer contraseña",
+    "sendResetLink": "Enviar enlace de restablecimiento",
+    "backToLogin": "Volver al inicio de sesión",
+    "invalidEmail": "Dirección de correo electrónico no válida",
+    "weakPassword": "La contraseña es demasiado débil"
   },
   "wallet": {
     "connect": "Conectar Billetera",
@@ -227,7 +250,13 @@
     "address": "Dirección",
     "copyAddress": "Copiar Dirección",
     "addressCopied": "Dirección Copiada",
-    "transactionHistory": "Historial de Transacciones"
+    "transactionHistory": "Historial de Transacciones",
+    "connecting": "Conectando...",
+    "switchNetwork": "Cambiar red",
+    "viewOnExplorer": "Ver en el explorador",
+    "transactionPending": "Transacción pendiente",
+    "transactionSuccess": "Transacción exitosa",
+    "transactionFailed": "Transacción fallida"
   },
   "error": {
     "general": "Algo salió mal, por favor intenta de nuevo",
