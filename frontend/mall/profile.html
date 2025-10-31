@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>我的 - 非遗商城</title>
+  <title data-i18n="page.title">我的 - 非遗商城</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <style>
@@ -291,6 +291,9 @@
       cursor: pointer;
     }
   </style>
+  <!-- i18n -->
+  <script src="/i18n/index.js"></script>
+  <script src="/common/i18n-helper.js"></script>
 </head>
 <body>
   <!-- 用户信息卡片 -->
@@ -497,22 +500,22 @@
   <div class="bottom-nav">
     <button class="nav-btn" onclick="navigateTo('home')">
       <i class="fas fa-home"></i>
-      <span>首页</span>
+      <span data-i18n="common.home">首页</span>
     </button>
     <button class="nav-btn" onclick="navigateTo('community')">
       <i class="fas fa-comments"></i>
-      <span>互动</span>
+      <span data-i18n="common.community">互动</span>
     </button>
     <button class="nav-btn" onclick="navigateTo('cart')">
       <div style="position: relative;">
         <i class="fas fa-shopping-cart"></i>
         <span class="nav-badge" id="navCartBadge" style="display: none;">0</span>
       </div>
-      <span>购物车</span>
+      <span data-i18n="common.cart">购物车</span>
     </button>
     <button class="nav-btn active" onclick="navigateTo('profile')">
       <i class="fas fa-user"></i>
-      <span>我的</span>
+      <span data-i18n="common.profile">我的</span>
     </button>
   </div>
 
@@ -669,6 +672,14 @@
 
     // 页面加载
     window.addEventListener('DOMContentLoaded', async () => {
+  // 初始化 i18n
+  await initI18n({
+    autoDetect: true,
+    translateOnInit: true,
+    createSwitcher: true,
+    switcherContainerId: 'languageSwitcher'
+  });
+
       // 检查是否已连接钱包
       if (typeof window.ethereum !== 'undefined') {
         try {
