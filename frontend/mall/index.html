@@ -3,10 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>非遗商城 - 传承千年工艺</title>
+  <title data-i18n="mall.title">非遗商城</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet" />
+  <!-- i18n -->
+  <script src="/i18n/index.js"></script>
+  <script src="/common/i18n-helper.js"></script>
   <style>
     * {
       margin: 0;
@@ -321,14 +324,14 @@
   <div class="top-search-bar">
     <div class="search-box">
       <i class="fas fa-search" style="color: #999;"></i>
-      <input type="text" class="search-input" placeholder="搜索商品、匠人、工艺..." id="searchInput">
-      <i class="fas fa-qrcode" style="color: #999;"></i>
+      <input type="text" class="search-input" data-i18n-placeholder="mall.searchPlaceholder" placeholder="搜索商品..." id="searchInput">
+      <div id="languageSwitcher" style="margin-left: 8px;"></div>
     </div>
   </div>
 
   <!-- 导航栏 -->
   <div class="nav-bar">
-    <button class="nav-item active" data-category="all">全部</button>
+    <button class="nav-item active" data-category="all" data-i18n="mall.allProducts">全部</button>
     <button class="nav-item" data-category="qipao">旗袍</button>
     <button class="nav-item" data-category="ceramics">陶瓷</button>
     <button class="nav-item" data-category="silk">丝绸</button>
@@ -371,25 +374,25 @@
       <div class="entry-icon" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53);">
         <i class="fas fa-store"></i>
       </div>
-      <div class="entry-label">全部商品</div>
+      <div class="entry-label" data-i18n="mall.allProducts">全部商品</div>
     </a>
     <a href="../checkin/" class="entry-card">
       <div class="entry-icon" style="background: linear-gradient(135deg, #4ECDC4, #44A08D);">
         <i class="fas fa-calendar-check"></i>
       </div>
-      <div class="entry-label">每日签到</div>
+      <div class="entry-label" data-i18n="profile.dailyCheckin">每日签到</div>
     </a>
     <a href="../claim/" class="entry-card">
       <div class="entry-icon" style="background: linear-gradient(135deg, #A8E6CF, #56AB91);">
         <i class="fas fa-gift"></i>
       </div>
-      <div class="entry-label">空投领取</div>
+      <div class="entry-label" data-i18n="profile.airdrop">空投领取</div>
     </a>
     <a href="../artisans/" class="entry-card">
       <div class="entry-icon" style="background: linear-gradient(135deg, #FFD93D, #F4A261);">
         <i class="fas fa-user-tie"></i>
       </div>
-      <div class="entry-label">认证匠人</div>
+      <div class="entry-label" data-i18n="nav.artisans">认证匠人</div>
     </a>
     <a href="../heritage/" class="entry-card">
       <div class="entry-icon" style="background: linear-gradient(135deg, #C77DFF, #9D4EDD);">
@@ -401,32 +404,32 @@
       <div class="entry-icon" style="background: linear-gradient(135deg, #06BEE1, #0582CA);">
         <i class="fas fa-users"></i>
       </div>
-      <div class="entry-label">社区治理</div>
+      <div class="entry-label" data-i18n="nav.dao">社区治理</div>
     </a>
     <a href="../rewards/" class="entry-card">
       <div class="entry-icon" style="background: linear-gradient(135deg, #FF6B9D, #C06C84);">
         <i class="fas fa-trophy"></i>
       </div>
-      <div class="entry-label">我的奖励</div>
+      <div class="entry-label" data-i18n="nav.rewards">我的奖励</div>
     </a>
     <a href="../points/" class="entry-card">
       <div class="entry-icon" style="background: linear-gradient(135deg, #FFA500, #FF6347);">
         <i class="fas fa-coins"></i>
       </div>
-      <div class="entry-label">积分中心</div>
+      <div class="entry-label" data-i18n="nav.points">积分中心</div>
     </a>
   </div>
 
   <!-- 热门商品 -->
   <div class="category-section" id="all-products">
     <div class="section-title">
-      <span><i class="fas fa-fire" style="color: #FF6B6B; margin-right: 8px;"></i>热门商品</span>
-      <a href="#all-products" onclick="loadAllProducts(); return false;" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
+      <span><i class="fas fa-fire" style="color: #FF6B6B; margin-right: 8px;"></i><span data-i18n="mall.hotProducts">热门商品</span></span>
+      <a href="#all-products" onclick="loadAllProducts(); return false;" class="section-more"><span data-i18n="common.viewMore">查看更多</span> <i class="fas fa-chevron-right"></i></a>
     </div>
     <div class="product-grid" id="hotProducts">
       <div class="loading">
         <i class="fas fa-spinner"></i>
-        <p>加载中...</p>
+        <p data-i18n="common.loading">加载中...</p>
       </div>
     </div>
   </div>
@@ -434,13 +437,13 @@
   <!-- 新品上架 -->
   <div class="category-section">
     <div class="section-title">
-      <span><i class="fas fa-star" style="color: #FFD700; margin-right: 8px;"></i>新品上架</span>
-      <a href="#all-products" onclick="loadAllProducts(); return false;" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
+      <span><i class="fas fa-star" style="color: #FFD700; margin-right: 8px;"></i><span data-i18n="mall.newProducts">新品上架</span></span>
+      <a href="#all-products" onclick="loadAllProducts(); return false;" class="section-more"><span data-i18n="common.viewMore">查看更多</span> <i class="fas fa-chevron-right"></i></a>
     </div>
     <div class="product-grid" id="newProducts">
       <div class="loading">
         <i class="fas fa-spinner"></i>
-        <p>加载中...</p>
+        <p data-i18n="common.loading">加载中...</p>
       </div>
     </div>
   </div>
@@ -448,13 +451,13 @@
   <!-- 认证商品 -->
   <div class="category-section">
     <div class="section-title">
-      <span><i class="fas fa-certificate" style="color: #4ECDC4; margin-right: 8px;"></i>链上认证</span>
-      <a href="#all-products" onclick="loadAllProducts('certified'); return false;" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
+      <span><i class="fas fa-certificate" style="color: #4ECDC4; margin-right: 8px;"></i><span data-i18n="mall.certified">链上认证</span></span>
+      <a href="#all-products" onclick="loadAllProducts('certified'); return false;" class="section-more"><span data-i18n="common.viewMore">查看更多</span> <i class="fas fa-chevron-right"></i></a>
     </div>
     <div class="product-grid" id="certifiedProducts">
       <div class="loading">
         <i class="fas fa-spinner"></i>
-        <p>加载中...</p>
+        <p data-i18n="common.loading">加载中...</p>
       </div>
     </div>
   </div>
@@ -463,22 +466,22 @@
   <div class="bottom-nav">
     <button class="nav-btn active" onclick="navigateTo('home')">
       <i class="fas fa-home"></i>
-      <span>首页</span>
+      <span data-i18n="common.home">首页</span>
     </button>
     <button class="nav-btn" onclick="navigateTo('community')">
       <i class="fas fa-comments"></i>
-      <span>互动</span>
+      <span data-i18n="common.community">互动</span>
     </button>
     <button class="nav-btn" onclick="navigateTo('cart')">
       <div style="position: relative;">
         <i class="fas fa-shopping-cart"></i>
         <span class="nav-badge" id="cartBadge" style="display: none;">0</span>
       </div>
-      <span>购物车</span>
+      <span data-i18n="common.cart">购物车</span>
     </button>
     <button class="nav-btn" onclick="navigateTo('profile')">
       <i class="fas fa-user"></i>
-      <span>我的</span>
+      <span data-i18n="common.profile">我的</span>
     </button>
   </div>
 
@@ -633,7 +636,20 @@
     }
 
     // 页面加载
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 初始化 i18n
+      await initI18n({
+        autoDetect: true,
+        translateOnInit: true,
+        createSwitcher: true,
+        switcherContainerId: 'languageSwitcher',
+        switcherOptions: {
+          showFlag: true,
+          showText: false,
+          style: 'dropdown'
+        }
+      });
+      
       loadProducts();
       updateCartBadge();
     });
