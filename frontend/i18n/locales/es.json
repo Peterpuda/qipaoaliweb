@@ -399,7 +399,10 @@
       "role2DescFull": "Registros diarios, compartir historias, crear contenido — cada participación gana recompensas en tokens. El proceso de proteger la cultura es también el proceso de acumular valor",
       "role3DescFull": "Acceso prioritario a obras maestras NFT limitadas, experiencias patrimoniales fuera de línea, conversaciones profundas con artesanos IA — tu billetera es un museo",
       "complianceLabel": "Declaración de Cumplimiento:",
-      "complianceText": "$QI es un token de utilidad comunitaria, no un valor y no tiene función de inversión. No admite comercio o transferencia en el mercado secundario. Solo se utiliza para la gobernanza del ecosistema y los derechos de acceso."
+      "complianceText": "$QI es un token de utilidad comunitaria, no un valor y no tiene función de inversión. No admite comercio o transferencia en el mercado secundario. Solo se utiliza para la gobernanza del ecosistema y los derechos de acceso.",
+      "header": "Token de Gobernanza Web3",
+      "claimButton": "Reclamar Airdrop de Tokens",
+      "claimDesc": "Inicia sesión diariamente para recibir 1000 $QI"
     },
     "ecosystem": {
       "title": "Ecosistema Completo, Empoderando la Cultura",
@@ -424,7 +427,10 @@
       "participationProof": "Prueba de Participación",
       "inscribeParticipation": "Inscribir Participación",
       "globalGovernance": "Co-Gobernanza Global",
-      "joinDAO": "Unirse al DAO"
+      "joinDAO": "Unirse al DAO",
+      "header": "Guardián Cultural · Cuatro Pilares",
+      "connector1": "Cada enlace está construyendo",
+      "connector2": "De las yemas de los dedos del artesano a la billetera global —"
     },
     "tech": {
       "title": "Arquitectura Técnica",

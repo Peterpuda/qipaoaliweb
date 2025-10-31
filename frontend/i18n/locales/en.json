@@ -399,7 +399,10 @@
       "role2DescFull": "Daily check-ins, sharing stories, creating content — every participation earns token rewards. The process of protecting culture is also the process of accumulating value",
       "role3DescFull": "Priority access to limited NFT masterpieces, offline heritage experiences, deep conversations with AI artisans — your wallet is a museum",
       "complianceLabel": "Compliance Statement:",
-      "complianceText": "$QI is a community utility token, not a security and has no investment function. It does not support secondary market trading or transfer. It is only used for ecosystem governance and access rights."
+      "complianceText": "$QI is a community utility token, not a security and has no investment function. It does not support secondary market trading or transfer. It is only used for ecosystem governance and access rights.",
+      "header": "Web3 Governance Token",
+      "claimButton": "Claim Token Airdrop",
+      "claimDesc": "Sign in daily to receive 1000 $QI"
     },
     "ecosystem": {
       "title": "Complete Ecosystem, Empowering Culture",
@@ -424,7 +427,10 @@
       "participationProof": "Participation Proof",
       "inscribeParticipation": "Inscribe Participation",
       "globalGovernance": "Global Co-Governance",
-      "joinDAO": "Join DAO"
+      "joinDAO": "Join DAO",
+      "header": "Cultural Guardian · Four Pillars",
+      "connector1": "Every link is building",
+      "connector2": "From the artisan's fingertips to the global wallet —"
     },
     "tech": {
       "title": "Technical Architecture",

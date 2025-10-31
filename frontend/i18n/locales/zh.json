@@ -399,7 +399,10 @@
       "role2DescFull": "每日签到、分享故事、创作内容 — 每一次参与都会获得通证奖励。守护文化的过程，也是价值累积的过程",
       "role3DescFull": "优先购买限量 NFT 真品、参加线下非遗体验、与 AI 匠人深度对话 — 你的钱包，就是博物馆",
       "complianceLabel": "合规声明：",
-      "complianceText": "$QI 为社区功能凭证，非证券且不具备投资功能，不支持二级市场交易或转让。仅用于生态治理和权益访问。"
+      "complianceText": "$QI 为社区功能凭证，非证券且不具备投资功能，不支持二级市场交易或转让。仅用于生态治理和权益访问。",
+      "header": "Web3 治理通证",
+      "claimButton": "领取通证空投",
+      "claimDesc": "每日签到可领取 1000 $QI"
     },
     "ecosystem": {
       "title": "完整生态，赋能文化",
@@ -424,7 +427,10 @@
       "participationProof": "参与证明",
       "inscribeParticipation": "铭刻参与",
       "globalGovernance": "全球共治",
-      "joinDAO": "加入 DAO"
+      "joinDAO": "加入 DAO",
+      "header": "文化守护 · 四大支柱",
+      "connector1": "每一个环节，都在构建",
+      "connector2": "从匠人的指尖，到全球的钱包 —"
     },
     "tech": {
       "title": "技术架构",

@@ -258,7 +258,10 @@
       "role2DescFull": "Daftar masuk harian, berkongsi cerita, mencipta kandungan — setiap penyertaan mendapat ganjaran token. Proses melindungi budaya juga merupakan proses mengumpul nilai",
       "role3DescFull": "Akses keutamaan kepada karya agung NFT terhad, pengalaman warisan luar talian, perbualan mendalam dengan tukang AI — dompet anda adalah muzium",
       "complianceLabel": "Kenyataan Pematuhan:",
-      "complianceText": "$QI adalah token utiliti komuniti, bukan sekuriti dan tidak mempunyai fungsi pelaburan. Ia tidak menyokong perdagangan atau pemindahan pasaran sekunder. Ia hanya digunakan untuk tadbir urus ekosistem dan hak akses."
+      "complianceText": "$QI adalah token utiliti komuniti, bukan sekuriti dan tidak mempunyai fungsi pelaburan. Ia tidak menyokong perdagangan atau pemindahan pasaran sekunder. Ia hanya digunakan untuk tadbir urus ekosistem dan hak akses.",
+      "header": "Token Tadbir Urus Web3",
+      "claimButton": "Tuntut Airdrop Token",
+      "claimDesc": "Log masuk setiap hari untuk menerima 1000 $QI"
     },
     "ecosystem": {
       "title": "Ekosistem Lengkap, Memperkasa Budaya",
@@ -283,7 +286,10 @@
       "participationProof": "Bukti Penyertaan",
       "inscribeParticipation": "Tulis Penyertaan",
       "globalGovernance": "Tadbir Urus Bersama Global",
-      "joinDAO": "Sertai DAO"
+      "joinDAO": "Sertai DAO",
+      "header": "Penjaga Budaya · Empat Tiang",
+      "connector1": "Setiap pautan sedang membina",
+      "connector2": "Dari hujung jari tukang ke dompet global —"
     },
     "tech": {
       "title": "Seni Bina Teknikal",
