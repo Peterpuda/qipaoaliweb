@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
@@ -1215,6 +1215,25 @@
       
       console.log('视频背景控制初始化完成');
     })();
+    </script>
+    
+    <!-- 初始化 i18n，默认英文 -->
+    <script>
+      window.addEventListener('DOMContentLoaded', async () => {
+        await initI18n({
+          defaultLocale: 'en',  // 设置默认语言为英文
+          autoDetect: false,     // 禁用自动检测，强制使用默认语言
+          translateOnInit: true,
+          createSwitcher: true,
+          switcherContainerId: 'languageSwitcher',
+          switcherOptions: {
+            showFlag: true,
+            showText: true,
+            style: 'dropdown'
+          }
+        });
+        console.log('主页多语言初始化完成，默认语言：英文');
+      });
     </script>
           </body>
         </html>
