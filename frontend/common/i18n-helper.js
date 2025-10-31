@@ -91,7 +91,13 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
     showText = true,
     position = 'top-right',
     style = 'dropdown' // 'dropdown' 或 'buttons'
-  } = options;
+  } = options || {};
+
+  // 确保 window.i18n 已初始化
+  if (!window.i18n) {
+    console.error('window.i18n is not initialized');
+    return;
+  }
 
   const container = document.getElementById(containerId);
   if (!container) {
@@ -99,19 +105,30 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
     return;
   }
 
+  // 确保i18n已初始化且有可用方法
+  if (!window.i18n || typeof window.i18n.getAvailableLocales !== 'function') {
+    console.error('window.i18n is not properly initialized');
+    return;
+  }
+
   const locales = window.i18n.getAvailableLocales();
   const currentLocale = window.i18n.getLocale();
+
+  // 为每个容器生成唯一的ID，避免冲突
+  const uniqueId = containerId.replace(/[^a-zA-Z0-9]/g, '_');
+  const langBtnId = `langBtn_${uniqueId}`;
+  const langDropdownId = `langDropdown_${uniqueId}`;
 
   if (style === 'dropdown') {
     // 下拉菜单样式
     container.innerHTML = `
       <div class="language-switcher-dropdown">
-        <button class="lang-btn" id="langBtn">
+        <button class="lang-btn" id="${langBtnId}">
           ${showFlag ? getFlagEmoji(currentLocale) : ''}
           ${showText ? window.i18n.getLocaleName(currentLocale) : ''}
           <i class="fas fa-chevron-down"></i>
         </button>
-        <div class="lang-dropdown" id="langDropdown" style="display: none;">
+        <div class="lang-dropdown" id="${langDropdownId}" style="display: none;">
           ${locales.map(locale => `
             <button class="lang-option ${locale === currentLocale ? 'active' : ''}" 
                     data-locale="${locale}">
@@ -136,17 +153,18 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
           align-items: center;
           gap: 8px;
           padding: 8px 16px;
-          background: white;
-          border: 1px solid #ddd;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 8px;
           cursor: pointer;
           font-size: 14px;
-          color: #333;
+          color: #ffffff;
           transition: all 0.3s;
+          backdrop-filter: blur(10px);
         }
         .lang-btn:hover {
-          background: #f5f5f5;
-          border-color: #9E2A2B;
+          background: rgba(212, 175, 55, 0.2);
+          border-color: #D4AF37;
         }
         .lang-btn i {
           font-size: 12px;
@@ -160,13 +178,14 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
           top: 100%;
           right: 0;
           margin-top: 8px;
-          background: white;
-          border: 1px solid #ddd;
+          background: rgba(27, 27, 27, 0.95);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
           min-width: 180px;
           z-index: 1000;
           overflow: hidden;
+          backdrop-filter: blur(20px);
         }
         .lang-option {
           display: flex;
@@ -174,12 +193,12 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
           gap: 8px;
           width: 100%;
           padding: 12px 16px;
-          background: white;
+          background: transparent;
           border: none;
-          border-bottom: 1px solid #f0f0f0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           cursor: pointer;
           font-size: 14px;
-          color: #333;
+          color: #ffffff;
           text-align: left;
           transition: all 0.3s;
         }
@@ -187,11 +206,11 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
           border-bottom: none;
         }
         .lang-option:hover {
-          background: #f5f5f5;
+          background: rgba(212, 175, 55, 0.15);
         }
         .lang-option.active {
-          background: #9E2A2B;
-          color: white;
+          background: rgba(212, 175, 55, 0.25);
+          color: #D4AF37;
           font-weight: bold;
         }
       `;
@@ -199,48 +218,85 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
     }
 
     // 添加事件监听
-    const langBtn = document.getElementById('langBtn');
-    const langDropdown = document.getElementById('langDropdown');
+    const langBtn = document.getElementById(langBtnId);
+    const langDropdown = document.getElementById(langDropdownId);
 
-    langBtn.addEventListener('click', (e) => {
+    if (!langBtn || !langDropdown) {
+      console.error(`Language switcher elements not found: ${langBtnId}, ${langDropdownId}`);
+      return;
+    }
+
+    // 移除之前可能存在的监听器（如果有）
+    const newLangBtn = langBtn.cloneNode(true);
+    langBtn.parentNode.replaceChild(newLangBtn, langBtn);
+
+    // 重新获取元素
+    const btn = document.getElementById(langBtnId);
+    const dropdown = document.getElementById(langDropdownId);
+
+    btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isVisible = langDropdown.style.display === 'block';
-      langDropdown.style.display = isVisible ? 'none' : 'block';
-      langBtn.classList.toggle('active', !isVisible);
+      e.preventDefault();
+      const isVisible = dropdown.style.display === 'block';
+      dropdown.style.display = isVisible ? 'none' : 'block';
+      btn.classList.toggle('active', !isVisible);
     });
 
-    // 点击外部关闭
-    document.addEventListener('click', () => {
-      langDropdown.style.display = 'none';
-      langBtn.classList.remove('active');
-    });
+    // 点击外部关闭（使用事件委托，只绑定一次）
+    if (!window._i18nOutsideClickHandler) {
+      window._i18nOutsideClickHandler = (e) => {
+        // 查找所有打开的下拉菜单并关闭它们
+        document.querySelectorAll('.lang-dropdown').forEach(dd => {
+          const container = dd.closest('.language-switcher-dropdown');
+          if (container && !container.contains(e.target)) {
+            dd.style.display = 'none';
+            const btn = container.querySelector('.lang-btn');
+            if (btn) btn.classList.remove('active');
+          }
+        });
+      };
+      document.addEventListener('click', window._i18nOutsideClickHandler, true);
+    }
 
     // 语言选项点击
-    langDropdown.querySelectorAll('.lang-option').forEach(option => {
+    dropdown.querySelectorAll('.lang-option').forEach(option => {
       option.addEventListener('click', async (e) => {
         e.stopPropagation();
+        e.preventDefault();
         const locale = option.getAttribute('data-locale');
-        await window.i18n.setLocale(locale);
         
-        // 更新按钮文本
-        langBtn.innerHTML = `
-          ${showFlag ? getFlagEmoji(locale) : ''}
-          ${showText ? window.i18n.getLocaleName(locale) : ''}
-          <i class="fas fa-chevron-down"></i>
-        `;
+        if (!locale) {
+          console.error('Locale not found');
+          return;
+        }
         
-        // 更新选中状态
-        langDropdown.querySelectorAll('.lang-option').forEach(opt => {
-          opt.classList.remove('active');
-        });
-        option.classList.add('active');
-        
-        // 关闭下拉菜单
-        langDropdown.style.display = 'none';
-        langBtn.classList.remove('active');
-        
-        // 重新翻译页面
-        translatePage();
+        try {
+          await window.i18n.setLocale(locale);
+          
+          // 更新按钮文本
+          btn.innerHTML = `
+            ${showFlag ? getFlagEmoji(locale) : ''}
+            ${showText ? window.i18n.getLocaleName(locale) : ''}
+            <i class="fas fa-chevron-down"></i>
+          `;
+          
+          // 更新选中状态
+          dropdown.querySelectorAll('.lang-option').forEach(opt => {
+            opt.classList.remove('active');
+          });
+          option.classList.add('active');
+          
+          // 关闭下拉菜单
+          dropdown.style.display = 'none';
+          btn.classList.remove('active');
+          
+          // 重新翻译页面
+          translatePage();
+          
+          console.log(`✅ Language switched to: ${locale}`);
+        } catch (error) {
+          console.error('Failed to switch language:', error);
+        }
       });
     });
   } else {
@@ -295,21 +351,31 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
     container.querySelectorAll('.lang-button').forEach(button => {
       button.addEventListener('click', async () => {
         const locale = button.getAttribute('data-locale');
-        await window.i18n.setLocale(locale);
         
-        // 更新选中状态
-        container.querySelectorAll('.lang-button').forEach(btn => {
-          btn.classList.remove('active');
-        });
-        button.classList.add('active');
+        if (!locale) {
+          console.error('Locale not found');
+          return;
+        }
         
-        // 重新翻译页面
-        translatePage();
+        try {
+          await window.i18n.setLocale(locale);
+          
+          // 更新选中状态
+          container.querySelectorAll('.lang-button').forEach(btn => {
+            btn.classList.remove('active');
+          });
+          button.classList.add('active');
+          
+          // 重新翻译页面
+          translatePage();
+        } catch (error) {
+          console.error('Failed to switch language:', error);
+        }
       });
     });
   }
 
-  console.log('✅ Language switcher created');
+  console.log(`✅ Language switcher created for container: ${containerId}`);
 }
 
 /**
