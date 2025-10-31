@@ -309,7 +309,9 @@
           <a href="./admin/" class="text-gray-300 hover:text-[#D4AF37] transition flex items-center">
             <i class="fas fa-user-shield mr-2"></i><span data-i18n="homepage.nav.admin">管理员</span>
           </a>
-          <a href="./mall/" class="px-6 py-2 bg-gradient-to-r from-[#D4AF37] to-[#9E2A2B] rounded-full text-white font-medium hover:opacity-90 transition">
+          <!-- 语言切换器 -->
+          <div id="languageSwitcher"></div>
+          <a href="./mall/" class="px-6 py-2 bg-gradient-to-r from-[#D4AF37] to-[#9E2A2B] rounded-full text-white font-medium hover:opacity-90 transition" data-i18n="homepage.nav.enter">
             进入平台
                 </a>
               </div>
@@ -1011,49 +1013,49 @@
       let isPlaying = false;
       let hasStartedLoading = false;
       
-      // 检测设备和网络
+      // Detect device and network
       const isMobile = window.innerWidth < 768;
       const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
       const slowConnection = connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g' || connection.effectiveType === '3g' || connection.saveData);
       
-      console.log('设备:', isMobile ? '移动端' : '桌面端');
-      console.log('网络:', slowConnection ? '慢速' : '正常');
+      console.log('Device:', isMobile ? 'Mobile' : 'Desktop');
+      console.log('Network:', slowConnection ? 'Slow' : 'Normal');
       
-      // 智能选择视频质量
+      // Smart video quality selection
       const API_BASE = 'https://songbrocade-api.petterbrand03.workers.dev';
       let videoPath;
       
-      // 优先级：移动端 > 慢速网络 > 桌面端
+      // Priority: Mobile > Slow Network > Desktop
       if (isMobile || slowConnection) {
-        // 移动端或慢速网络：使用 4.1MB 压缩版
+        // Mobile or slow network: use 4.1MB compressed version
         videoPath = '/storage/public/videos/hero-background-mobile.mp4';
-        console.log('使用移动端/慢速网络视频 (4.1MB)');
+        console.log('Using mobile/slow network video (4.1MB)');
       } else {
-        // 桌面端且网络正常：使用 15MB 优化版
+        // Desktop with normal network: use 15MB optimized version
         videoPath = '/storage/public/videos/hero-background-optimized.mp4';
-        console.log('使用桌面端视频 (15MB)');
+        console.log('Using desktop video (15MB)');
       }
       
-      // 注意：永远不使用 160MB 的原始文件 hero-background.mp4
+      // Note: Never use the 160MB original file hero-background.mp4
       
       videoSource.src = API_BASE + videoPath;
       
       // 智能加载策略：移动端或慢速网络延迟加载
       const shouldDelayLoad = isMobile || slowConnection;
       
-      // 延迟加载视频（等待用户交互）
+      // Delayed video loading (wait for user interaction)
       function startVideoLoading() {
         if (hasStartedLoading) return;
         hasStartedLoading = true;
         
-        console.log('开始加载视频:', videoSource.src);
+        console.log('Starting video load:', videoSource.src);
         videoLoading.style.display = 'flex';
         video.load();
       }
       
-      // 如果需要延迟加载，监听用户交互
+      // If delayed loading is needed, listen for user interaction
       if (shouldDelayLoad) {
-        console.log('延迟加载视频，等待用户交互');
+        console.log('Delaying video load, waiting for user interaction');
         
         const startLoadingEvents = ['click', 'scroll', 'touchstart'];
         const startLoadingHandler = function() {
@@ -1077,7 +1079,7 @@
       
       // 视频加载完成足够数据可以播放
       video.addEventListener('canplay', function() {
-        console.log('视频可以播放');
+        console.log('Video can play');
         videoLoading.style.display = 'none';
         
         // 尝试自动播放
@@ -1086,13 +1088,13 @@
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              console.log('视频自动播放成功');
+              console.log('Video autoplay succeeded');
               isPlaying = true;
               video.classList.add('loaded');
               updatePlayPauseBtn();
             })
             .catch(error => {
-              console.log('视频自动播放失败，可能需要用户交互:', error);
+              console.log('Video autoplay failed, user interaction may be required:', error);
               isPlaying = false;
               updatePlayPauseBtn();
             });
@@ -1104,12 +1106,12 @@
       const maxRetries = 3;
       
       video.addEventListener('error', function(e) {
-        console.error('视频加载失败:', e);
+        console.error('Video load failed:', e);
         
         // 如果是网络错误且未超过重试次数，尝试重新加载
         if (retryCount < maxRetries) {
           retryCount++;
-          console.log(`尝试重新加载视频 (${retryCount}/${maxRetries})...`);
+          console.log(`Retrying video load (${retryCount}/${maxRetries})...`);
           videoLoading.style.display = 'flex';
           
           // 延迟 2 秒后重试
@@ -1118,7 +1120,7 @@
           }, 2000);
         } else {
           // 超过重试次数，隐藏视频
-          console.error('视频加载失败，已达到最大重试次数');
+          console.error('Video load failed, max retries reached');
           videoLoading.style.display = 'none';
           video.style.display = 'none';
         }
@@ -1126,13 +1128,13 @@
       
       // 视频停止播放（网络中断等）
       video.addEventListener('stalled', function() {
-        console.warn('视频加载停滞，可能是网络问题');
+        console.warn('Video loading stalled, possible network issue');
         videoLoading.style.display = 'flex';
       });
       
       // 视频等待数据
       video.addEventListener('waiting', function() {
-        console.log('视频缓冲中...');
+        console.log('Video buffering...');
         videoLoading.style.display = 'flex';
       });
       
@@ -1214,7 +1216,7 @@
           }
         } else {
           if (!isPlaying && video.paused) {
-            video.play().catch(e => console.log('恢复播放失败:', e));
+            video.play().catch(e => console.log('Resume playback failed:', e));
           }
         }
       });
@@ -1223,7 +1225,7 @@
       updateVolumeBtn();
       updatePlayPauseBtn();
       
-      console.log('视频背景控制初始化完成');
+      console.log('Video background controls initialized');
     })();
     </script>
     
@@ -1242,7 +1244,7 @@
             style: 'dropdown'
           }
         });
-        console.log('主页多语言初始化完成，默认语言：英文');
+        console.log('Homepage i18n initialized, default language: English');
       });
     </script>
           </body>
