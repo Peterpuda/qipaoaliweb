@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>我的 - 非遗商城</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      padding-bottom: 80px;
+    }
+    
+    /* 用户信息卡片 */
+    .user-card {
+      background: linear-gradient(135deg, #9E2A2B, #7a1b1c);
+      color: white;
+      padding: 24px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .user-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: #9E2A2B;
+      border: 3px solid rgba(255,255,255,0.3);
+    }
+    
+    .user-info {
+      flex: 1;
+    }
+    
+    .user-name {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .user-id {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    
+    .wallet-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .wallet-btn:active {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    /* 资产卡片 */
+    .assets-card {
+      background: white;
+      margin: 12px 16px;
+      border-radius: 12px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    
+    .asset-item {
+      text-align: center;
+      cursor: pointer;
+    }
+    
+    .asset-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #9E2A2B;
+      margin-bottom: 4px;
+    }
+    
+    .asset-label {
+      font-size: 12px;
+      color: #999;
+    }
+    
+    /* 订单卡片 */
+    .order-card {
+      background: white;
+      margin: 0 16px 12px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .card-header {
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .view-all {
+      font-size: 13px;
+      color: #999;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    
+    .order-status-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 16px 0;
+    }
+    
+    .status-item {
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .status-icon {
+      font-size: 28px;
+      color: #9E2A2B;
+      margin-bottom: 8px;
+    }
+    
+    .status-label {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .status-badge {
+      position: absolute;
+      top: -4px;
+      right: 50%;
+      transform: translateX(20px);
+      background: #ff4444;
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      min-width: 18px;
+    }
+    
+    /* 功能菜单 */
+    .menu-card {
+      background: white;
+      margin: 0 16px 12px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid #f5f5f5;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+    
+    .menu-item:active {
+      background: #f9f9f9;
+    }
+    
+    .menu-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #9E2A2B, #D5BDAF);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-right: 12px;
+    }
+    
+    .menu-content {
+      flex: 1;
+    }
+    
+    .menu-title {
+      font-size: 15px;
+      color: #333;
+      margin-bottom: 2px;
+    }
+    
+    .menu-desc {
+      font-size: 12px;
+      color: #999;
+    }
+    
+    .menu-arrow {
+      color: #ccc;
+      font-size: 14px;
+    }
+    
+    /* 底部导航栏 */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      z-index: 1000;
+    }
+    
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      color: #999;
+      font-size: 11px;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+    
+    .nav-btn.active {
+      color: #9E2A2B;
+    }
+    
+    .nav-btn i {
+      font-size: 22px;
+    }
+    
+    .nav-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #ff4444;
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      min-width: 18px;
+      text-align: center;
+    }
+    
+    /* 设置按钮 */
+    .settings-btn {
+      position: absolute;
+      top: 24px;
+      right: 16px;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- 用户信息卡片 -->
+  <div class="user-card">
+    <div class="user-avatar" id="userAvatar">
+      <i class="fas fa-user"></i>
+    </div>
+    <div class="user-info">
+      <div class="user-name" id="userName">未连接钱包</div>
+      <div class="user-id" id="userAddress">点击右侧按钮连接钱包</div>
+    </div>
+    <button class="wallet-btn" id="connectWalletBtn" onclick="connectWallet()">
+      <i class="fab fa-ethereum"></i> 连接
+    </button>
+    <button class="settings-btn" onclick="openSettings()">
+      <i class="fas fa-cog"></i>
+    </button>
+  </div>
+
+  <!-- 资产卡片 -->
+  <div class="assets-card">
+    <div class="asset-item" onclick="navigateTo('points')">
+      <div class="asset-value" id="pointsValue">0</div>
+      <div class="asset-label">积分</div>
+    </div>
+    <div class="asset-item" onclick="navigateTo('rewards')">
+      <div class="asset-value" id="rewardsValue">0</div>
+      <div class="asset-label">奖励</div>
+    </div>
+    <div class="asset-item" onclick="navigateTo('coupons')">
+      <div class="asset-value" id="couponsValue">0</div>
+      <div class="asset-label">优惠券</div>
+    </div>
+  </div>
+
+  <!-- 我的订单 -->
+  <div class="order-card">
+    <div class="card-header">
+      <div class="card-title">
+        <i class="fas fa-file-invoice" style="color: #9E2A2B; margin-right: 8px;"></i>
+        我的订单
+      </div>
+      <div class="view-all" onclick="navigateTo('orders')">
+        查看全部
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+    <div class="order-status-grid">
+      <div class="status-item" onclick="viewOrders('pending')">
+        <div class="status-icon">
+          <i class="fas fa-wallet"></i>
+          <span class="status-badge" id="pendingCount" style="display: none;">0</span>
+        </div>
+        <div class="status-label">待付款</div>
+      </div>
+      <div class="status-item" onclick="viewOrders('paid')">
+        <div class="status-icon">
+          <i class="fas fa-box"></i>
+          <span class="status-badge" id="paidCount" style="display: none;">0</span>
+        </div>
+        <div class="status-label">待发货</div>
+      </div>
+      <div class="status-item" onclick="viewOrders('shipped')">
+        <div class="status-icon">
+          <i class="fas fa-shipping-fast"></i>
+          <span class="status-badge" id="shippedCount" style="display: none;">0</span>
+        </div>
+        <div class="status-label">待收货</div>
+      </div>
+      <div class="status-item" onclick="viewOrders('completed')">
+        <div class="status-icon">
+          <i class="fas fa-star"></i>
+          <span class="status-badge" id="completedCount" style="display: none;">0</span>
+        </div>
+        <div class="status-label">待评价</div>
+      </div>
+      <div class="status-item" onclick="viewOrders('refund')">
+        <div class="status-icon">
+          <i class="fas fa-undo"></i>
+          <span class="status-badge" id="refundCount" style="display: none;">0</span>
+        </div>
+        <div class="status-label">退款/售后</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 活动中心 -->
+  <div class="menu-card">
+    <div class="card-header">
+      <div class="card-title">
+        <i class="fas fa-calendar-alt" style="color: #9E2A2B; margin-right: 8px;"></i>
+        活动中心
+      </div>
+    </div>
+    <div class="menu-item" onclick="navigateTo('checkin')">
+      <div class="menu-icon">
+        <i class="fas fa-calendar-check"></i>
+      </div>
+      <div class="menu-content">
+        <div class="menu-title">每日签到</div>
+        <div class="menu-desc">签到领积分，连续签到奖励更多</div>
+      </div>
+      <div class="menu-arrow">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+    <div class="menu-item" onclick="navigateTo('airdrop')">
+      <div class="menu-icon">
+        <i class="fas fa-parachute-box"></i>
+      </div>
+      <div class="menu-content">
+        <div class="menu-title">空投领取</div>
+        <div class="menu-desc">参与活动领取空投奖励</div>
+      </div>
+      <div class="menu-arrow">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+    <div class="menu-item" onclick="navigateTo('dao')">
+      <div class="menu-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="menu-content">
+        <div class="menu-title">DAO 治理</div>
+        <div class="menu-desc">参与社区治理，投票决策</div>
+      </div>
+      <div class="menu-arrow">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- 我的服务 -->
+  <div class="menu-card">
+    <div class="card-header">
+      <div class="card-title">
+        <i class="fas fa-concierge-bell" style="color: #9E2A2B; margin-right: 8px;"></i>
+        我的服务
+      </div>
+    </div>
+    <div class="menu-item" onclick="navigateTo('artisans')">
+      <div class="menu-icon">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="menu-content">
+        <div class="menu-title">认证匠人</div>
+        <div class="menu-desc">查看所有认证传承人</div>
+      </div>
+      <div class="menu-arrow">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+    <div class="menu-item" onclick="navigateTo('collection')">
+      <div class="menu-icon">
+        <i class="fas fa-heart"></i>
+      </div>
+      <div class="menu-content">
+        <div class="menu-title">我的收藏</div>
+        <div class="menu-desc">收藏的商品和文化故事</div>
+      </div>
+      <div class="menu-arrow">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+    <div class="menu-item" onclick="navigateTo('address')">
+      <div class="menu-icon">
+        <i class="fas fa-map-marker-alt"></i>
+      </div>
+      <div class="menu-content">
+        <div class="menu-title">收货地址</div>
+        <div class="menu-desc">管理收货地址</div>
+      </div>
+      <div class="menu-arrow">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+    <div class="menu-item" onclick="navigateTo('customer-service')">
+      <div class="menu-icon">
+        <i class="fas fa-headset"></i>
+      </div>
+      <div class="menu-content">
+        <div class="menu-title">客服中心</div>
+        <div class="menu-desc">联系客服，解决问题</div>
+      </div>
+      <div class="menu-arrow">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+    <div class="menu-item" onclick="navigateTo('about')">
+      <div class="menu-icon">
+        <i class="fas fa-info-circle"></i>
+      </div>
+      <div class="menu-content">
+        <div class="menu-title">关于我们</div>
+        <div class="menu-desc">了解非遗上链项目</div>
+      </div>
+      <div class="menu-arrow">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航栏 -->
+  <div class="bottom-nav">
+    <button class="nav-btn" onclick="navigateTo('home')">
+      <i class="fas fa-home"></i>
+      <span>首页</span>
+    </button>
+    <button class="nav-btn" onclick="navigateTo('community')">
+      <i class="fas fa-comments"></i>
+      <span>互动</span>
+    </button>
+    <button class="nav-btn" onclick="navigateTo('cart')">
+      <div style="position: relative;">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="nav-badge" id="navCartBadge" style="display: none;">0</span>
+      </div>
+      <span>购物车</span>
+    </button>
+    <button class="nav-btn active" onclick="navigateTo('profile')">
+      <i class="fas fa-user"></i>
+      <span>我的</span>
+    </button>
+  </div>
+
+  <script src="../common/auth.js"></script>
+  <script>
+    let currentAddress = null;
+
+    // 连接钱包
+    async function connectWallet() {
+      if (typeof window.ethereum === 'undefined') {
+        alert('请安装 MetaMask 钱包');
+        return;
+      }
+
+      try {
+        const accounts = await window.ethereum.request({ 
+          method: 'eth_requestAccounts' 
+        });
+        
+        if (accounts.length > 0) {
+          currentAddress = accounts[0];
+          updateUserInfo(currentAddress);
+          loadUserData();
+        }
+      } catch (error) {
+        console.error('连接钱包失败:', error);
+        alert('连接钱包失败，请重试');
+      }
+    }
+
+    // 更新用户信息
+    function updateUserInfo(address) {
+      const shortAddress = address.slice(0, 6) + '...' + address.slice(-4);
+      document.getElementById('userName').textContent = shortAddress;
+      document.getElementById('userAddress').textContent = '钱包已连接';
+      document.getElementById('connectWalletBtn').innerHTML = '<i class="fas fa-check"></i> 已连接';
+      document.getElementById('userAvatar').innerHTML = '<i class="fab fa-ethereum"></i>';
+    }
+
+    // 加载用户数据
+    async function loadUserData() {
+      // 加载积分
+      try {
+        const pointsRes = await fetch(API_BASE + '/points/' + currentAddress);
+        const pointsData = await pointsRes.json();
+        if (pointsData.ok) {
+          document.getElementById('pointsValue').textContent = pointsData.points || 0;
+        }
+      } catch (error) {
+        console.error('加载积分失败:', error);
+      }
+
+      // 加载订单统计
+      loadOrderStats();
+      
+      // 加载购物车数量
+      updateCartBadge();
+    }
+
+    // 加载订单统计
+    async function loadOrderStats() {
+      if (!currentAddress) return;
+
+      try {
+        const res = await fetch(API_BASE + '/orders?wallet=' + currentAddress);
+        const data = await res.json();
+        
+        if (data.ok && data.orders) {
+          const orders = data.orders;
+          const stats = {
+            pending: orders.filter(o => o.status === 'pending').length,
+            paid: orders.filter(o => o.status === 'paid').length,
+            shipped: orders.filter(o => o.status === 'shipped').length,
+            completed: orders.filter(o => o.status === 'completed' && !o.reviewed).length,
+            refund: orders.filter(o => o.status === 'refund').length
+          };
+          
+          updateOrderBadges(stats);
+        }
+      } catch (error) {
+        console.error('加载订单统计失败:', error);
+      }
+    }
+
+    // 更新订单徽章
+    function updateOrderBadges(stats) {
+      const badges = ['pending', 'paid', 'shipped', 'completed', 'refund'];
+      badges.forEach(status => {
+        const badge = document.getElementById(status + 'Count');
+        if (stats[status] > 0) {
+          badge.textContent = stats[status];
+          badge.style.display = 'block';
+        } else {
+          badge.style.display = 'none';
+        }
+      });
+    }
+
+    // 更新购物车徽章
+    function updateCartBadge() {
+      const cart = JSON.parse(localStorage.getItem('shopping_cart') || '[]');
+      const badge = document.getElementById('navCartBadge');
+      if (cart.length > 0) {
+        badge.textContent = cart.length;
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    // 查看订单
+    function viewOrders(status) {
+      if (!currentAddress) {
+        alert('请先连接钱包');
+        return;
+      }
+      window.location.href = '../orders/?status=' + status;
+    }
+
+    // 打开设置
+    function openSettings() {
+      alert('设置功能开发中...');
+    }
+
+    // 导航
+    function navigateTo(page) {
+      const routes = {
+        home: '/mall/',
+        community: '/mall/community.html',
+        cart: '/mall/cart.html',
+        profile: '/mall/profile.html',
+        orders: '../orders/',
+        points: '../points/',
+        rewards: '../rewards/',
+        coupons: '#',
+        checkin: '../checkin/',
+        airdrop: '../index.html#airdrop',
+        dao: '../dao/',
+        artisans: '../artisans/',
+        collection: '#',
+        address: '#',
+        'customer-service': '#',
+        about: '../about.html'
+      };
+      
+      if (routes[page]) {
+        if (routes[page] === '#') {
+          alert('功能开发中...');
+        } else {
+          window.location.href = routes[page];
+        }
+      }
+    }
+
+    // 页面加载
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 检查是否已连接钱包
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          const accounts = await window.ethereum.request({ 
+            method: 'eth_accounts' 
+          });
+          
+          if (accounts.length > 0) {
+            currentAddress = accounts[0];
+            updateUserInfo(currentAddress);
+            loadUserData();
+          }
+        } catch (error) {
+          console.error('检查钱包连接失败:', error);
+        }
+      }
+      
+      // 监听钱包变化
+      if (typeof window.ethereum !== 'undefined') {
+        window.ethereum.on('accountsChanged', (accounts) => {
+          if (accounts.length > 0) {
+            currentAddress = accounts[0];
+            updateUserInfo(currentAddress);
+            loadUserData();
+          } else {
+            location.reload();
+          }
+        });
+      }
+      
+      updateCartBadge();
+    });
+  </script>
+</body>
+</html>
+
