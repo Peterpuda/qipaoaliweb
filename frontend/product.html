@@ -95,7 +95,7 @@
     <!-- 导航栏 -->
     <header class="flex items-center justify-between py-4 mb-4">
       <div class="flex items-center gap-3">
-        <button onclick="window.history.length > 1 ? window.history.back() : window.location.href='./market/'" 
+        <button onclick="window.history.length > 1 ? window.history.back() : window.location.href='./mall/'" 
                 class="w-10 h-10 rounded-full bg-line flex items-center justify-center text-ink hover:bg-primary hover:text-paper transition">
           <i class="fas fa-arrow-left"></i>
         </button>
@@ -176,7 +176,7 @@
               <i class="fas fa-exclamation-triangle text-4xl text-secondary mb-4"></i>
               <h3 class="text-lg font-bold text-ink mb-2">商品不存在</h3>
               <p class="text-secondary mb-4">请检查商品ID是否正确</p>
-              <a href="./market/" class="btn btn-primary">返回商城</a>
+              <a href="./mall/" class="btn btn-primary">返回商城</a>
             </div>
           `;
           return;
@@ -206,7 +206,7 @@
             <i class="fas fa-exclamation-triangle text-4xl text-secondary mb-4"></i>
             <h3 class="text-lg font-bold text-ink mb-2">加载失败</h3>
             <p class="text-secondary mb-4">${error.message}</p>
-            <a href="./market/" class="btn btn-primary">返回商城</a>
+            <a href="./mall/" class="btn btn-primary">返回商城</a>
           </div>
         `;
       }

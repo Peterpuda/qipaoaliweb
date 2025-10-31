@@ -367,7 +367,7 @@
 
   <!-- 入口卡片 -->
   <div class="entry-grid">
-    <a href="../market/" class="entry-card">
+    <a href="#all-products" onclick="scrollToProducts(); return false;" class="entry-card">
       <div class="entry-icon" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53);">
         <i class="fas fa-store"></i>
       </div>
@@ -418,10 +418,10 @@
   </div>
 
   <!-- 热门商品 -->
-  <div class="category-section">
+  <div class="category-section" id="all-products">
     <div class="section-title">
       <span><i class="fas fa-fire" style="color: #FF6B6B; margin-right: 8px;"></i>热门商品</span>
-      <a href="../market/" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
+      <a href="#all-products" onclick="loadAllProducts(); return false;" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
     </div>
     <div class="product-grid" id="hotProducts">
       <div class="loading">
@@ -435,7 +435,7 @@
   <div class="category-section">
     <div class="section-title">
       <span><i class="fas fa-star" style="color: #FFD700; margin-right: 8px;"></i>新品上架</span>
-      <a href="../market/" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
+      <a href="#all-products" onclick="loadAllProducts(); return false;" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
     </div>
     <div class="product-grid" id="newProducts">
       <div class="loading">
@@ -449,7 +449,7 @@
   <div class="category-section">
     <div class="section-title">
       <span><i class="fas fa-certificate" style="color: #4ECDC4; margin-right: 8px;"></i>链上认证</span>
-      <a href="../market/?filter=certified" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
+      <a href="#all-products" onclick="loadAllProducts('certified'); return false;" class="section-more">查看更多 <i class="fas fa-chevron-right"></i></a>
     </div>
     <div class="product-grid" id="certifiedProducts">
       <div class="loading">
@@ -595,6 +595,29 @@
       }
     }
 
+    // 滚动到商品区域
+    function scrollToProducts() {
+      const element = document.getElementById('all-products');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // 加载所有商品（展开更多）
+    function loadAllProducts(filter = '') {
+      // 滚动到商品区域
+      scrollToProducts();
+      
+      // 如果有筛选条件，可以在这里应用
+      if (filter === 'certified') {
+        // 只显示认证商品
+        console.log('筛选认证商品');
+      }
+      
+      // 可以扩展为显示更多商品或跳转到专门的商品列表页
+      // 目前保持在当前页面并滚动到商品区域
+    }
+
     // 导航
     function navigateTo(page) {
       const routes = {
@@ -612,6 +635,7 @@
     // 页面加载
     window.addEventListener('DOMContentLoaded', () => {
       loadProducts();
+      updateCartBadge();
     });
   </script>
 </body>
