@@ -55,7 +55,32 @@
     "sortBy": "Sort By",
     "priceRange": "Price Range",
     "region": "Region",
-    "artisan": "Artisan"
+    "artisan": "Artisan",
+    "category": {
+      "qipao": "Qipao",
+      "ceramics": "Ceramics",
+      "silk": "Silk",
+      "jewelry": "Jewelry",
+      "tea": "Tea Set",
+      "art": "Artwork"
+    },
+    "hero": {
+      "slide1": {
+        "title": "Heritage Inheritance · Master's Craftsmanship",
+        "subtitle": "Every piece has a story"
+      },
+      "slide2": {
+        "title": "Limited Edition · Authentic Heritage",
+        "subtitle": "On-Chain Certified · Forever Authentic"
+      },
+      "slide3": {
+        "title": "Cultural Expansion · Global Sharing",
+        "subtitle": "Web3 Empowering Intangible Cultural Heritage"
+      }
+    },
+    "heritageProjects": "Heritage Projects",
+    "noProducts": "No products available",
+    "product": "Product"
   },
   "product": {
     "title": "Product Details - Heritage on Chain",
@@ -78,7 +103,18 @@
     "selectSpec": "Select Specification",
     "outOfStock": "Out of Stock",
     "inStock": "In Stock",
-    "buyNow": "Buy Now"
+    "buyNow": "Buy Now",
+    "loadingArtisan": "Loading artisan information...",
+    "blockchainCertification": "Blockchain Certification",
+    "checkingCertification": "Checking certification status...",
+    "invalidId": "Please check if the product ID is correct",
+    "productNotFound": "Product not found",
+    "dataLoadFailed": "Product data load failed",
+    "imageLoadFailed": "Image Load Failed",
+    "productImage": "Product Image",
+    "certifiedRWA": "Certified RWA Digital Asset",
+    "onChainVerify": "On-Chain Verified",
+    "pendingCertification": "Pending Certification"
   },
   "cart": {
     "title": "Shopping Cart",

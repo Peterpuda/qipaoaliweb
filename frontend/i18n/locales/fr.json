@@ -55,7 +55,32 @@
     "sortBy": "Trier par",
     "priceRange": "Gamme de prix",
     "region": "Région",
-    "artisan": "Artisan"
+    "artisan": "Artisan",
+    "category": {
+      "qipao": "Qipao",
+      "ceramics": "Céramique",
+      "silk": "Soie",
+      "jewelry": "Bijoux",
+      "tea": "Service à thé",
+      "art": "Œuvre d'art"
+    },
+    "hero": {
+      "slide1": {
+        "title": "Patrimoine transmis · Artisanat de maître",
+        "subtitle": "Chaque pièce a une histoire"
+      },
+      "slide2": {
+        "title": "Édition limitée · Patrimoine authentique",
+        "subtitle": "Certifié sur la chaîne · Authentique pour toujours"
+      },
+      "slide3": {
+        "title": "Expansion culturelle · Partage mondial",
+        "subtitle": "Web3 renforçant le patrimoine culturel immatériel"
+      }
+    },
+    "heritageProjects": "Projets patrimoniaux",
+    "noProducts": "Aucun produit disponible",
+    "product": "Produit"
   },
   "product": {
     "price": "Prix",
@@ -70,15 +95,26 @@
     "reviews": "Avis",
     "shipping": "Livraison",
     "returns": "Politique de retour",
-    "notFound": "Produit introuvable",
-    "loadFailed": "Échec du chargement",
+    "notFound": "Produit Introuvable",
+    "loadFailed": "Échec du Chargement",
     "backToMall": "Retour à la boutique",
     "quantity": "Quantité",
     "selectSpec": "Sélectionner les spécifications",
     "outOfStock": "Rupture de stock",
     "inStock": "En stock",
     "title": "Détails du Produit - Patrimoine sur Chaîne",
-    "buyNow": "Acheter Maintenant"
+    "buyNow": "Acheter Maintenant",
+    "loadingArtisan": "Chargement des informations de l'artisan...",
+    "blockchainCertification": "Certification Blockchain",
+    "checkingCertification": "Vérification du statut de certification...",
+    "invalidId": "Veuillez vérifier si l'ID du produit est correct",
+    "productNotFound": "Produit non trouvé",
+    "dataLoadFailed": "Échec du chargement des données du produit",
+    "imageLoadFailed": "Échec du Chargement de l'Image",
+    "productImage": "Image du Produit",
+    "certifiedRWA": "Actif Numérique RWA Certifié",
+    "onChainVerify": "Vérifié sur la Chaîne",
+    "pendingCertification": "En Attente de Certification"
   },
   "cart": {
     "title": "Panier",

@@ -55,7 +55,32 @@
     "sortBy": "Susun Mengikut",
     "priceRange": "Julat Harga",
     "region": "Wilayah",
-    "artisan": "Tukang"
+    "artisan": "Tukang",
+    "category": {
+      "qipao": "Qipao",
+      "ceramics": "Seramik",
+      "silk": "Sutera",
+      "jewelry": "Barang Kemas",
+      "tea": "Set Teh",
+      "art": "Karya Seni"
+    },
+    "hero": {
+      "slide1": {
+        "title": "Warisan Budaya · Kraf Tukang",
+        "subtitle": "Setiap karya mempunyai cerita"
+      },
+      "slide2": {
+        "title": "Edisi Terhad · Warisan Asli",
+        "subtitle": "Diperakui di Rantaian · Selamanya Asli"
+      },
+      "slide3": {
+        "title": "Pengembangan Budaya · Perkongsian Global",
+        "subtitle": "Web3 Memperkasakan Warisan Budaya Tidak Ketara"
+      }
+    },
+    "heritageProjects": "Projek Warisan",
+    "noProducts": "Tiada produk tersedia",
+    "product": "Produk"
   },
   "product": {
     "price": "Harga",
@@ -70,7 +95,7 @@
     "reviews": "Ulasan",
     "shipping": "Penghantaran",
     "returns": "Polisi Pemulangan",
-    "notFound": "Produk Tidak Dijumpai",
+    "notFound": "Produk Tidak Ditemui",
     "loadFailed": "Gagal Memuatkan",
     "backToMall": "Kembali ke Kedai",
     "quantity": "Kuantiti",
@@ -78,7 +103,18 @@
     "outOfStock": "Kehabisan Stok",
     "inStock": "Ada Stok",
     "title": "Butiran Produk - Warisan di Rantai",
-    "buyNow": "Beli Sekarang"
+    "buyNow": "Beli Sekarang",
+    "loadingArtisan": "Memuatkan maklumat tukang...",
+    "blockchainCertification": "Pensijilan Blockchain",
+    "checkingCertification": "Memeriksa status pensijilan...",
+    "invalidId": "Sila semak sama ada ID produk betul",
+    "productNotFound": "Produk tidak dijumpai",
+    "dataLoadFailed": "Gagal memuatkan data produk",
+    "imageLoadFailed": "Gagal Memuatkan Imej",
+    "productImage": "Imej Produk",
+    "certifiedRWA": "Aset Digital RWA Disahkan",
+    "onChainVerify": "Disahkan di Rantaian",
+    "pendingCertification": "Menunggu Pensijilan"
   },
   "cart": {
     "title": "Troli Beli-belah",

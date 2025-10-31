@@ -55,7 +55,32 @@
     "sortBy": "排序",
     "priceRange": "价格区间",
     "region": "产地",
-    "artisan": "匠人"
+    "artisan": "匠人",
+    "category": {
+      "qipao": "旗袍",
+      "ceramics": "陶瓷",
+      "silk": "丝绸",
+      "jewelry": "首饰",
+      "tea": "茶具",
+      "art": "艺术品"
+    },
+    "hero": {
+      "slide1": {
+        "title": "非遗传承 · 匠心之作",
+        "subtitle": "每一件作品都有故事"
+      },
+      "slide2": {
+        "title": "限量手作 · 真实传承",
+        "subtitle": "链上认证 · 永久保真"
+      },
+      "slide3": {
+        "title": "文化出海 · 全球共享",
+        "subtitle": "Web3 赋能非遗文化"
+      }
+    },
+    "heritageProjects": "非遗项目",
+    "noProducts": "暂无商品",
+    "product": "商品"
   },
   "product": {
     "title": "商品详情 - 非遗上链平台",
@@ -78,7 +103,18 @@
     "selectSpec": "选择规格",
     "outOfStock": "缺货",
     "inStock": "有货",
-    "buyNow": "立即购买"
+    "buyNow": "立即购买",
+    "loadingArtisan": "加载匠人信息...",
+    "blockchainCertification": "链上认证",
+    "checkingCertification": "检查认证状态...",
+    "invalidId": "请检查商品ID是否正确",
+    "productNotFound": "商品未找到",
+    "dataLoadFailed": "商品数据加载失败",
+    "imageLoadFailed": "图片加载失败",
+    "productImage": "商品图片",
+    "certifiedRWA": "已认证 RWA 数字资产",
+    "onChainVerify": "链上验证",
+    "pendingCertification": "待认证"
   },
   "cart": {
     "title": "购物车",

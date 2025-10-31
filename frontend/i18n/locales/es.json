@@ -55,7 +55,32 @@
     "sortBy": "Ordenar por",
     "priceRange": "Rango de Precio",
     "region": "Región",
-    "artisan": "Artesano"
+    "artisan": "Artesano",
+    "category": {
+      "qipao": "Qipao",
+      "ceramics": "Cerámica",
+      "silk": "Seda",
+      "jewelry": "Joyería",
+      "tea": "Juego de té",
+      "art": "Obra de arte"
+    },
+    "hero": {
+      "slide1": {
+        "title": "Herencia patrimonial · Artesanía de maestro",
+        "subtitle": "Cada pieza tiene una historia"
+      },
+      "slide2": {
+        "title": "Edición limitada · Herencia auténtica",
+        "subtitle": "Certificado en cadena · Auténtico para siempre"
+      },
+      "slide3": {
+        "title": "Expansión cultural · Compartir global",
+        "subtitle": "Web3 potenciando el patrimonio cultural inmaterial"
+      }
+    },
+    "heritageProjects": "Proyectos patrimoniales",
+    "noProducts": "No hay productos disponibles",
+    "product": "Producto"
   },
   "product": {
     "price": "Precio",
@@ -70,15 +95,26 @@
     "reviews": "Reseñas",
     "shipping": "Envío",
     "returns": "Política de Devolución",
-    "notFound": "Producto no encontrado",
-    "loadFailed": "Error al cargar",
+    "notFound": "Producto No Encontrado",
+    "loadFailed": "Error al Cargar",
     "backToMall": "Volver a la Tienda",
     "quantity": "Cantidad",
     "selectSpec": "Seleccionar Especificación",
     "outOfStock": "Agotado",
     "inStock": "En Stock",
     "title": "Detalles del Producto - Patrimonio en Cadena",
-    "buyNow": "Comprar Ahora"
+    "buyNow": "Comprar Ahora",
+    "loadingArtisan": "Cargando información del artesano...",
+    "blockchainCertification": "Certificación Blockchain",
+    "checkingCertification": "Verificando estado de certificación...",
+    "invalidId": "Por favor verifique si el ID del producto es correcto",
+    "productNotFound": "Producto no encontrado",
+    "dataLoadFailed": "Error al cargar datos del producto",
+    "imageLoadFailed": "Error al Cargar Imagen",
+    "productImage": "Imagen del Producto",
+    "certifiedRWA": "Activo Digital RWA Certificado",
+    "onChainVerify": "Verificado en Cadena",
+    "pendingCertification": "Certificación Pendiente"
   },
   "cart": {
     "title": "Carrito de Compras",

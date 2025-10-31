@@ -332,12 +332,12 @@
   <!-- 导航栏 -->
   <div class="nav-bar">
     <button class="nav-item active" data-category="all" data-i18n="mall.allProducts">全部</button>
-    <button class="nav-item" data-category="qipao">旗袍</button>
-    <button class="nav-item" data-category="ceramics">陶瓷</button>
-    <button class="nav-item" data-category="silk">丝绸</button>
-    <button class="nav-item" data-category="jewelry">首饰</button>
-    <button class="nav-item" data-category="tea">茶具</button>
-    <button class="nav-item" data-category="art">艺术品</button>
+    <button class="nav-item" data-category="qipao" data-i18n="mall.category.qipao">旗袍</button>
+    <button class="nav-item" data-category="ceramics" data-i18n="mall.category.ceramics">陶瓷</button>
+    <button class="nav-item" data-category="silk" data-i18n="mall.category.silk">丝绸</button>
+    <button class="nav-item" data-category="jewelry" data-i18n="mall.category.jewelry">首饰</button>
+    <button class="nav-item" data-category="tea" data-i18n="mall.category.tea">茶具</button>
+    <button class="nav-item" data-category="art" data-i18n="mall.category.art">艺术品</button>
   </div>
 
   <!-- 英雄轮播 -->
@@ -346,22 +346,22 @@
       <div class="swiper-slide hero-slide">
         <img src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=800" alt="传统工艺">
         <div class="hero-content">
-          <div class="hero-title">非遗传承 · 匠心之作</div>
-          <div class="hero-subtitle">每一件作品都有故事</div>
+          <div class="hero-title" data-i18n="mall.hero.slide1.title">非遗传承 · 匠心之作</div>
+          <div class="hero-subtitle" data-i18n="mall.hero.slide1.subtitle">每一件作品都有故事</div>
         </div>
       </div>
       <div class="swiper-slide hero-slide">
         <img src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800" alt="手工艺品">
         <div class="hero-content">
-          <div class="hero-title">限量手作 · 真实传承</div>
-          <div class="hero-subtitle">链上认证 · 永久保真</div>
+          <div class="hero-title" data-i18n="mall.hero.slide2.title">限量手作 · 真实传承</div>
+          <div class="hero-subtitle" data-i18n="mall.hero.slide2.subtitle">链上认证 · 永久保真</div>
         </div>
       </div>
       <div class="swiper-slide hero-slide">
         <img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800" alt="文化艺术">
         <div class="hero-content">
-          <div class="hero-title">文化出海 · 全球共享</div>
-          <div class="hero-subtitle">Web3 赋能非遗文化</div>
+          <div class="hero-title" data-i18n="mall.hero.slide3.title">文化出海 · 全球共享</div>
+          <div class="hero-subtitle" data-i18n="mall.hero.slide3.subtitle">Web3 赋能非遗文化</div>
         </div>
       </div>
     </div>
@@ -398,7 +398,7 @@
       <div class="entry-icon" style="background: linear-gradient(135deg, #C77DFF, #9D4EDD);">
         <i class="fas fa-landmark"></i>
       </div>
-      <div class="entry-label">非遗项目</div>
+      <div class="entry-label" data-i18n="mall.heritageProjects">非遗项目</div>
     </a>
     <a href="../dao/" class="entry-card">
       <div class="entry-icon" style="background: linear-gradient(135deg, #06BEE1, #0582CA);">
@@ -550,8 +550,17 @@
     function renderProducts(containerId, products) {
       const container = document.getElementById(containerId);
       
+      // 安全的翻译函数
+      const tSafe = (key) => {
+        if (window.i18n && window.i18n.t) {
+          return window.i18n.t(key);
+        }
+        // 回退到英文或键名
+        return key;
+      };
+      
       if (!products || products.length === 0) {
-        container.innerHTML = '<div class="loading"><p style="color: #999;">暂无商品</p></div>';
+        container.innerHTML = `<div class="loading"><p style="color: #999;">${tSafe('mall.noProducts')}</p></div>`;
         return;
       }
       
@@ -564,7 +573,7 @@
             </div>`
           }
           <div class="product-info">
-            <div class="product-name">${p.title_zh || '商品'}</div>
+            <div class="product-name">${p.title_zh || tSafe('mall.product')}</div>
             <div class="product-price">
               ¥${p.price_native}
               <span class="product-price-unit">${p.price_currency}</span>

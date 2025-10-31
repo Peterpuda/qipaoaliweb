@@ -55,7 +55,32 @@
     "sortBy": "並び替え",
     "priceRange": "価格帯",
     "region": "産地",
-    "artisan": "職人"
+    "artisan": "職人",
+    "category": {
+      "qipao": "旗袍",
+      "ceramics": "陶器",
+      "silk": "シルク",
+      "jewelry": "宝石",
+      "tea": "茶器",
+      "art": "芸術品"
+    },
+    "hero": {
+      "slide1": {
+        "title": "無形文化遺産の継承 · 職人の技",
+        "subtitle": "すべての作品に物語がある"
+      },
+      "slide2": {
+        "title": "限定制作 · 真の継承",
+        "subtitle": "オンチェーン認証 · 永続的な真正性"
+      },
+      "slide3": {
+        "title": "文化の海外展開 · グローバル共有",
+        "subtitle": "Web3が無形文化遺産を強化"
+      }
+    },
+    "heritageProjects": "無形文化遺産プロジェクト",
+    "noProducts": "商品がありません",
+    "product": "商品"
   },
   "product": {
     "price": "価格",
@@ -78,7 +103,18 @@
     "outOfStock": "在庫切れ",
     "inStock": "在庫あり",
     "title": "商品詳細 - 伝統文化チェーン",
-    "buyNow": "今すぐ購入"
+    "buyNow": "今すぐ購入",
+    "loadingArtisan": "職人情報を読み込み中...",
+    "blockchainCertification": "ブロックチェーン認証",
+    "checkingCertification": "認証状態を確認中...",
+    "invalidId": "商品IDが正しいか確認してください",
+    "productNotFound": "商品が見つかりません",
+    "dataLoadFailed": "商品データの読み込みに失敗しました",
+    "imageLoadFailed": "画像の読み込みに失敗しました",
+    "productImage": "商品画像",
+    "certifiedRWA": "認証済み RWA デジタル資産",
+    "onChainVerify": "オンチェーン認証済み",
+    "pendingCertification": "認証待ち"
   },
   "cart": {
     "title": "ショッピングカート",
