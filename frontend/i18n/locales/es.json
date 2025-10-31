@@ -132,7 +132,9 @@
     "selectCoupon": "Seleccionar Cupón",
     "recommended": "Recomendado para Ti",
     "confirmDelete": "¿Estás seguro de eliminar este artículo?",
-    "confirmClear": "¿Estás seguro de vaciar tu carrito?"
+    "confirmClear": "¿Estás seguro de que quieres vaciar el carrito?",
+    "defaultSpec": "Especificación predeterminada",
+    "couponInDevelopment": "Funcionalidad de cupón en desarrollo"
   },
   "profile": {
     "title": "Mi Perfil",
@@ -149,17 +151,21 @@
     "shipped": "En Tránsito",
     "completed": "Pendiente de Reseña",
     "refund": "Reembolso/Postventa",
-    "viewAll": "Ver Todo",
-    "activityCenter": "Centro de Actividades",
+    "viewAll": "Ver todo",
+    "activityCenter": "Centro de actividades",
     "dailyCheckin": "Check-in Diario",
     "airdrop": "Airdrop",
     "daoGovernance": "Gobernanza DAO",
-    "myServices": "Mis Servicios",
-    "certifiedArtisans": "Artesanos Certificados",
-    "myCollection": "Mi Colección",
+    "myServices": "Mis servicios",
+    "certifiedArtisans": "Ver todos los artesanos certificados",
+    "myCollection": "Mi colección",
     "shippingAddress": "Dirección de Envío",
     "customerService": "Servicio al Cliente",
-    "settings": "Configuración"
+    "settings": "Configuración",
+    "checkinDesc": "Regístrese para ganar puntos, los registros consecutivos ganan más",
+    "airdropDesc": "Participa en actividades para reclamar recompensas de airdrop",
+    "daoDesc": "Participa en la gobernanza comunitaria y vota sobre decisiones",
+    "collectionDesc": "Productos recopilados e historias culturales"
   },
   "community": {
     "title": "Comunidad",
@@ -292,7 +298,8 @@
     "viewOnExplorer": "Ver en el explorador",
     "transactionPending": "Transacción pendiente",
     "transactionSuccess": "Transacción exitosa",
-    "transactionFailed": "Transacción fallida"
+    "transactionFailed": "Transacción fallida",
+    "clickToConnect": "Haz clic en el botón de la derecha para conectar la billetera"
   },
   "error": {
     "general": "Algo salió mal, por favor intenta de nuevo",

@@ -132,7 +132,9 @@
     "selectCoupon": "Sélectionner un coupon",
     "recommended": "Recommandé pour vous",
     "confirmDelete": "Voulez-vous vraiment supprimer cet article ?",
-    "confirmClear": "Voulez-vous vraiment vider votre panier ?"
+    "confirmClear": "Êtes-vous sûr de vouloir vider le panier ?",
+    "defaultSpec": "Spécification par défaut",
+    "couponInDevelopment": "Fonctionnalité de coupon en développement"
   },
   "profile": {
     "title": "Mon Profil",
@@ -149,17 +151,21 @@
     "shipped": "En cours de livraison",
     "completed": "À évaluer",
     "refund": "Remboursement/SAV",
-    "viewAll": "Tout voir",
+    "viewAll": "Voir tout",
     "activityCenter": "Centre d'activités",
     "dailyCheckin": "Check-in quotidien",
     "airdrop": "Airdrop",
     "daoGovernance": "Gouvernance DAO",
     "myServices": "Mes services",
-    "certifiedArtisans": "Artisans certifiés",
+    "certifiedArtisans": "Voir tous les artisans certifiés",
     "myCollection": "Ma collection",
     "shippingAddress": "Adresse de livraison",
     "customerService": "Service client",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "checkinDesc": "Connectez-vous pour gagner des points, des connexions consécutives rapportent plus",
+    "airdropDesc": "Participez aux activités pour réclamer des récompenses d'airdrop",
+    "daoDesc": "Participez à la gouvernance communautaire et votez sur les décisions",
+    "collectionDesc": "Produits collectés et histoires culturelles"
   },
   "community": {
     "title": "Communauté",
@@ -292,7 +298,8 @@
     "viewOnExplorer": "Voir sur l'explorateur",
     "transactionPending": "Transaction en attente",
     "transactionSuccess": "Transaction réussie",
-    "transactionFailed": "Transaction échouée"
+    "transactionFailed": "Transaction échouée",
+    "clickToConnect": "Cliquez sur le bouton à droite pour connecter le portefeuille"
   },
   "error": {
     "general": "Une erreur s'est produite, veuillez réessayer",

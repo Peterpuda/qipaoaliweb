@@ -406,10 +406,10 @@
   <div class="coupon-section" onclick="selectCoupon()">
     <div class="coupon-label">
       <i class="fas fa-ticket-alt" style="color: #9E2A2B; margin-right: 8px;"></i>
-      优惠券
+      <span data-i18n="cart.coupon">优惠券</span>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
-      <span class="coupon-value" id="couponText">选择优惠券</span>
+      <span class="coupon-value" id="couponText" data-i18n="cart.selectCoupon">选择优惠券</span>
       <i class="fas fa-chevron-right" style="color: #999;"></i>
     </div>
   </div>
@@ -418,7 +418,7 @@
   <div class="recommend-section">
     <div class="section-title">
       <i class="fas fa-heart" style="color: #ff6b6b; margin-right: 8px;"></i>
-      为你推荐
+      <span data-i18n="cart.recommended">为你推荐</span>
     </div>
     <div class="recommend-grid" id="recommendList">
       <!-- 动态加载 -->
@@ -437,7 +437,7 @@
       <div style="display: flex; align-items: center; gap: 16px;">
         <div class="checkout-info">
           <div class="total-price">¥<span id="totalPrice">0.00</span></div>
-          <div class="total-price-label">已选 <span id="selectedCount">0</span> 件</div>
+          <div class="total-price-label"><span data-i18n="cart.selected">已选</span> <span id="selectedCount">0</span> <span data-i18n="cart.items">件</span></div>
         </div>
         <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">
           <span data-i18n="cart.checkout">去结算</span>
@@ -471,6 +471,19 @@
 
   <script src="../common/auth.js"></script>
   <script>
+    // 安全的翻译函数
+    function tSafe(key) {
+      if (window.i18n && window.i18n.t) {
+        return window.i18n.t(key);
+      }
+      const fallback = {
+        'cart.defaultSpec': 'Default Spec',
+        'cart.confirmClear': 'Are you sure you want to clear the cart?',
+        'cart.couponInDevelopment': 'Coupon feature is under development'
+      };
+      return fallback[key] || key;
+    }
+    
     let cart = [];
     let allSelected = false;
 
@@ -495,8 +508,8 @@
             <div class="empty-icon">
               <i class="fas fa-shopping-cart"></i>
             </div>
-            <div class="empty-text">购物车空空如也</div>
-            <button class="go-shopping-btn" onclick="navigateTo('home')">
+            <div class="empty-text" data-i18n="cart.empty">购物车空空如也</div>
+            <button class="go-shopping-btn" onclick="navigateTo('home')" data-i18n="cart.goShopping">
               去逛逛
             </button>
           </div>
@@ -514,7 +527,7 @@
           <div class="item-info">
             <div>
               <div class="item-name">${item.title}</div>
-              <div class="item-spec">${item.spec || '默认规格'}</div>
+              <div class="item-spec">${item.spec || tSafe('cart.defaultSpec')}</div>
             </div>
             <div class="item-bottom">
               <div class="item-price">¥${item.price}</div>
@@ -564,7 +577,7 @@
     function clearCart() {
       if (cart.length === 0) return;
       
-      if (confirm('确定要清空购物车吗？')) {
+      if (confirm(tSafe('cart.confirmClear'))) {
         cart = [];
         saveCart();
         renderCart();

@@ -127,12 +127,14 @@
     "delete": "削除",
     "clear": "クリア",
     "selected": "選択済み",
-    "items": "点",
+    "items": "件",
     "coupon": "クーポン",
     "selectCoupon": "クーポンを選択",
     "recommended": "おすすめ商品",
     "confirmDelete": "この商品を削除してもよろしいですか？",
-    "confirmClear": "カートを空にしてもよろしいですか？"
+    "confirmClear": "カートを空にしてもよろしいですか？",
+    "defaultSpec": "デフォルト仕様",
+    "couponInDevelopment": "クーポン機能は開発中です"
   },
   "profile": {
     "title": "マイページ",
@@ -155,11 +157,15 @@
     "airdrop": "エアドロップ",
     "daoGovernance": "DAO ガバナンス",
     "myServices": "マイサービス",
-    "certifiedArtisans": "認定職人",
-    "myCollection": "お気に入り",
+    "certifiedArtisans": "すべての認定職人を表示",
+    "myCollection": "マイコレクション",
     "shippingAddress": "配送先住所",
     "customerService": "カスタマーサポート",
-    "settings": "設定"
+    "settings": "設定",
+    "checkinDesc": "チェックインしてポイントを獲得、連続チェックインでさらなる報酬",
+    "airdropDesc": "アクティビティに参加してエアドロップ報酬を獲得",
+    "daoDesc": "コミュニティガバナンスに参加し、決定に投票",
+    "collectionDesc": "収集した商品と文化ストーリー"
   },
   "community": {
     "title": "コミュニティ",
@@ -292,7 +298,8 @@
     "viewOnExplorer": "エクスプローラーで表示",
     "transactionPending": "トランザクション保留中",
     "transactionSuccess": "トランザクション成功",
-    "transactionFailed": "トランザクション失敗"
+    "transactionFailed": "トランザクション失敗",
+    "clickToConnect": "右側のボタンをクリックしてウォレットを接続"
   },
   "error": {
     "general": "エラーが発生しました。しばらくしてから再度お試しください",

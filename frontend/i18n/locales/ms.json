@@ -132,7 +132,9 @@
     "selectCoupon": "Pilih Kupon",
     "recommended": "Disyorkan untuk Anda",
     "confirmDelete": "Adakah anda pasti mahu memadam item ini?",
-    "confirmClear": "Adakah anda pasti mahu mengosongkan troli?"
+    "confirmClear": "Adakah anda pasti mahu mengosongkan troli?",
+    "defaultSpec": "Spesifikasi Lalai",
+    "couponInDevelopment": "Fungsi kupon sedang dibangunkan"
   },
   "profile": {
     "title": "Profil Saya",
@@ -155,11 +157,15 @@
     "airdrop": "Airdrop",
     "daoGovernance": "Tadbir Urus DAO",
     "myServices": "Perkhidmatan Saya",
-    "certifiedArtisans": "Tukang Bertauliah",
+    "certifiedArtisans": "Lihat semua tukang yang disahkan",
     "myCollection": "Koleksi Saya",
     "shippingAddress": "Alamat Penghantaran",
     "customerService": "Khidmat Pelanggan",
-    "settings": "Tetapan"
+    "settings": "Tetapan",
+    "checkinDesc": "Daftar masuk untuk mendapat mata, daftar masuk berturut-turut mendapat lebih banyak",
+    "airdropDesc": "Sertai aktiviti untuk menuntut ganjaran airdrop",
+    "daoDesc": "Sertai tadbir urus komuniti dan undi keputusan",
+    "collectionDesc": "Produk yang dikumpul dan cerita budaya"
   },
   "community": {
     "title": "Komuniti",
@@ -447,6 +453,7 @@
     "coinbase": "Dompet Coinbase",
     "installMetamask": "Pasang MetaMask",
     "addressCopied": "Alamat disalin",
-    "transactionHistory": "Sejarah Transaksi"
+    "transactionHistory": "Sejarah Transaksi",
+    "clickToConnect": "Klik butang di sebelah kanan untuk menyambung dompet"
   }
 }

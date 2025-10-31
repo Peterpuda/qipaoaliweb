@@ -132,7 +132,9 @@
     "selectCoupon": "Select Coupon",
     "recommended": "Recommended for You",
     "confirmDelete": "Are you sure you want to delete this item?",
-    "confirmClear": "Are you sure you want to clear your cart?"
+    "confirmClear": "Are you sure you want to clear the cart?",
+    "defaultSpec": "Default Spec",
+    "couponInDevelopment": "Coupon feature is under development"
   },
   "profile": {
     "title": "My Profile",
@@ -155,11 +157,15 @@
     "airdrop": "Airdrop",
     "daoGovernance": "DAO Governance",
     "myServices": "My Services",
-    "certifiedArtisans": "Certified Artisans",
+    "certifiedArtisans": "View all certified artisans",
     "myCollection": "My Collection",
     "shippingAddress": "Shipping Address",
     "customerService": "Customer Service",
-    "settings": "Settings"
+    "settings": "Settings",
+    "checkinDesc": "Check in to earn points, consecutive check-ins earn more",
+    "airdropDesc": "Participate in activities to claim airdrop rewards",
+    "daoDesc": "Participate in community governance and vote on decisions",
+    "collectionDesc": "Collected products and cultural stories"
   },
   "community": {
     "title": "Community",
@@ -292,7 +298,8 @@
     "viewOnExplorer": "View on Explorer",
     "transactionPending": "Transaction Pending",
     "transactionSuccess": "Transaction Successful",
-    "transactionFailed": "Transaction Failed"
+    "transactionFailed": "Transaction Failed",
+    "clickToConnect": "Click the button on the right to connect wallet"
   },
   "error": {
     "general": "Something went wrong, please try again later",

@@ -132,7 +132,9 @@
     "selectCoupon": "选择优惠券",
     "recommended": "为你推荐",
     "confirmDelete": "确定要删除该商品吗？",
-    "confirmClear": "确定要清空购物车吗？"
+    "confirmClear": "确定要清空购物车吗？",
+    "defaultSpec": "默认规格",
+    "couponInDevelopment": "优惠券功能开发中..."
   },
   "profile": {
     "title": "我的",
@@ -155,11 +157,15 @@
     "airdrop": "空投领取",
     "daoGovernance": "DAO治理",
     "myServices": "我的服务",
-    "certifiedArtisans": "认证匠人",
+    "certifiedArtisans": "查看所有认证传承人",
     "myCollection": "我的收藏",
     "shippingAddress": "收货地址",
     "customerService": "客服中心",
-    "settings": "设置"
+    "settings": "设置",
+    "checkinDesc": "签到领积分，连续签到奖励更多",
+    "airdropDesc": "参与活动领取空投奖励",
+    "daoDesc": "参与社区治理，投票决策",
+    "collectionDesc": "收藏的商品和文化故事"
   },
   "community": {
     "title": "互动中心",
@@ -292,7 +298,8 @@
     "viewOnExplorer": "在浏览器中查看",
     "transactionPending": "交易待处理",
     "transactionSuccess": "交易成功",
-    "transactionFailed": "交易失败"
+    "transactionFailed": "交易失败",
+    "clickToConnect": "点击右侧按钮连接钱包"
   },
   "error": {
     "general": "出错了，请稍后重试",

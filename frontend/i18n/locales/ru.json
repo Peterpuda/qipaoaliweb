@@ -132,7 +132,9 @@
     "selectCoupon": "Выбрать Купон",
     "recommended": "Рекомендуем Вам",
     "confirmDelete": "Вы уверены, что хотите удалить этот товар?",
-    "confirmClear": "Вы уверены, что хотите очистить корзину?"
+    "confirmClear": "Вы уверены, что хотите очистить корзину?",
+    "defaultSpec": "Стандартная спецификация",
+    "couponInDevelopment": "Функция купонов в разработке"
   },
   "profile": {
     "title": "Мой Профиль",
@@ -149,17 +151,21 @@
     "shipped": "В Пути",
     "completed": "Ожидает Отзыва",
     "refund": "Возврат/Сервис",
-    "viewAll": "Показать Всё",
-    "activityCenter": "Центр Активности",
+    "viewAll": "Посмотреть все",
+    "activityCenter": "Центр активности",
     "dailyCheckin": "Ежедневная Регистрация",
     "airdrop": "Airdrop",
     "daoGovernance": "DAO Управление",
-    "myServices": "Мои Услуги",
-    "certifiedArtisans": "Сертифицированные Мастера",
-    "myCollection": "Моя Коллекция",
+    "myServices": "Мои услуги",
+    "certifiedArtisans": "Просмотреть всех сертифицированных мастеров",
+    "myCollection": "Моя коллекция",
     "shippingAddress": "Адрес Доставки",
     "customerService": "Служба Поддержки",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "checkinDesc": "Регистрируйтесь для получения баллов, последовательные регистрации дают больше",
+    "airdropDesc": "Участвуйте в активностях, чтобы получить награды аирдропа",
+    "daoDesc": "Участвуйте в управлении сообществом и голосуйте по решениям",
+    "collectionDesc": "Собранные товары и культурные истории"
   },
   "community": {
     "title": "Сообщество",
@@ -447,6 +453,7 @@
     "coinbase": "Coinbase Wallet",
     "installMetamask": "Установить MetaMask",
     "addressCopied": "Адрес скопирован",
-    "transactionHistory": "История транзакций"
+    "transactionHistory": "История транзакций",
+    "clickToConnect": "Нажмите кнопку справа, чтобы подключить кошелек"
   }
 }
