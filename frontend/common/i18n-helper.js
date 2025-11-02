@@ -62,6 +62,12 @@ function translatePage() {
     el.setAttribute('aria-label', t(key));
   });
 
+  // 翻译所有带 data-i18n-content 属性的元素（用于 meta 标签等）
+  document.querySelectorAll('[data-i18n-content]').forEach(el => {
+    const key = el.getAttribute('data-i18n-content');
+    el.setAttribute('content', t(key));
+  });
+
   console.log('✅ Page translated');
 }
 
