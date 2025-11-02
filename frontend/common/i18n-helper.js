@@ -565,24 +565,34 @@ async function initI18n(options = {}) {
   } = options;
 
   try {
+    console.log('🔄 Starting i18n initialization...', options);
+    
     // 检测或使用默认语言
     const locale = autoDetect ? window.i18n.autoDetectLocale() : defaultLocale;
+    console.log('🌍 Detected locale:', locale);
     
     // 初始化 i18n
     await window.i18n.init(locale);
+    console.log('✅ i18n engine initialized');
     
     // 翻译页面
     if (translateOnInit) {
+      console.log('🔄 Calling translatePage()...');
       translatePage();
+      console.log('✅ translatePage() completed');
+    } else {
+      console.log('⚠️ translateOnInit is false, skipping translation');
     }
     
     // 创建语言切换器
     if (createSwitcher) {
+      console.log('🔄 Creating language switcher...');
       createLanguageSwitcher(switcherContainerId, switcherOptions);
     }
     
     // 监听语言切换事件
     window.addEventListener('localeChanged', () => {
+      console.log('🔄 Language changed, re-translating page...');
       translatePage();
     });
     
@@ -590,6 +600,7 @@ async function initI18n(options = {}) {
     return true;
   } catch (error) {
     console.error('❌ Failed to initialize i18n:', error);
+    console.error('Error stack:', error.stack);
     return false;
   }
 }
