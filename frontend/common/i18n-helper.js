@@ -10,6 +10,17 @@ console.log('🔄 i18n-helper.js v2.1 loaded - Enhanced debugging enabled');
  * 翻译页面上的所有元素
  */
 function translatePage() {
+  // 确保翻译函数可用
+  const translate = window.t || (window.i18n && window.i18n.t.bind(window.i18n));
+  
+  if (!translate) {
+    console.error('❌ Translation function not available');
+    return;
+  }
+  
+  let translatedCount = 0;
+  let errorCount = 0;
+  
   // 翻译所有带 data-i18n 属性的元素
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
@@ -17,10 +28,14 @@ function translatePage() {
     
     try {
       const parsedParams = params ? JSON.parse(params) : {};
-      el.textContent = t(key, parsedParams);
+      const translation = translate(key, parsedParams);
+      if (translation && translation !== key) {
+        el.textContent = translation;
+        translatedCount++;
+      }
     } catch (error) {
       console.error(`Error translating element with key: ${key}`, error);
-      el.textContent = t(key);
+      errorCount++;
     }
   });
 
@@ -31,44 +46,93 @@ function translatePage() {
     
     try {
       const parsedParams = params ? JSON.parse(params) : {};
-      el.innerHTML = t(key, parsedParams);
+      const translation = translate(key, parsedParams);
+      if (translation && translation !== key) {
+        el.innerHTML = translation;
+        translatedCount++;
+      }
     } catch (error) {
       console.error(`Error translating HTML element with key: ${key}`, error);
-      el.innerHTML = t(key);
+      errorCount++;
     }
   });
 
   // 翻译所有带 data-i18n-placeholder 属性的元素
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
-    el.placeholder = t(key);
+    try {
+      const translation = translate(key);
+      if (translation && translation !== key) {
+        el.placeholder = translation;
+        translatedCount++;
+      }
+    } catch (error) {
+      console.error(`Error translating placeholder with key: ${key}`, error);
+      errorCount++;
+    }
   });
 
   // 翻译所有带 data-i18n-title 属性的元素
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
     const key = el.getAttribute('data-i18n-title');
-    el.title = t(key);
+    try {
+      const translation = translate(key);
+      if (translation && translation !== key) {
+        el.title = translation;
+        translatedCount++;
+      }
+    } catch (error) {
+      console.error(`Error translating title with key: ${key}`, error);
+      errorCount++;
+    }
   });
 
   // 翻译所有带 data-i18n-value 属性的元素
   document.querySelectorAll('[data-i18n-value]').forEach(el => {
     const key = el.getAttribute('data-i18n-value');
-    el.value = t(key);
+    try {
+      const translation = translate(key);
+      if (translation && translation !== key) {
+        el.value = translation;
+        translatedCount++;
+      }
+    } catch (error) {
+      console.error(`Error translating value with key: ${key}`, error);
+      errorCount++;
+    }
   });
 
   // 翻译所有带 data-i18n-aria-label 属性的元素
   document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
     const key = el.getAttribute('data-i18n-aria-label');
-    el.setAttribute('aria-label', t(key));
+    try {
+      const translation = translate(key);
+      if (translation && translation !== key) {
+        el.setAttribute('aria-label', translation);
+        translatedCount++;
+      }
+    } catch (error) {
+      console.error(`Error translating aria-label with key: ${key}`, error);
+      errorCount++;
+    }
   });
 
   // 翻译所有带 data-i18n-content 属性的元素（用于 meta 标签等）
   document.querySelectorAll('[data-i18n-content]').forEach(el => {
     const key = el.getAttribute('data-i18n-content');
-    el.setAttribute('content', t(key));
+    try {
+      const translation = translate(key);
+      if (translation && translation !== key) {
+        el.setAttribute('content', translation);
+        translatedCount++;
+      }
+    } catch (error) {
+      console.error(`Error translating content with key: ${key}`, error);
+      errorCount++;
+    }
   });
 
-  console.log('✅ Page translated');
+  console.log(`✅ Page translated: ${translatedCount} elements, ${errorCount} errors`);
 }
 
 /**
