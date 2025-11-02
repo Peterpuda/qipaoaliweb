@@ -1173,16 +1173,36 @@
     
     // ===== 视频背景控制 =====
     (function() {
-      // 安全翻译函数，如果 i18n 未初始化则返回 key
-      function tSafe(key, params = {}) {
+      // 安全翻译函数，如果 i18n 未初始化则返回默认值或 key
+      function tSafe(key, defaultValue = null, params = {}) {
+        // 如果第二个参数是对象，说明没有提供 defaultValue
+        if (typeof defaultValue === 'object' && defaultValue !== null) {
+          params = defaultValue;
+          defaultValue = null;
+        }
+        
         if (window.i18n && typeof window.i18n.t === 'function') {
-          return window.i18n.t(key, params);
+          try {
+            const translation = window.i18n.t(key, params);
+            // 如果翻译返回的是 key 本身，说明没找到翻译
+            if (translation === key && defaultValue) {
+              return defaultValue;
+            }
+            return translation;
+          } catch (error) {
+            console.warn(`Translation error for key: ${key}`, error);
+            return defaultValue || key;
+          }
         }
         if (window.t && typeof window.t === 'function') {
-          return window.t(key, params);
+          try {
+            return window.t(key, params);
+          } catch (error) {
+            return defaultValue || key;
+          }
         }
-        // 如果都没有，返回 key 本身
-        return key;
+        // 如果都没有，返回默认值或 key 本身
+        return defaultValue || key;
       }
       
       const video = document.getElementById('heroVideo');
@@ -1385,10 +1405,10 @@
         const icon = playPauseBtn.querySelector('i');
         if (isPlaying) {
           icon.className = 'fas fa-pause';
-          playPauseBtn.title = tSafe('common.pause');
+          playPauseBtn.title = tSafe('common.pause', '暂停');
         } else {
           icon.className = 'fas fa-play';
-          playPauseBtn.title = tSafe('common.play');
+          playPauseBtn.title = tSafe('common.play', '播放');
         }
       }
       
@@ -1415,33 +1435,55 @@
     
     <!-- 初始化 i18n，自动跟随系统语言 -->
     <script>
-      window.addEventListener('DOMContentLoaded', async () => {
-        await initI18n({
-          defaultLocale: 'zh',   // 设置默认语言为中文（作为后备）
-          autoDetect: true,      // 启用自动检测，跟随系统语言
-          translateOnInit: true,
-          createSwitcher: true,
-          switcherContainerId: 'languageSwitcher',
-          switcherOptions: {
-            showFlag: true,
-            showText: true,
-            style: 'dropdown'
-          }
-        });
-        
-        // 为移动端也创建语言切换器
-        if (window.createLanguageSwitcher && document.getElementById('languageSwitcherMobile')) {
-          window.createLanguageSwitcher('languageSwitcherMobile', {
-            showFlag: true,
-            showText: true,
-            style: 'dropdown'
+      (async function() {
+        // 等待 DOM 加载完成
+        if (document.readyState === 'loading') {
+          await new Promise(resolve => {
+            document.addEventListener('DOMContentLoaded', resolve);
           });
         }
         
-        // 获取当前检测到的语言
-        const currentLocale = window.i18n ? window.i18n.locale : 'zh';
-        console.log('Homepage i18n initialized, detected language:', currentLocale);
-      });
+        // 确保 i18n 引擎已加载
+        if (!window.i18n) {
+          console.error('❌ i18n engine not loaded');
+          return;
+        }
+        
+        try {
+          // 初始化 i18n
+          await initI18n({
+            defaultLocale: 'zh',   // 设置默认语言为中文（作为后备）
+            autoDetect: true,      // 启用自动检测，跟随系统语言
+            translateOnInit: true,
+            createSwitcher: true,
+            switcherContainerId: 'languageSwitcher',
+            switcherOptions: {
+              showFlag: true,
+              showText: true,
+              style: 'dropdown'
+            }
+          });
+          
+          // 为移动端也创建语言切换器
+          if (window.createLanguageSwitcher && document.getElementById('languageSwitcherMobile')) {
+            window.createLanguageSwitcher('languageSwitcherMobile', {
+              showFlag: true,
+              showText: true,
+              style: 'dropdown'
+            });
+          }
+          
+          // 获取当前检测到的语言
+          const currentLocale = window.i18n.locale;
+          console.log('✅ Homepage i18n initialized, detected language:', currentLocale);
+          
+          // 触发自定义事件，通知其他模块 i18n 已就绪
+          window.dispatchEvent(new CustomEvent('i18nReady', { detail: { locale: currentLocale } }));
+          
+        } catch (error) {
+          console.error('❌ Failed to initialize i18n:', error);
+        }
+      })();
     </script>
           </body>
         </html>
