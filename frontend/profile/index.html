@@ -653,8 +653,11 @@
       color: #721c24;
     }
   </style>
+  <link rel="stylesheet" href="/common/global-nav.css">
 </head>
 <body class="app">
+  <div id="globalNavContainer"></div>
+
 <header class="nav">
   <div class="nav-left"><a class="link" href="/">返回</a></div>
   <div class="nav-title">个人中心</div>
@@ -810,5 +813,11 @@ $('#adminLoginBtn').onclick = adminLogin;
 $('#adminLogoutBtn').onclick = adminLogout;
 
 </script>
+  <script src="/common/global-nav.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initGlobalNav({ currentPage: 'profile' });
+    });
+  </script>
 </body>
 </html>

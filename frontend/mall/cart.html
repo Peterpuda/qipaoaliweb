@@ -9,6 +9,7 @@
   <!-- i18n -->
   <script src="/i18n/index.js"></script>
   <script src="/common/i18n-helper.js"></script>
+  <script src="/common/global-nav.js"></script>
   <style>
     * {
       margin: 0;
@@ -382,8 +383,11 @@
       cursor: pointer;
     }
   </style>
+  <link rel="stylesheet" href="/common/global-nav.css">
 </head>
 <body>
+  <div id="globalNavContainer"></div>
+
   <!-- 顶部栏 -->
   <div class="top-bar">
     <div class="top-bar-title">
@@ -686,6 +690,7 @@
 
     // 页面加载
     window.addEventListener('DOMContentLoaded', async () => {
+    await initGlobalNav({ currentPage: 'cart' });
   // 初始化 i18n
   await initI18n({
     autoDetect: true,

@@ -294,8 +294,12 @@
   <!-- i18n -->
   <script src="/i18n/index.js"></script>
   <script src="/common/i18n-helper.js"></script>
+  <script src="/common/global-nav.js"></script>
+  <link rel="stylesheet" href="/common/global-nav.css">
 </head>
 <body>
+  <div id="globalNavContainer"></div>
+
   <!-- 用户信息卡片 -->
   <div class="user-card">
     <div class="user-avatar" id="userAvatar">
@@ -672,6 +676,7 @@
 
     // 页面加载
     window.addEventListener('DOMContentLoaded', async () => {
+    await initGlobalNav({ currentPage: 'profile' });
   // 初始化 i18n
   await initI18n({
     autoDetect: true,

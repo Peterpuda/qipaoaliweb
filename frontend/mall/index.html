@@ -23,11 +23,11 @@
       padding-bottom: 70px;
     }
     
-    /* 顶部搜索栏 */
+    /* 顶部搜索栏 - 在简单导航栏下方 */
     .top-search-bar {
       position: sticky;
-      top: 0;
-      z-index: 100;
+      top: 56px; /* 在简单导航栏下方 */
+      z-index: 99; /* 低于简单导航栏 */
       background: linear-gradient(135deg, #9E2A2B 0%, #7a1b1c 100%);
       padding: 12px 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -52,6 +52,33 @@
     
     .search-input::placeholder {
       color: #999;
+    }
+    
+    /* 移动端搜索栏自适应 */
+    @media (max-width: 768px) {
+      .top-search-bar {
+        padding: 8px 12px;
+      }
+      
+      .search-box {
+        padding: 8px 12px;
+        gap: 6px;
+      }
+      
+      .search-input {
+        font-size: 13px;
+        min-width: 0;
+      }
+      
+      /* 语言切换器在移动端缩小 */
+      #languageSwitcher {
+        margin-left: 4px !important;
+      }
+      
+      #languageSwitcher .lang-btn {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+      }
     }
     
     /* 导航栏 */
@@ -94,7 +121,7 @@
     
     .hero-slide {
       position: relative;
-      height: 180px;
+      height: 260px; /* 更强视觉的 Hero 高度（移动端） */
       background: linear-gradient(135deg, #9E2A2B 0%, #D5BDAF 100%);
     }
     
@@ -109,6 +136,20 @@
       bottom: 20px;
       left: 20px;
       color: white;
+    }
+
+    /* Hero 视频支持 */
+    .hero-slide video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* 桌面端更大视觉区域 */
+    @media (min-width: 768px) {
+      .hero-slide {
+        height: 420px;
+      }
     }
     
     .hero-title {
@@ -317,15 +358,62 @@
       opacity: 1;
       background: white;
     }
+    
+    /* 简单顶部导航栏 - 只有返回按钮和语言切换器 */
+    .simple-top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .back-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #333;
+      text-decoration: none;
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: all 0.3s;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+    
+    .back-button:hover {
+      background: #f5f5f5;
+      color: #9E2A2B;
+    }
+    
+    .back-button i {
+      font-size: 18px;
+    }
+    
   </style>
 </head>
 <body>
+  <!-- 简单顶部导航栏 - 只有返回按钮和语言切换器 -->
+  <div class="simple-top-nav">
+    <button class="back-button" onclick="history.back()">
+      <i class="fas fa-arrow-left"></i>
+      <span data-i18n="common.back">返回</span>
+    </button>
+    <div id="languageSwitcher"></div>
+  </div>
+
   <!-- 顶部搜索栏 -->
   <div class="top-search-bar">
     <div class="search-box">
       <i class="fas fa-search" style="color: #999;"></i>
       <input type="text" class="search-input" data-i18n-placeholder="mall.searchPlaceholder" placeholder="搜索商品..." id="searchInput">
-      <div id="languageSwitcher" style="margin-left: 8px;"></div>
     </div>
   </div>
 
@@ -368,57 +456,7 @@
     <div class="swiper-pagination"></div>
   </div>
 
-  <!-- 入口卡片 -->
-  <div class="entry-grid">
-    <a href="#all-products" onclick="scrollToProducts(); return false;" class="entry-card">
-      <div class="entry-icon" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53);">
-        <i class="fas fa-store"></i>
-      </div>
-      <div class="entry-label" data-i18n="mall.allProducts">全部商品</div>
-    </a>
-    <a href="../checkin/" class="entry-card">
-      <div class="entry-icon" style="background: linear-gradient(135deg, #4ECDC4, #44A08D);">
-        <i class="fas fa-calendar-check"></i>
-      </div>
-      <div class="entry-label" data-i18n="profile.dailyCheckin">每日签到</div>
-    </a>
-    <a href="../claim/" class="entry-card">
-      <div class="entry-icon" style="background: linear-gradient(135deg, #A8E6CF, #56AB91);">
-        <i class="fas fa-gift"></i>
-      </div>
-      <div class="entry-label" data-i18n="profile.airdrop">空投领取</div>
-    </a>
-    <a href="../artisans/" class="entry-card">
-      <div class="entry-icon" style="background: linear-gradient(135deg, #FFD93D, #F4A261);">
-        <i class="fas fa-user-tie"></i>
-      </div>
-      <div class="entry-label" data-i18n="nav.artisans">认证匠人</div>
-    </a>
-    <a href="../heritage/" class="entry-card">
-      <div class="entry-icon" style="background: linear-gradient(135deg, #C77DFF, #9D4EDD);">
-        <i class="fas fa-landmark"></i>
-      </div>
-      <div class="entry-label" data-i18n="mall.heritageProjects">非遗项目</div>
-    </a>
-    <a href="../dao/" class="entry-card">
-      <div class="entry-icon" style="background: linear-gradient(135deg, #06BEE1, #0582CA);">
-        <i class="fas fa-users"></i>
-      </div>
-      <div class="entry-label" data-i18n="nav.dao">社区治理</div>
-    </a>
-    <a href="../rewards/" class="entry-card">
-      <div class="entry-icon" style="background: linear-gradient(135deg, #FF6B9D, #C06C84);">
-        <i class="fas fa-trophy"></i>
-      </div>
-      <div class="entry-label" data-i18n="nav.rewards">我的奖励</div>
-    </a>
-    <a href="../points/" class="entry-card">
-      <div class="entry-icon" style="background: linear-gradient(135deg, #FFA500, #FF6347);">
-        <i class="fas fa-coins"></i>
-      </div>
-      <div class="entry-label" data-i18n="nav.points">积分中心</div>
-    </a>
-  </div>
+  <!-- 入口按钮区域已移除，Hero 区域与其合并，形成强视觉 Banner -->
 
   <!-- 热门商品 -->
   <div class="category-section" id="all-products">
@@ -519,10 +557,17 @@
       }
     });
 
+    // API 配置 - 使用函数获取，避免与 auth.js 冲突
+    function getAPIBase() {
+      return window.POAP_CONFIG?.WORKER_BASE_URL || 
+             window.POAP_CONFIG?.API_BASE || 
+             'https://songbrocade-api.petterbrand03.workers.dev';
+    }
+    
     // 加载商品
     async function loadProducts() {
       try {
-        const res = await fetch(API_BASE + "/products");
+        const res = await fetch(getAPIBase() + "/products");
         const data = await res.json();
         
         if (data.ok && data.products) {
@@ -567,7 +612,7 @@
       container.innerHTML = products.map(p => `
         <a href="../product.html?id=${p.id}" class="product-card">
           ${p.image_key ? 
-            `<img src="${API_BASE}/image/${p.image_key}" alt="${p.title_zh}" class="product-image">` :
+            `<img src="${getAPIBase()}/image/${p.image_key}" alt="${p.title_zh}" class="product-image">` :
             `<div class="product-image" style="display: flex; align-items: center; justify-content: center; color: #ccc;">
               <i class="fas fa-image" style="font-size: 32px;"></i>
             </div>`
@@ -646,7 +691,7 @@
 
     // 页面加载
     window.addEventListener('DOMContentLoaded', async () => {
-      // 初始化 i18n
+      // 初始化 i18n（不初始化全局导航）
       await initI18n({
         autoDetect: true,
         translateOnInit: true,

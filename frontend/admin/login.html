@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title data-i18n="admin.loginTitle">管理员登录 - 非遗上链平台</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <script src="/poap.config.js"></script>
+  <!-- i18n -->
+  <script src="/i18n/index.js?v=2.1"></script>
+  <script src="/common/i18n-helper.js?v=2.1"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* 背景装饰 */
+    body::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
+      animation: rotate 30s linear infinite;
+    }
+    
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .login-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+    }
+    
+    .login-card {
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 24px;
+      padding: 48px 40px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 100px rgba(212, 175, 55, 0.1);
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .logo-section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #D4AF37 0%, #9E2A2B 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+      }
+      50% {
+        box-shadow: 0 0 0 20px rgba(212, 175, 55, 0);
+      }
+    }
+    
+    .logo-icon i {
+      font-size: 40px;
+      color: white;
+    }
+    
+    .logo-title {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #D4AF37, #9E2A2B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    
+    .logo-subtitle {
+      font-size: 14px;
+      color: #999;
+    }
+    
+    .login-content {
+      margin-top: 32px;
+    }
+    
+    .section-title {
+      font-size: 18px;
+      color: #D4AF37;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .wallet-status {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s;
+    }
+    
+    .wallet-status.connected {
+      border-color: #D4AF37;
+      background: rgba(212, 175, 55, 0.1);
+    }
+    
+    .wallet-status i {
+      font-size: 24px;
+      color: #666;
+    }
+    
+    .wallet-status.connected i {
+      color: #D4AF37;
+    }
+    
+    .wallet-status-text {
+      flex: 1;
+    }
+    
+    .wallet-status-label {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 4px;
+    }
+    
+    .wallet-status-value {
+      font-size: 14px;
+      color: white;
+      font-weight: 500;
+    }
+    
+    .login-button {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #9E2A2B, #D5BDAF);
+      color: white;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 16px rgba(158, 42, 43, 0.6);
+      margin-bottom: 24px;
+    }
+    
+    .login-button:hover:not(:disabled) {
+      background: #7a1b1c;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(158, 42, 43, 0.8);
+    }
+    
+    .login-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .login-button i {
+      font-size: 20px;
+    }
+    
+    .tips {
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .tips p {
+      font-size: 13px;
+      color: #ccc;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    
+    .tips p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .back-home {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #999;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.3s;
+      padding: 12px;
+      border-radius: 8px;
+    }
+    
+    .back-home:hover {
+      color: #D4AF37;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .back-home i {
+      transition: transform 0.3s;
+    }
+    
+    .back-home:hover i {
+      transform: translateX(-4px);
+    }
+    
+    /* 语言切换器位置 */
+    .language-switcher-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+    }
+    
+    /* 加载动画 */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* 响应式 - 移动端优化 */
+    @media (max-width: 768px) {
+      body {
+        padding: 16px;
+      }
+      
+      .login-container {
+        max-width: 100%;
+      }
+      
+      .login-card {
+        padding: 28px 20px;
+        border-radius: 20px;
+      }
+      
+      .logo-section {
+        margin-bottom: 28px;
+      }
+      
+      .logo-icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 16px;
+      }
+      
+      .logo-icon i {
+        font-size: 28px;
+      }
+      
+      .logo-title {
+        font-size: 22px;
+        margin-bottom: 6px;
+      }
+      
+      .logo-subtitle {
+        font-size: 13px;
+      }
+      
+      .login-content {
+        margin-top: 24px;
+      }
+      
+      .section-title {
+        font-size: 16px;
+        margin-bottom: 20px;
+      }
+      
+      .wallet-status {
+        padding: 14px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+      
+      .wallet-status i {
+        font-size: 20px;
+      }
+      
+      .wallet-status-label {
+        font-size: 11px;
+      }
+      
+      .wallet-status-value {
+        font-size: 13px;
+      }
+      
+      .login-button {
+        padding: 14px;
+        font-size: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+      
+      .login-button i {
+        font-size: 18px;
+      }
+      
+      .tips {
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      
+      .tips p {
+        font-size: 12px;
+        line-height: 1.5;
+        margin-bottom: 6px;
+      }
+      
+      .back-home {
+        font-size: 13px;
+        padding: 10px;
+      }
+      
+      .language-switcher-container {
+        top: 12px;
+        right: 12px;
+      }
+    }
+    
+    /* 小屏幕手机优化 (iPhone SE, 小屏安卓等) */
+    @media (max-width: 375px) {
+      body {
+        padding: 12px;
+      }
+      
+      .login-card {
+        padding: 24px 16px;
+        border-radius: 16px;
+      }
+      
+      .logo-section {
+        margin-bottom: 24px;
+      }
+      
+      .logo-icon {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 12px;
+      }
+      
+      .logo-icon i {
+        font-size: 26px;
+      }
+      
+      .logo-title {
+        font-size: 20px;
+        margin-bottom: 4px;
+      }
+      
+      .logo-subtitle {
+        font-size: 12px;
+      }
+      
+      .login-content {
+        margin-top: 20px;
+      }
+      
+      .section-title {
+        font-size: 15px;
+        margin-bottom: 16px;
+      }
+      
+      .wallet-status {
+        padding: 12px;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      
+      .wallet-status i {
+        font-size: 18px;
+      }
+      
+      .wallet-status-label {
+        font-size: 10px;
+        margin-bottom: 3px;
+      }
+      
+      .wallet-status-value {
+        font-size: 12px;
+      }
+      
+      .login-button {
+        padding: 13px;
+        font-size: 14px;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      
+      .login-button i {
+        font-size: 16px;
+      }
+      
+      .tips {
+        padding: 12px;
+        margin-bottom: 16px;
+      }
+      
+      .tips p {
+        font-size: 11px;
+        line-height: 1.5;
+        margin-bottom: 5px;
+      }
+      
+      .back-home {
+        font-size: 12px;
+        padding: 8px;
+        gap: 6px;
+      }
+      
+      .language-switcher-container {
+        top: 10px;
+        right: 10px;
+      }
+      
+      /* 优化加载动画尺寸 */
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border-width: 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 语言切换器 -->
+  <div class="language-switcher-container">
+    <div id="languageSwitcher"></div>
+  </div>
+
+  <div class="login-container">
+    <div class="login-card">
+      <!-- Logo 区域 -->
+      <div class="logo-section">
+        <div class="logo-icon">
+          <i class="fas fa-chess-rook"></i>
+        </div>
+        <h1 class="logo-title" data-i18n="homepage.footer.brandName">非遗上链</h1>
+        <p class="logo-subtitle" data-i18n="admin.title">管理后台</p>
+      </div>
+      
+      <!-- 登录内容 -->
+      <div class="login-content">
+        <p class="section-title" data-i18n="admin.loginSubtitle">使用 Web3 钱包登录</p>
+        
+        <!-- 钱包连接状态 -->
+        <div id="walletStatus" class="wallet-status">
+          <i class="fas fa-wallet"></i>
+          <div class="wallet-status-text">
+            <div class="wallet-status-label" data-i18n="admin.walletStatus">钱包状态</div>
+            <div class="wallet-status-value" data-i18n="admin.notConnected">未连接钱包</div>
+          </div>
+        </div>
+        
+        <!-- 登录按钮 -->
+        <button id="loginBtn" class="login-button">
+          <i class="fas fa-shield-alt"></i>
+          <span data-i18n="admin.loginButton">连接钱包并登录</span>
+        </button>
+        
+        <!-- 提示信息 -->
+        <div class="tips">
+          <p data-i18n="admin.loginTip1">⚠️ 仅授权管理员钱包可登录</p>
+          <p data-i18n="admin.loginTip2">📝 登录即表示同意签名验证</p>
+        </div>
+        
+        <!-- 返回主页 -->
+        <a href="/" class="back-home">
+          <i class="fas fa-arrow-left"></i>
+          <span data-i18n="admin.backToHome">返回主页</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="common/admin-common.js"></script>
+  <script>
+    const t = (key) => window.i18n ? window.i18n.t(key) : key;
+    
+    // 更新钱包状态显示
+    function updateWalletStatus(address, connected) {
+      const statusEl = document.getElementById('walletStatus');
+      const valueEl = statusEl.querySelector('.wallet-status-value');
+      
+      if (connected && address) {
+        statusEl.classList.add('connected');
+        const shortAddress = `${address.slice(0, 6)}...${address.slice(-4)}`;
+        valueEl.textContent = shortAddress;
+      } else {
+        statusEl.classList.remove('connected');
+        valueEl.textContent = t('admin.notConnected');
+      }
+    }
+    
+    // 登录按钮点击事件
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('loginBtn');
+      const btnText = btn.querySelector('span');
+      const originalText = btnText.textContent;
+      
+      // 禁用按钮
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="spinner"></span>';
+      
+      try {
+        // 执行管理员登录
+        const success = await adminLogin();
+        
+        if (success) {
+          btnText.textContent = t('admin.loginSuccess');
+          
+          // 登录成功，跳转到管理中心
+          setTimeout(() => {
+            const returnUrl = new URLSearchParams(window.location.search).get('returnUrl') || '/admin/index.html';
+            window.location.href = returnUrl;
+          }, 1000);
+        } else {
+          throw new Error(t('admin.loginFailed'));
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        alert(error.message || t('admin.loginFailed'));
+        
+        // 恢复按钮状态
+        btn.disabled = false;
+        btnText.textContent = originalText;
+      }
+    });
+    
+    // 检查钱包连接状态
+    async function checkWalletConnection() {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts.length > 0) {
+            updateWalletStatus(accounts[0], true);
+          }
+        } catch (error) {
+          console.error('Check wallet failed:', error);
+        }
+      }
+    }
+    
+    // 监听账户变化
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', (accounts) => {
+        if (accounts.length === 0) {
+          updateWalletStatus(null, false);
+        } else {
+          updateWalletStatus(accounts[0], true);
+        }
+      });
+    }
+    
+    // 页面加载时检查
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 初始化 i18n
+      await initI18n({
+        autoDetect: true,
+        translateOnInit: true,
+        createSwitcher: true,
+        switcherContainerId: 'languageSwitcher',
+        switcherOptions: {
+          showFlag: true,
+          showText: false,
+          style: 'dropdown'
+        }
+      });
+      
+      // 检查是否已登录
+      const token = readToken();
+      if (token) {
+        // 已登录，直接跳转到管理中心
+        console.log('Already logged in, redirecting...');
+        window.location.href = '/admin/index.html';
+        return;
+      }
+      
+      // 检查钱包连接状态
+      await checkWalletConnection();
+    });
+  </script>
+</body>
+</html>
+

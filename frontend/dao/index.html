@@ -161,8 +161,11 @@
       margin: 8px 0;
     }
   </style>
+  <link rel="stylesheet" href="/common/global-nav.css">
 </head>
 <body>
+  <div id="globalNavContainer"></div>
+
   <div class="min-h-screen max-w-[600px] mx-auto px-4 py-4">
     <!-- 导航栏 -->
     <header class="flex items-center justify-between py-4 mb-4">
@@ -825,6 +828,12 @@
         loadProposals();
         loadVotingHistory();
       }
+    });
+  </script>
+  <script src="/common/global-nav.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initGlobalNav({ currentPage: 'dao' });
     });
   </script>
 </body>

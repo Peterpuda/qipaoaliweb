@@ -203,7 +203,8 @@
       "ecosystem": "Ekosistem",
       "governance": "Tadbir Urus",
       "admin": "Pentadbir",
-      "enter": "Masuk ke Platform"
+      "enter": "Masuk ke Platform",
+      "selectLanguage": "Pilih Bahasa"
     },
     "title": "Platform Globalisasi Budaya Dikuasakan AI",
     "description": "Mengintegrasikan Kecerdasan Buatan dan Teknologi Web3 untuk Memelihara Warisan Budaya Tak Berwujud Global",
@@ -238,13 +239,13 @@
     },
     "token": {
       "communityEngagement": "Penglibatan Komuniti",
-      "title": "$QI · Sijil Penjaga",
+      "title": "Komuniti Elegan",
       "subtitle": "$QI bukan token spekulatif, tetapi bukti penyertaan dalam pemeliharaan budaya",
-      "role1Title": "Pembuat Keputusan Budaya",
+      "role1Title": "Pengesahan Nilai Budaya",
       "role1Desc": "Undi anda membentuk masa depan budaya",
-      "role2Title": "Penyumbang Warisan",
+      "role2Title": "Pengesahan Konsensus On-Chain",
       "role2Desc": "Daftar masuk harian, kongsi cerita, cipta kandungan",
-      "role3Title": "Pengumpul Budaya",
+      "role3Title": "Kelayakan Digital Kekal",
       "role3Desc": "Akses keutamaan kepada NFT edisi terhad, dompet anda adalah muzium",
       "compliance": "Kenyataan Pematuhan:",
       "stat1Label": "Jumlah Bekalan",
@@ -255,14 +256,15 @@
       "proofText": "bukti penyertaan dalam pemeliharaan budaya",
       "introText2": ". Diterbitkan di",
       "introText3": ", memegang $QI bermakna anda menjadi:",
-      "role1DescFull": "Projek warisan mana yang layak berada di rantaian, bagaimana dana diagihkan, bagaimana masa depan berkembang — undi anda membentuk arah budaya. Ini bukan formaliti, tetapi kuasa membuat keputusan sebenar",
-      "role2DescFull": "Daftar masuk harian, berkongsi cerita, mencipta kandungan — setiap penyertaan mendapat ganjaran token. Proses melindungi budaya juga merupakan proses mengumpul nilai",
-      "role3DescFull": "Akses keutamaan kepada karya agung NFT terhad, pengalaman warisan luar talian, perbualan mendalam dengan tukang AI — dompet anda adalah muzium",
+      "role1DescFull": "Penyertaan mendalam selaras dengan orientasi budaya ekosistem, disahkan melalui konsistensi dimensi budaya untuk memastikan keserasian tinggi dengan teras ekosistem",
+      "role2DescFull": "Konsensus berbilang nod melengkapkan pengesahan kesahihan teknikal, mekanisme hak insentif mencapai penambatan tepat nilai penyertaan dan pelaksanaan hak",
+      "role3DescFull": "Tertulis secara tidak boleh ubah melalui algoritma hash, disepadukan ke dalam sistem bukti teragih, menjadi saksi berwibawa identiti budaya yang tidak boleh diubah dan seumur hidup",
       "complianceLabel": "Kenyataan Pematuhan:",
       "complianceText": "$QI adalah token utiliti komuniti, bukan sekuriti dan tidak mempunyai fungsi pelaburan. Ia tidak menyokong perdagangan atau pemindahan pasaran sekunder. Ia hanya digunakan untuk tadbir urus ekosistem dan hak akses.",
       "header": "Token Tadbir Urus Web3",
-      "claimButton": "Tuntut Airdrop Token",
-      "claimDesc": "Log masuk setiap hari untuk menerima 1000 $QI"
+      "claimButton": "Catat Penyertaan",
+      "claimDesc": "Log masuk setiap hari untuk menerima 1000 $QI",
+      "communityIntro": "Sistem identiti blockchain yang didorong oleh konsensus budaya. Setiap penglibatan mendalam menjalani pengesahan nilai budaya terlebih dahulu, kemudian pengesahan konsensus blockchain, membina pengesahan berganda 'Budaya + Teknologi'. Melalui mekanisme hak insentif, nilai ditambat dengan tepat, tertulis secara tidak boleh ubah melalui algoritma hash, dan diubah menjadi kelayakan digital kekal—ini adalah saksi blockchain kepercayaan budaya dalam ekosistem Web3."
     },
     "ecosystem": {
       "title": "Ekosistem Lengkap, Memperkasa Budaya",
@@ -503,5 +505,34 @@
     "addressCopied": "Alamat disalin",
     "transactionHistory": "Sejarah Transaksi",
     "clickToConnect": "Klik butang di sebelah kanan untuk menyambung dompet"
+  },
+  "global": {
+    "nav.mall": "Kedai",
+    "nav.artisans": "Tukang",
+    "nav.dao": "Tadbir Urus",
+    "nav.checkin": "Daftar Masuk",
+    "nav.rewards": "Ganjaran"
+  },
+  "admin": {
+    "title": "Panel Pentadbir",
+    "loginTitle": "Log Masuk Pentadbir",
+    "loginSubtitle": "Log masuk dengan Dompet Web3",
+    "walletStatus": "Status Dompet",
+    "notConnected": "Tidak Disambungkan",
+    "connected": "Disambungkan",
+    "loginButton": "Sambung Dompet & Log Masuk",
+    "loginTip1": "⚠️ Hanya dompet pentadbir yang dibenarkan boleh log masuk",
+    "loginTip2": "📝 Log masuk bermaksud anda bersetuju dengan pengesahan tandatangan",
+    "backToHome": "Kembali ke Laman Utama",
+    "logout": "Log Keluar",
+    "loginSuccess": "Log Masuk Berjaya",
+    "loginFailed": "Log Masuk Gagal",
+    "unauthorized": "Alamat dompet tidak dibenarkan",
+    "sessionExpired": "Sesi tamat tempoh, sila log masuk semula",
+    "operationCenter": "Pusat Operasi Nod",
+    "loggedIn": "Telah Log Masuk",
+    "notLoggedIn": "Belum Log Masuk",
+    "loginRequired": "Sila log masuk terlebih dahulu",
+    "logoutSuccess": "Berjaya log keluar"
   }
 }

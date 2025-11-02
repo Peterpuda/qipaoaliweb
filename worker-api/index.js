@@ -81,6 +81,44 @@ function pickAllowedOrigin(req) {
     "https://693f317c.poap-checkin-frontend.pages.dev",
     "https://db251da8.poap-checkin-frontend.pages.dev",
     "https://1c8bf6e6.poap-checkin-frontend.pages.dev",
+    "https://f1d3f8b8.poap-checkin-frontend.pages.dev",
+    "https://97c8d667.poap-checkin-frontend.pages.dev",
+    "https://78e87e82.poap-checkin-frontend.pages.dev",
+    "https://207492bb.poap-checkin-frontend.pages.dev",
+    "https://e73d4746.poap-checkin-frontend.pages.dev",
+    "https://f7198852.poap-checkin-frontend.pages.dev",
+    "https://d3444fea.poap-checkin-frontend.pages.dev",
+    "https://aef1dc97.poap-checkin-frontend.pages.dev",
+    "https://2f33025c.poap-checkin-frontend.pages.dev",
+    "https://08fedf4f.poap-checkin-frontend.pages.dev",
+    "https://5942f4d6.poap-checkin-frontend.pages.dev",
+    "https://d6b47579.poap-checkin-frontend.pages.dev",
+    "https://12db0061.poap-checkin-frontend.pages.dev",
+    "https://eeed345b.poap-checkin-frontend.pages.dev",
+    "https://11b1f618.poap-checkin-frontend.pages.dev",
+    "https://4acfc827.poap-checkin-frontend.pages.dev",
+    "https://7a8731ca.poap-checkin-frontend.pages.dev",
+    "https://3e893ddf.poap-checkin-frontend.pages.dev",
+    "https://be4cb410.poap-checkin-frontend.pages.dev",
+    "https://960b14de.poap-checkin-frontend.pages.dev",
+    "https://94ca6d4e.poap-checkin-frontend.pages.dev",
+    "https://c0ab77bc.poap-checkin-frontend.pages.dev",
+    "https://27020218.poap-checkin-frontend.pages.dev",
+    "https://772563d8.poap-checkin-frontend.pages.dev", // Mobile language switcher fix
+    "https://0a13b172.poap-checkin-frontend.pages.dev", // Mobile menu button fix
+    "https://bef492cd.poap-checkin-frontend.pages.dev", // Fix i18n getCurrentLocale error
+    "https://de7aac99.poap-checkin-frontend.pages.dev", // Mobile menu debugging
+    "https://bc22d8a5.poap-checkin-frontend.pages.dev", // Fix mobile menu i18n conflict
+    "https://43919992.poap-checkin-frontend.pages.dev", // Mobile menu dropdown style
+    "https://9680bf59.poap-checkin-frontend.pages.dev", // Fix admin form input background
+    "https://b1b13602.poap-checkin-frontend.pages.dev", // Fix API_BASE in product.html
+    "https://abfadcc5.poap-checkin-frontend.pages.dev", // Fix AI data isolation
+    "https://870264e1.poap-checkin-frontend.pages.dev", // Add detailed API logging
+    "https://a685eb7c.poap-checkin-frontend.pages.dev", // Force cache refresh v2.0
+    "https://19133e24.poap-checkin-frontend.pages.dev", // Add version to script import
+    "https://f5914dd1.poap-checkin-frontend.pages.dev", // Fix admin links and artisan logs
+    "https://1a2d16de.poap-checkin-frontend.pages.dev", // Fix cultural story query (status=published)
+    "https://dce3c9ef.poap-checkin-frontend.pages.dev", // Fix product_id caching issue
     "http://10break.com",
     "https://10break.com",
     "http://localhost:8787",
@@ -98,14 +136,125 @@ function withCors(resp, origin) {
   const newHeaders = new Headers(resp.headers);
 
   newHeaders.set("Access-Control-Allow-Origin", allowedOrigin);
-  newHeaders.set("Access-Control-Allow-Headers", "Authorization, Content-Type");
-  newHeaders.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  newHeaders.set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With");
+  newHeaders.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   newHeaders.set("Access-Control-Allow-Credentials", "true");
+  newHeaders.set("Access-Control-Max-Age", "86400"); // 24小时缓存预检请求
 
   return new Response(resp.body, {
     status: resp.status,
     headers: newHeaders
   });
+}
+
+// ------------------------------------
+// 统一处理 R2 公共读取（/storage/public/* 和 /r2/* 共用）
+// ------------------------------------
+async function handleRequestForR2(req, env, allowedOrigin) {
+    const url = new URL(req.url);
+    const key = url.pathname.startsWith('/storage/public/')
+      ? url.pathname.slice(16)
+      : url.pathname.startsWith('/r2/')
+        ? url.pathname.slice(4)
+        : '';
+
+    console.log('[R2 Handler] Request URL:', req.url);
+    console.log('[R2 Handler] Pathname:', url.pathname);
+    console.log('[R2 Handler] Extracted key:', key);
+
+    if (!key) {
+      console.error('[R2 Handler] Missing key!');
+      return withCors(errorResponse('missing file key', 400), allowedOrigin);
+    }
+
+    try {
+      if (!env.R2_BUCKET) {
+        console.error('[R2 Handler] R2_BUCKET not bound!');
+        return withCors(errorResponse('R2_BUCKET not configured', 500), allowedOrigin);
+      }
+
+      console.log('[R2 Handler] R2_BUCKET exists, attempting to get key:', key);
+
+      const rangeHeader = req.headers.get('Range');
+      console.log('[R2 Handler] Range header:', rangeHeader);
+      
+      let object;
+      let status = 200;
+      let rangeResponseHeaders = {};
+
+      if (rangeHeader) {
+        const rangeMatch = rangeHeader.match(/bytes=(\d+)-(\d*)/);
+        if (rangeMatch) {
+          try {
+            const start = parseInt(rangeMatch[1]);
+            console.log('[R2 Handler] Range request, start:', start);
+            
+            const headObject = await env.R2_BUCKET.head(key);
+            if (!headObject) {
+              console.error('[R2 Handler] HEAD returned null for key:', key);
+              return withCors(errorResponse('file not found', 404), allowedOrigin);
+            }
+            
+            const fileSize = headObject.size;
+            const end = rangeMatch[2] ? parseInt(rangeMatch[2]) : fileSize - 1;
+            console.log('[R2 Handler] File size:', fileSize, 'Range:', start, '-', end);
+            
+            object = await env.R2_BUCKET.get(key, { range: { offset: start, length: Math.max(1, end - start + 1) } });
+            status = 206;
+            rangeResponseHeaders = {
+              'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+              'Content-Length': `${Math.max(1, end - start + 1)}`,
+            };
+            console.log('[R2 Handler] Range GET successful, status 206');
+          } catch (e) {
+            console.error('[R2 Handler] Range processing error:', e.message, '- Falling back to full file');
+            // 如果 HEAD/Range 处理异常，降级为返回完整文件，避免 500
+            object = await env.R2_BUCKET.get(key);
+            status = 200;
+            rangeResponseHeaders = {};
+          }
+        } else {
+          console.log('[R2 Handler] Invalid range format, getting full file');
+          object = await env.R2_BUCKET.get(key);
+        }
+      } else {
+        console.log('[R2 Handler] No range header, getting full file');
+        object = await env.R2_BUCKET.get(key);
+      }
+
+      if (!object) {
+        console.error('[R2 Handler] GET returned null for key:', key);
+        return withCors(errorResponse('file not found', 404), allowedOrigin);
+      }
+
+      console.log('[R2 Handler] Object retrieved successfully, size:', object.size);
+
+      let contentType = object.httpMetadata?.contentType || 'application/octet-stream';
+      if (key.endsWith('.mp4')) contentType = 'video/mp4';
+      else if (key.endsWith('.webm')) contentType = 'video/webm';
+      else if (key.endsWith('.mp3')) contentType = 'audio/mpeg';
+      else if (key.endsWith('.m4a')) contentType = 'audio/mp4';
+      else if (key.endsWith('.wav')) contentType = 'audio/wav';
+      else if (key.endsWith('.ogg')) contentType = 'audio/ogg';
+      else if (key.endsWith('.jpg') || key.endsWith('.jpeg')) contentType = 'image/jpeg';
+      else if (key.endsWith('.png')) contentType = 'image/png';
+
+      console.log('[R2 Handler] Content-Type:', contentType, 'Status:', status);
+
+      return new Response(object.body, {
+        status,
+        headers: {
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=31536000',
+          'Access-Control-Allow-Origin': allowedOrigin || '*',
+          'Accept-Ranges': 'bytes',
+          ...rangeResponseHeaders,
+        },
+      });
+    } catch (error) {
+      console.error('[R2 Handler] Unexpected error:', error.message, error.stack);
+      return withCors(errorResponse(`get file failed: ${error.message}`, 500), allowedOrigin);
+    }
 }
 
 // ------------------------------------
@@ -339,22 +488,25 @@ function randomHex(len) {
 export default {
   async fetch(req, env) {
     try {
-      // 确保数据库schema是最新的
-      await ensureSchema(env);
+      // ⚠️ 禁用每次请求的 schema 检查（导致 CPU 超时）
+      // Schema 应该在部署时通过 migration 脚本执行，而不是每次请求
+      // await ensureSchema(env);
       
       const url = new URL(req.url);
       const { pathname, searchParams } = url;
 
       // --- CORS preflight ---
       if (req.method === "OPTIONS") {
+        const origin = pickAllowedOrigin(req);
+        console.log('OPTIONS request from origin:', req.headers.get('Origin'), 'allowed:', origin);
         return withCors(
           new Response(null, { status: 204 }),
-          pickAllowedOrigin(req)
+          origin
         );
       }
 
       const path = stripApi(pathname);
-      console.log('Request path:', pathname, 'stripped:', path);
+      console.log('Request path:', pathname, 'stripped:', path, 'method:', req.method);
 
       // health
       if (req.method === 'GET' && (path === '/' || path === '/health')) {
@@ -375,6 +527,7 @@ export default {
 
       // auth: challenge
       if ((req.method === 'POST' || req.method === 'GET') && path === '/auth/challenge') {
+        console.log('Auth challenge request, method:', req.method, 'origin:', req.headers.get('Origin'));
         const body = req.method === 'POST' ? await readJson(req) : {};
     const addr = String(body.address || body.addr || '').toLowerCase();
     const nonce = randomHex(8);
@@ -384,9 +537,11 @@ export default {
           `Address: ${addr}`,
           `Timestamp: ${Date.now()}`
         ].join('\n');
+        const origin = pickAllowedOrigin(req);
+        console.log('Returning challenge with origin:', origin);
         return withCors(
           jsonResponse({ ok: true, message, nonce }),
-          pickAllowedOrigin(req)
+          origin
         );
       }
 
@@ -612,16 +767,24 @@ export default {
             SELECT * FROM artisans WHERE id = ?
           `, [artisan_id]);
 
+          // ✅ 添加数据隔离验证日志
+          console.log(`💬 [Artisan Chat] artisan_id: ${artisan_id}, found: ${artisanRows?.length > 0}`);
+          
           if (!artisanRows || artisanRows.length === 0) {
+            console.error(`❌ [Artisan Chat] Artisan not found: ${artisan_id}`);
             return withCors(errorResponse("artisan not found", 404), pickAllowedOrigin(req));
           }
 
           const artisan = artisanRows[0];
+          console.log(`💬 [Artisan Chat] Artisan: ${artisan.name_zh || artisan.name_en} (ID: ${artisan.id})`);
 
           // 查询 AI 配置
           const voiceRows = await query(env, `
             SELECT * FROM artisan_voice WHERE artisan_id = ? AND enabled = 1
           `, [artisan_id]);
+
+          // ✅ 添加 AI 配置验证日志
+          console.log(`🎭 [Artisan AI Config] artisan_id: ${artisan_id}, has_config: ${voiceRows?.length > 0}`);
 
           let voiceConfig = null;
           if (voiceRows && voiceRows.length > 0) {
@@ -785,6 +948,30 @@ export default {
       }
 
       // ============================================
+      // AI 匠人对话 API
+      // ============================================
+
+      // POST /ai/artisan-chat - 与匠人 AI 对话（已废弃，使用 /ai/artisan-agent/reply）
+      if (pathname === "/ai/artisan-chat" && req.method === "POST") {
+        console.warn('⚠️ [DEPRECATED] /ai/artisan-chat is deprecated. Use /ai/artisan-agent/reply instead.');
+        
+        // ❌ 返回 410 Gone 状态码，提示使用新 API
+        return withCors(
+          new Response(JSON.stringify({
+            ok: false,
+            error: 'ENDPOINT_DEPRECATED',
+            message: 'This endpoint is deprecated. Please use /ai/artisan-agent/reply instead.',
+            new_endpoint: '/ai/artisan-agent/reply',
+            migration_guide: 'Change parameter names: message → question, language → lang'
+          }), {
+            status: 410,
+            headers: { 'Content-Type': 'application/json' }
+          }),
+          pickAllowedOrigin(req)
+        );
+      }
+
+      // ============================================
       // 文化叙事生成 API (Sprint 4)
       // ============================================
 
@@ -815,12 +1002,11 @@ export default {
             );
           }
 
-          // 查询商品信息
+          // ✅ 只查询商品信息（文化故事不需要匠人数据）
           const productRows = await query(env, `
-            SELECT p.*, a.id as artisan_id, a.name_zh, a.name_en, a.region
-            FROM products_new p
-            LEFT JOIN artisans a ON p.artisan_id = a.id
-            WHERE p.id = ?
+            SELECT id, name_zh, name_en, desc_md, category, price_wei, image_key
+            FROM products_new
+            WHERE id = ?
           `, [product_id]);
 
           if (!productRows || productRows.length === 0) {
@@ -828,20 +1014,6 @@ export default {
           }
 
           const productData = productRows[0];
-          
-          if (!productData.artisan_id) {
-            return withCors(
-              errorResponse("product has no associated artisan", 400),
-              pickAllowedOrigin(req)
-            );
-          }
-
-          const artisanData = {
-            id: productData.artisan_id,
-            name_zh: productData.name_zh,
-            name_en: productData.name_en,
-            region: productData.region
-          };
 
           // 选择 AI 提供商
           const apiKey = provider === 'claude' ? env.ANTHROPIC_API_KEY : env.OPENAI_API_KEY;
@@ -857,11 +1029,10 @@ export default {
             );
           }
 
-          // 生成多种叙事版本
+          // ✅ 生成多种叙事版本（不传递匠人数据）
           const results = await generateMultipleNarratives(
             apiKey,
             productData,
-            artisanData,
             types,
             lang,
             provider
@@ -1022,8 +1193,15 @@ export default {
       // GET /ai/narrative/product/:product_id - 获取商品所有叙事版本
       if (pathname.startsWith("/ai/narrative/product/") && req.method === "GET") {
         try {
-          const product_id = pathname.split("/ai/narrative/product/")[1];
-          const lang = searchParams.get('lang') || 'zh';
+          // 正确提取 product_id，去除查询字符串
+          const pathParts = pathname.split("/ai/narrative/product/")[1];
+          const product_id = pathParts ? pathParts.split('?')[0] : '';
+          
+          if (!product_id) {
+            return withCors(errorResponse("missing product_id", 400), pickAllowedOrigin(req));
+          }
+          
+          const lang = searchParams.get('lang'); // 可选参数，不传则返回所有语言
           const status = searchParams.get('status') || 'all';
 
           let sql = `
@@ -1034,9 +1212,15 @@ export default {
                    video_key, video_url, video_duration, video_size, video_thumbnail,
                    generation_status, generation_progress
             FROM content_variants
-            WHERE product_id = ? AND lang = ?
+            WHERE product_id = ?
           `;
-          const params = [product_id, lang];
+          const params = [product_id];
+
+          // ✅ 如果指定了语言，则只返回该语言的内容
+          if (lang) {
+            sql += ` AND lang = ?`;
+            params.push(lang);
+          }
 
           if (status !== 'all') {
             sql += ` AND status = ?`;
@@ -1046,6 +1230,16 @@ export default {
           sql += ` ORDER BY created_at DESC`;
 
           const rows = await query(env, sql, params);
+
+          // ✅ 添加数据隔离验证日志
+          console.log(`📖 [Cultural Story] product_id: ${product_id}, lang: ${lang || 'all'}, status: ${status}, found ${rows?.length || 0} narratives`);
+          if (rows && rows.length > 0) {
+            console.log(`📖 [Cultural Story] Languages: ${[...new Set(rows.map(r => r.lang))].join(', ')}`);
+            console.log(`📖 [Cultural Story] Types: ${rows.map(r => r.type).join(', ')}`);
+            console.log(`📖 [Cultural Story] IDs: ${rows.map(r => r.id).slice(0, 3).join(', ')}${rows.length > 3 ? '...' : ''}`);
+          } else {
+            console.log(`⚠️ [Cultural Story] No narratives found for product ${product_id}`);
+          }
 
           const narratives = (rows || []).map(row => {
             let contentData = {};
@@ -1780,106 +1974,15 @@ export default {
         return await handleUploadImage(req, env);
       }
 
+      // GET /r2/:path - 兼容旧路径（历史上生成的 URL 使用 /r2/ 前缀）
+      if (pathname.startsWith("/r2/") && req.method === "GET") {
+        // 直接调用 handleRequestForR2，不需要创建假请求
+        return await handleRequestForR2(req, env, pickAllowedOrigin(req));
+      }
+
       // GET /storage/public/:path - 获取R2存储的任何公开文件（图片、视频等）
       if (pathname.startsWith("/storage/public/") && req.method === "GET") {
-        const key = pathname.slice(16); // 去掉 "/storage/public/"
-        console.log(`[R2 DEBUG] Pathname: ${pathname}, Key: ${key}`);
-        
-        if (!key) {
-          console.error(`[R2 DEBUG] Missing key!`);
-          return withCors(errorResponse("missing file key", 400), pickAllowedOrigin(req));
-        }
-
-        try {
-          if (!env.R2_BUCKET) {
-            console.error(`[R2 DEBUG] R2_BUCKET not bound to worker!`);
-            return withCors(errorResponse("R2_BUCKET not configured", 500), pickAllowedOrigin(req));
-          }
-          
-          console.log(`[R2 DEBUG] R2_BUCKET exists, attempting to get key: ${key}`);
-
-          // 检查是否有 Range 请求（视频拖动进度条时）
-          const rangeHeader = req.headers.get('Range');
-          
-          let object;
-          let status = 200;
-          let rangeResponseHeaders = {};
-          
-          if (rangeHeader) {
-            // 解析 Range: bytes=start-end
-            const rangeMatch = rangeHeader.match(/bytes=(\d+)-(\d*)/);
-            if (rangeMatch) {
-              const start = parseInt(rangeMatch[1]);
-              
-              // 先获取文件信息以知道总大小
-              const headObject = await env.R2_BUCKET.head(key);
-              if (!headObject) {
-                console.error(`R2 file not found: ${key}`);
-                return withCors(errorResponse("file not found", 404), pickAllowedOrigin(req));
-              }
-              
-              const fileSize = headObject.size;
-              const end = rangeMatch[2] ? parseInt(rangeMatch[2]) : fileSize - 1;
-              
-              console.log(`Range request for ${key}: bytes ${start}-${end}/${fileSize}`);
-              
-              // 使用 R2 的 range 参数获取部分内容
-              object = await env.R2_BUCKET.get(key, {
-                range: { offset: start, length: end - start + 1 }
-              });
-              
-              status = 206; // Partial Content
-              rangeResponseHeaders = {
-                'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-                'Content-Length': `${end - start + 1}`,
-              };
-            } else {
-              // Range 格式不对，返回完整文件
-              object = await env.R2_BUCKET.get(key);
-            }
-          } else {
-            // 没有 Range 请求，返回完整文件
-            object = await env.R2_BUCKET.get(key);
-          }
-          
-          if (!object) {
-            console.error(`R2 file not found: ${key}`);
-            return withCors(errorResponse("file not found", 404), pickAllowedOrigin(req));
-          }
-
-          // 自动检测文件类型
-          let contentType = object.httpMetadata?.contentType || 'application/octet-stream';
-          
-          // 根据文件扩展名设置正确的 Content-Type
-          if (key.endsWith('.mp4')) {
-            contentType = 'video/mp4';
-          } else if (key.endsWith('.webm')) {
-            contentType = 'video/webm';
-          } else if (key.endsWith('.mp3')) {
-            contentType = 'audio/mpeg';
-          } else if (key.endsWith('.jpg') || key.endsWith('.jpeg')) {
-            contentType = 'image/jpeg';
-          } else if (key.endsWith('.png')) {
-            contentType = 'image/png';
-          }
-
-          console.log(`Serving R2 file: ${key}, Content-Type: ${contentType}, Size: ${object.size || 'unknown'} bytes, Status: ${status}`);
-
-          // 返回文件，支持视频流式播放和 Range 请求
-          return new Response(object.body, {
-            status: status,
-            headers: {
-              'Content-Type': contentType,
-              'Cache-Control': 'public, max-age=31536000',
-              'Access-Control-Allow-Origin': '*',
-              'Accept-Ranges': 'bytes',
-              ...rangeResponseHeaders,
-            },
-          });
-        } catch (error) {
-          console.error("Get file error:", error);
-          return withCors(errorResponse(`get file failed: ${error.message}`, 500), pickAllowedOrigin(req));
-        }
+        return await handleRequestForR2(req, env, pickAllowedOrigin(req));
       }
 
       // GET /image/:key - 获取R2存储的图片（保留向后兼容）
@@ -2119,6 +2222,9 @@ export default {
       }
 
       // GET /badge/claim-ticket
+      // 支持两种查询方式：
+      // 1. 通过 order_id 查询（用于订单页面）
+      // 2. 通过 product_id + wallet 查询（用于商品详情页）
       if (pathname === "/badge/claim-ticket" && req.method === "GET") {
         const userCheck = await requireUser(req, env);
         if (!userCheck.ok) {
@@ -2129,36 +2235,71 @@ export default {
         }
 
         const orderId = searchParams.get("order_id");
-        if (!orderId) {
+        const productId = searchParams.get("product_id");
+        const wallet = searchParams.get("wallet");
+
+        let rows;
+
+        if (orderId) {
+          // 方式 1：通过 order_id 查询
+          rows = await query(env, `
+            SELECT
+              b.order_id,
+              b.buyer_wallet,
+              b.token_id,
+              b.contract_addr,
+              b.sig_payload,
+              b.claimed,
+              o.status AS order_status
+            FROM badges_issues b
+            LEFT JOIN orders o ON b.order_id = o.order_no
+            WHERE b.order_id = ?
+            LIMIT 1
+          `, [orderId]);
+        } else if (productId && wallet) {
+          // 方式 2：通过 product_id + wallet 查询
+          // 查找该用户购买该商品的最新订单
+          rows = await query(env, `
+            SELECT
+              b.order_id,
+              b.buyer_wallet,
+              b.token_id,
+              b.contract_addr,
+              b.sig_payload,
+              b.claimed,
+              o.status AS order_status
+            FROM badges_issues b
+            LEFT JOIN orders o ON b.order_id = o.order_no
+            WHERE o.product_id = ? 
+              AND LOWER(o.wallet) = LOWER(?)
+              AND o.status = 'completed'
+            ORDER BY b.created_at DESC
+            LIMIT 1
+          `, [productId, wallet]);
+          
+          console.log(`🎖️ [Badge Check] product_id: ${productId}, wallet: ${wallet}, found: ${rows?.length > 0}`);
+        } else {
           return withCors(
-            errorResponse("missing order_id", 400),
+            errorResponse("missing order_id or (product_id + wallet)", 400),
             pickAllowedOrigin(req)
           );
         }
 
-        const rows = await query(env, `
-          SELECT
-            b.order_id,
-            b.buyer_wallet,
-            b.token_id,
-            b.contract_addr,
-            b.sig_payload,
-            b.claimed,
-            o.status AS order_status
-          FROM badges_issues b
-          LEFT JOIN orders o ON b.order_id = o.order_no
-          WHERE b.order_id = ?
-          LIMIT 1
-        `, [orderId]);
-
         if (!rows || !rows.length) {
+          console.log(`⚠️ [Badge Check] No badge found`);
           return withCors(
-            errorResponse("badge not ready yet", 404),
+            jsonResponse({ 
+              ok: true, 
+              claimable: false, 
+              reason: 'no_purchase_or_badge_not_ready' 
+            }),
             pickAllowedOrigin(req)
           );
         }
 
         const row = rows[0];
+        
+        // 验证钱包地址
         if (row.buyer_wallet.toLowerCase() !== userCheck.wallet.toLowerCase()) {
           return withCors(
             errorResponse("not your order", 403),

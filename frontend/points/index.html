@@ -55,8 +55,11 @@
   th,td{border-bottom:1px solid var(--line); padding:10px; font-size:14px; text-align:left}
   code{font-family:ui-monospace,Menlo,Consolas,monospace}
 </style>
+  <link rel="stylesheet" href="/common/global-nav.css">
 </head>
 <body>
+  <div id="globalNavContainer"></div>
+
   <div class="appbar">
     <button class="backBtn" onclick="window.location.href='../index.html'" title="返回主页">
       <i class="fas fa-arrow-left"></i>
@@ -136,6 +139,12 @@
 
     $('btnConnect').onclick = connect;
     $('btnLoad').onclick = loadPoints;
+  </script>
+  <script src="/common/global-nav.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initGlobalNav({ currentPage: 'points' });
+    });
   </script>
 </body>
 </html>

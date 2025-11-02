@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="common/admin-common.css"/>
   <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <script src="/poap.config.js"></script>
+  <script src="common/admin-common.js"></script>
+  <script src="common/admin-auth.js"></script>
   
   <style>
     /* 管理功能区域样式 */
@@ -77,6 +79,9 @@
     <button class="hamburger">☰</button>
     <div class="nav-user">
       <span id="authState" class="pill">未登录</span>
+      <button onclick="logout()" class="btn btn-sm btn-outline" style="margin-left: 12px;" title="退出登录">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
     </div>
   </nav>
 
@@ -309,7 +314,6 @@
 
 </div>
 
-<script src="common/admin-common.js"></script>
 <script>
 // 运营中心功能
 

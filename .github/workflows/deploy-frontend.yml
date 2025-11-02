@@ -1,0 +1,167 @@
+name: Deploy Frontend to Aliyun OSS
+
+on:
+  push:
+    branches:
+      - main
+      - prod
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '部署环境'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🔧 设置环境变量
+        id: env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
+            echo "bucket=${{ secrets.OSS_BUCKET }}" >> $GITHUB_OUTPUT
+            echo "region=${{ secrets.OSS_REGION }}" >> $GITHUB_OUTPUT
+            echo "cdn_domain=${{ secrets.CDN_DOMAIN }}" >> $GITHUB_OUTPUT
+            echo "env=production" >> $GITHUB_OUTPUT
+          else
+            echo "bucket=${{ secrets.OSS_BUCKET_DEV }}" >> $GITHUB_OUTPUT
+            echo "region=${{ secrets.OSS_REGION }}" >> $GITHUB_OUTPUT
+            echo "cdn_domain=${{ secrets.CDN_DOMAIN_DEV }}" >> $GITHUB_OUTPUT
+            echo "env=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📦 安装 ossutil
+        run: |
+          wget -q https://gosspublic.alicdn.com/ossutil/1.7.15/ossutil64
+          chmod +x ossutil64
+          sudo mv ossutil64 /usr/local/bin/ossutil
+          ossutil --version
+
+      - name: ⚙️ 配置 ossutil
+        run: |
+          ossutil config -e ${{ steps.env.outputs.region }}.aliyuncs.com \
+                        -i ${{ secrets.ALIYUN_ACCESS_KEY_ID }} \
+                        -k ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+
+      - name: 🚀 上传文件到 OSS
+        run: |
+          cd frontend
+          echo "📤 开始上传文件到 OSS..."
+          ossutil cp -r -f -u . oss://${{ steps.env.outputs.bucket }}/ \
+            --exclude "*.md" \
+            --exclude ".git/*" \
+            --exclude "node_modules/*" \
+            --exclude ".DS_Store" \
+            --exclude "*.log"
+          echo "✅ 文件上传完成"
+
+      - name: 🎨 设置缓存策略
+        run: |
+          echo "⚙️ 配置缓存策略..."
+          
+          # HTML文件不缓存（或短缓存）
+          ossutil set-meta oss://${{ steps.env.outputs.bucket }}/ \
+            Cache-Control:no-cache,no-store,must-revalidate \
+            Content-Type:text/html \
+            --include "*.html" \
+            -r -f -u || true
+          
+          # JS/CSS缓存7天
+          ossutil set-meta oss://${{ steps.env.outputs.bucket }}/ \
+            Cache-Control:max-age=604800 \
+            --include "*.js" \
+            -r -f -u || true
+          
+          ossutil set-meta oss://${{ steps.env.outputs.bucket }}/ \
+            Cache-Control:max-age=604800 \
+            --include "*.css" \
+            -r -f -u || true
+          
+          # 图片缓存30天
+          ossutil set-meta oss://${{ steps.env.outputs.bucket }}/ \
+            Cache-Control:max-age=2592000 \
+            --include "*.jpg" \
+            --include "*.jpeg" \
+            --include "*.png" \
+            --include "*.gif" \
+            --include "*.webp" \
+            --include "*.svg" \
+            -r -f -u || true
+          
+          # 视频/音频缓存30天
+          ossutil set-meta oss://${{ steps.env.outputs.bucket }}/ \
+            Cache-Control:max-age=2592000 \
+            --include "*.mp4" \
+            --include "*.mp3" \
+            --include "*.webm" \
+            -r -f -u || true
+          
+          echo "✅ 缓存策略配置完成"
+
+      - name: 🔄 刷新 CDN 缓存
+        if: steps.env.outputs.cdn_domain != ''
+        run: |
+          echo "🔄 刷新CDN缓存..."
+          
+          # 安装阿里云CLI
+          wget -q https://aliyuncli.alicdn.com/aliyun-cli-linux-latest-amd64.tgz
+          tar -xzf aliyun-cli-linux-latest-amd64.tgz
+          sudo mv aliyun /usr/local/bin/
+          
+          # 配置CLI
+          aliyun configure set \
+            --profile default \
+            --region cn-shanghai \
+            --access-key-id ${{ secrets.ALIYUN_ACCESS_KEY_ID }} \
+            --access-key-secret ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+          
+          # 刷新HTML文件
+          aliyun cdn RefreshObjectCaches \
+            --ObjectPath https://${{ steps.env.outputs.cdn_domain }}/ \
+            --ObjectType Directory || echo "⚠️ CDN刷新失败，请手动刷新"
+          
+          echo "✅ CDN缓存刷新完成"
+
+      - name: 📊 部署信息
+        run: |
+          echo "=========================================="
+          echo "✅ 前端部署成功！"
+          echo "=========================================="
+          echo "📦 OSS Bucket: ${{ steps.env.outputs.bucket }}"
+          echo "🌍 区域: ${{ steps.env.outputs.region }}"
+          echo "🌐 访问地址: https://${{ steps.env.outputs.cdn_domain }}"
+          echo "🔗 OSS直接访问: https://${{ steps.env.outputs.bucket }}.${{ steps.env.outputs.region }}.aliyuncs.com"
+          echo "🕐 部署时间: $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "📝 提交信息: ${{ github.event.head_commit.message }}"
+          echo "👤 提交者: ${{ github.actor }}"
+          echo "🔖 分支: ${{ github.ref_name }}"
+          echo "🆔 Commit: ${{ github.sha }}"
+          echo "=========================================="
+
+      - name: 📢 发送钉钉通知
+        if: always() && secrets.DINGTALK_WEBHOOK != ''
+        uses: zcong1993/actions-ding@master
+        with:
+          dingToken: ${{ secrets.DINGTALK_WEBHOOK }}
+          body: |
+            {
+              "msgtype": "markdown",
+              "markdown": {
+                "title": "前端部署通知",
+                "text": "## 🚀 前端部署${{ job.status == 'success' && '成功 ✅' || '失败 ❌' }}\n\n- **环境**: ${{ steps.env.outputs.env }}\n- **分支**: ${{ github.ref_name }}\n- **提交**: ${{ github.event.head_commit.message }}\n- **提交者**: ${{ github.actor }}\n- **时间**: $(date '+%Y-%m-%d %H:%M:%S')\n- **访问**: [https://${{ steps.env.outputs.cdn_domain }}](https://${{ steps.env.outputs.cdn_domain }})"
+              }
+            }
+

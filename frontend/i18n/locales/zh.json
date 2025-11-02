@@ -344,7 +344,8 @@
       "ecosystem": "生态系统",
       "governance": "治理",
       "admin": "管理员",
-      "enter": "进入平台"
+      "enter": "进入平台",
+      "selectLanguage": "选择语言"
     },
     "title": "AI驱动的文化出海平台",
     "description": "融合AI智能与Web3技术，保护全球非遗文化，解锁·共创·流转 — 文旅不止于故事",
@@ -379,13 +380,14 @@
     },
     "token": {
       "communityEngagement": "社区参与度",
-      "title": "$QI · 文化守护者的凭证",
+      "title": "优雅共同体",
+      "communityIntro": "文化共识驱动的链上身份体系。每一次深度参与，先经文化价值核验，再由链上共识验证，构建\"文化+技术\"双重确认。通过激励确权机制精准锚定价值，经哈希算法不可逆铭刻，转化为永续持有的数字凭证——这是Web3生态中文化信仰的链上见证。",
       "subtitle": "$QI 不是炒币的筹码，而是参与文化守护的身份证明",
-      "role1Title": "文化决策者",
+      "role1Title": "文化价值核验",
       "role1Desc": "你的一票决定文化的走向",
-      "role2Title": "传承贡献者",
+      "role2Title": "链上共识验证",
       "role2Desc": "每日签到、分享故事、创作内容",
-      "role3Title": "文化收藏家",
+      "role3Title": "永续数字凭证",
       "role3Desc": "优先购买限量 NFT 真品、你的钱包，就是博物馆",
       "compliance": "合规声明：",
       "stat1Label": "总供应量",
@@ -396,13 +398,13 @@
       "proofText": "参与文化守护的身份证明",
       "introText2": "。基于",
       "introText3": "发行，持有 $QI 意味着你成为了：",
-      "role1DescFull": "对哪些非遗项目值得上链、资金如何分配、未来如何发展 — 你的一票决定文化的走向。这不是形式，而是真正的话语权",
-      "role2DescFull": "每日签到、分享故事、创作内容 — 每一次参与都会获得通证奖励。守护文化的过程，也是价值累积的过程",
-      "role3DescFull": "优先购买限量 NFT 真品、参加线下非遗体验、与 AI 匠人深度对话 — 你的钱包，就是博物馆",
+      "role1DescFull": "深度参与行为契合生态文化导向，经文化维度一致性验证，确保与生态内核高度契合",
+      "role2DescFull": "通过多节点共识完成技术层面有效性验证，激励确权机制实现参与价值的精准锚定与权益落地",
+      "role3DescFull": "经哈希算法不可逆铭刻，纳入分布式存证体系，成为不可篡改、终身持有的文化身份权威见证",
       "complianceLabel": "合规声明：",
       "complianceText": "$QI 为社区功能凭证，非证券且不具备投资功能，不支持二级市场交易或转让。仅用于生态治理和权益访问。",
       "header": "Web3 治理通证",
-      "claimButton": "领取通证空投",
+      "claimButton": "铭刻参与",
       "claimDesc": "每日签到可领取 1000 $QI"
     },
     "ecosystem": {
@@ -503,5 +505,34 @@
       "connector3": "持有",
       "connector4": "就是"
     }
+  },
+  "global": {
+    "nav.mall": "商城",
+    "nav.artisans": "匠人",
+    "nav.dao": "治理",
+    "nav.checkin": "签到",
+    "nav.rewards": "奖励"
+  },
+  "admin": {
+    "title": "管理后台",
+    "loginTitle": "管理员登录",
+    "loginSubtitle": "使用 Web3 钱包登录",
+    "walletStatus": "钱包状态",
+    "notConnected": "未连接钱包",
+    "connected": "已连接",
+    "loginButton": "连接钱包并登录",
+    "loginTip1": "⚠️ 仅授权管理员钱包可登录",
+    "loginTip2": "📝 登录即表示同意签名验证",
+    "backToHome": "返回主页",
+    "logout": "退出登录",
+    "loginSuccess": "登录成功",
+    "loginFailed": "登录失败",
+    "unauthorized": "未授权的钱包地址",
+    "sessionExpired": "登录已过期，请重新登录",
+    "operationCenter": "节点运营中心",
+    "loggedIn": "已登录",
+    "notLoggedIn": "未登录",
+    "loginRequired": "请先登录",
+    "logoutSuccess": "已退出登录"
   }
 }

@@ -89,8 +89,11 @@ async function doClaim() {
 </script>
 <!-- 使用 ethers v6（从 UNPKG 引入） -->
 <script src="https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <link rel="stylesheet" href="/common/global-nav.css">
 </head>
 <body>
+  <div id="globalNavContainer"></div>
+
   <div class="appbar"><h1>链上领取 · Merkle v2（SHA-256）</h1></div>
   <div class="wrap">
     <div class="card">
@@ -111,5 +114,11 @@ async function doClaim() {
       <p class="muted">提示：本合约为演示原生币发放版本；生产可替换为 ERC20 转账或 NFT 凭证。</p>
     </div>
   </div>
+  <script src="/common/global-nav.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initGlobalNav({ currentPage: 'claim' });
+    });
+  </script>
 </body>
 </html>

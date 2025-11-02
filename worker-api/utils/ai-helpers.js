@@ -352,23 +352,23 @@ export function generateId(prefix = '') {
 
 /**
  * 生成商品文化叙事的系统提示词
+ * ✅ 只使用商品数据，不涉及匠人信息
  * @param {Object} productData - 商品信息
- * @param {Object} artisanData - 匠人信息
  * @param {string} narrativeType - 叙事类型 (story/feature/heritage/usage)
  * @param {string} lang - 语言
  * @returns {string} 系统提示词
  */
-export function buildNarrativeSystemPrompt(productData, artisanData, narrativeType, lang = 'zh') {
+export function buildNarrativeSystemPrompt(productData, narrativeType, lang = 'zh') {
   const typeDescriptions = {
     zh: {
       story: {
         name: '故事版',
-        desc: '讲述这件作品背后的创作故事和文化意义',
+        desc: '讲述这件作品背后的文化故事和历史渊源',
         guidelines: [
-          '以第一人称视角讲述（匠人的口吻）',
-          '包含创作灵感来源',
-          '描述制作过程中的关键时刻',
-          '体现匠人的情感和用心',
+          '客观专业的叙述方式',
+          '聚焦商品的文化内涵和历史背景',
+          '描述相关的传统技艺和工艺特点',
+          '体现文化传承的价值和意义',
           '字数控制在 200-300 字'
         ]
       },
@@ -409,12 +409,12 @@ export function buildNarrativeSystemPrompt(productData, artisanData, narrativeTy
     en: {
       story: {
         name: 'Story Version',
-        desc: 'Tell the creative story and cultural significance behind this piece',
+        desc: 'Tell the cultural story and historical origins behind this piece',
         guidelines: [
-          'Use first-person perspective (artisan\'s voice)',
-          'Include source of inspiration',
-          'Describe key moments in the creation process',
-          'Reflect artisan\'s emotion and dedication',
+          'Use objective and professional tone',
+          'Focus on cultural connotations and historical background',
+          'Describe related traditional craftsmanship and techniques',
+          'Reflect the value and significance of cultural heritage',
           'Keep within 200-300 words'
         ]
       },
@@ -457,12 +457,12 @@ export function buildNarrativeSystemPrompt(productData, artisanData, narrativeTy
   const l = lang === 'zh' ? typeDescriptions.zh : typeDescriptions.en;
   const type = l[narrativeType] || l.story;
   
-  const artisanName = lang === 'zh' ? artisanData.name_zh : artisanData.name_en;
   const productName = lang === 'zh' ? productData.name_zh : productData.name_en;
 
+  // ✅ 新的 Prompt：客观叙述，只关注商品的文化价值
   let prompt = lang === 'zh'
-    ? `你是 ${artisanName}，一位专注传统技艺的匠人。现在需要为你的作品《${productName}》撰写${type.name}文案。\n\n`
-    : `You are ${artisanName}, a traditional artisan. Write a ${type.name} narrative for your work "${productName}".\n\n`;
+    ? `请为《${productName}》这件传统手工艺品撰写${type.name}文案。\n\n`
+    : `Write a ${type.name} narrative for the traditional craft "${productName}".\n\n`;
 
   prompt += lang === 'zh' ? `任务说明：\n${type.desc}\n\n` : `Task Description:\n${type.desc}\n\n`;
   
@@ -473,41 +473,38 @@ export function buildNarrativeSystemPrompt(productData, artisanData, narrativeTy
 
   // 添加商品基本信息
   prompt += lang === 'zh' ? `\n商品信息参考：\n` : `\nProduct Information Reference:\n`;
-  if (productData.description) {
+  
+  if (productData.desc_md) {
     prompt += lang === 'zh' 
-      ? `- 商品描述：${productData.description}\n`
-      : `- Description: ${productData.description}\n`;
+      ? `- 商品描述：${productData.desc_md}\n`
+      : `- Description: ${productData.desc_md}\n`;
   }
+  
   if (productData.category) {
     prompt += lang === 'zh'
       ? `- 类别：${productData.category}\n`
       : `- Category: ${productData.category}\n`;
   }
-  if (artisanData.region) {
-    prompt += lang === 'zh'
-      ? `- 产地：${artisanData.region}\n`
-      : `- Origin: ${artisanData.region}\n`;
-  }
 
   prompt += lang === 'zh'
-    ? `\n请直接输出文案内容，不要包含标题或其他额外说明。`
-    : `\nPlease output the narrative content directly without title or additional explanation.`;
+    ? `\n请直接输出文案内容，不要包含标题或其他额外说明。以客观、专业的方式讲述这件作品的文化价值和历史意义。`
+    : `\nPlease output the narrative content directly without title or additional explanation. Use an objective and professional tone to describe the cultural value and historical significance of this piece.`;
 
   return prompt;
 }
 
 /**
  * 生成文化叙事内容
+ * ✅ 只使用商品数据
  * @param {string} apiKey - API Key
  * @param {Object} productData - 商品信息
- * @param {Object} artisanData - 匠人信息
  * @param {string} narrativeType - 叙事类型
  * @param {string} lang - 语言
  * @param {string} provider - AI 提供商 (openai/claude)
  * @returns {Promise<Object>} 响应结果
  */
-export async function generateNarrative(apiKey, productData, artisanData, narrativeType, lang = 'zh', provider = 'openai') {
-  const systemPrompt = buildNarrativeSystemPrompt(productData, artisanData, narrativeType, lang);
+export async function generateNarrative(apiKey, productData, narrativeType, lang = 'zh', provider = 'openai') {
+  const systemPrompt = buildNarrativeSystemPrompt(productData, narrativeType, lang);
   const messages = [
     { role: 'system', content: systemPrompt },
     { 
@@ -533,20 +530,20 @@ export async function generateNarrative(apiKey, productData, artisanData, narrat
 
 /**
  * 批量生成多种叙事版本
+ * ✅ 只使用商品数据
  * @param {string} apiKey - API Key
  * @param {Object} productData - 商品信息
- * @param {Object} artisanData - 匠人信息
  * @param {Array} types - 叙事类型数组
  * @param {string} lang - 语言
  * @param {string} provider - AI 提供商
  * @returns {Promise<Object>} 所有叙事结果
  */
-export async function generateMultipleNarratives(apiKey, productData, artisanData, types, lang = 'zh', provider = 'openai') {
+export async function generateMultipleNarratives(apiKey, productData, types, lang = 'zh', provider = 'openai') {
   const results = {};
   
   for (const type of types) {
     try {
-      const result = await generateNarrative(apiKey, productData, artisanData, type, lang, provider);
+      const result = await generateNarrative(apiKey, productData, type, lang, provider);
       if (result.ok) {
         results[type] = {
           ok: true,

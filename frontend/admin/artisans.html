@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="/styles/app.css"/>
   <link rel="stylesheet" href="common/admin-common.css"/>
   <script src="/poap.config.js"></script>
+  <script src="common/admin-common.js"></script>
+  <script src="common/admin-auth.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -16,6 +18,9 @@
     <button class="hamburger">☰</button>
     <div class="nav-user">
       <span id="authState" class="pill">未登录</span>
+      <button onclick="logout()" class="btn btn-sm btn-outline" style="margin-left: 12px;" title="退出登录">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
     </div>
   </nav>
 
@@ -123,7 +128,6 @@
 
 </div>
 
-<script src="common/admin-common.js"></script>
 <script>
 // 传承人管理特定功能
 
@@ -237,18 +241,38 @@ function displayArtisans(artisans) {
 }
 
 // 编辑传承人
-function editArtisan(artisanId) {
-  // 这里应该从列表中获取传承人数据，或者重新加载单个传承人
-  // 为了简化，我们重新加载列表并找到对应的传承人
-  loadArtisans().then(() => {
-    // 找到对应的传承人并填充表单
-    const artisanElement = document.querySelector(`[onclick="editArtisan('${artisanId}')"]`);
-    if (artisanElement) {
-      // 这里需要从服务器获取完整的传承人数据
-      // 为了简化，我们显示一个提示
-      toast('请从服务器重新加载传承人数据', 'error');
+async function editArtisan(artisanId) {
+  if (!ensureAuth()) return;
+  
+  try {
+    // 从服务器加载传承人列表
+    const result = await apiJSONmulti(['/admin/artisans']);
+    
+    if (result.artisans && result.artisans.length > 0) {
+      // 找到对应的传承人
+      const artisan = result.artisans.find(a => a.id === artisanId);
+      
+      if (artisan) {
+        // 填充表单
+        fillArtisanForm(artisan);
+        
+        // 滚动到表单顶部
+        const form = document.getElementById('artisanForm');
+        if (form) {
+          form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        toast('已加载传承人信息，可以编辑');
+      } else {
+        toast('未找到该传承人', 'error');
+      }
+    } else {
+      toast('加载传承人数据失败', 'error');
     }
-  });
+  } catch (error) {
+    console.error('加载传承人失败:', error);
+    toast('加载失败: ' + error.message, 'error');
+  }
 }
 
 // 清空传承人表单

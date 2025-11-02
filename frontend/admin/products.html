@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="/styles/app.css"/>
   <link rel="stylesheet" href="common/admin-common.css"/>
   <script src="/poap.config.js"></script>
+  <script src="common/admin-common.js"></script>
+  <script src="common/admin-auth.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -16,6 +18,9 @@
     <button class="hamburger">☰</button>
     <div class="nav-user">
       <span id="authState" class="pill">未登录</span>
+      <button onclick="logout()" class="btn btn-sm btn-outline" style="margin-left: 12px;" title="退出登录">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
     </div>
   </nav>
 
@@ -122,6 +127,12 @@
       <div class="field">
         <label>徽章合约地址</label>
         <input id="product_badge_contract" name="badge_contract" placeholder="0x... 用于 POAP 徽章"/>
+        <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">
+          💡 提示：留空表示该商品不发放 NFT 徽章
+          <button type="button" id="btnFillBadgeContract" class="btn btn-sm" style="margin-left: 8px; height: 28px; padding: 0 12px;">
+            自动填充默认合约
+          </button>
+        </div>
       </div>
       
       <div class="row">
@@ -155,7 +166,6 @@
 
 </div>
 
-<script src="common/admin-common.js"></script>
 <script>
 // 商品管理特定功能
 
@@ -163,6 +173,9 @@
 document.addEventListener('DOMContentLoaded', () => {
   loadArtisans();
   loadProducts();
+  
+  // 自动填充徽章合约地址按钮
+  $('#btnFillBadgeContract').addEventListener('click', fillDefaultBadgeContract);
 });
 
 // 加载传承人列表（用于下拉选择）
@@ -330,18 +343,38 @@ function displayProducts(products) {
 }
 
 // 编辑商品
-function editProduct(productId) {
-  // 这里应该从列表中获取商品数据，或者重新加载单个商品
-  // 为了简化，我们重新加载列表并找到对应的商品
-  loadProducts().then(() => {
-    // 找到对应的商品并填充表单
-    const productElement = document.querySelector(`[onclick="editProduct('${productId}')"]`);
-    if (productElement) {
-      // 这里需要从服务器获取完整的商品数据
-      // 为了简化，我们显示一个提示
-      toast('请从服务器重新加载商品数据', 'error');
+async function editProduct(productId) {
+  if (!ensureAuth()) return;
+  
+  try {
+    // 从服务器加载商品列表
+    const result = await apiJSONmulti(['/products']);
+    
+    if (result.products && result.products.length > 0) {
+      // 找到对应的商品
+      const product = result.products.find(p => p.id === productId);
+      
+      if (product) {
+        // 填充表单
+        fillProductForm(product);
+        
+        // 滚动到表单顶部
+        const form = document.getElementById('productForm');
+        if (form) {
+          form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        toast('已加载商品信息，可以编辑');
+      } else {
+        toast('未找到该商品', 'error');
+      }
+    } else {
+      toast('加载商品数据失败', 'error');
     }
-  });
+  } catch (error) {
+    console.error('加载商品失败:', error);
+    toast('加载失败: ' + error.message, 'error');
+  }
 }
 
 // 清空商品表单
@@ -369,10 +402,25 @@ function fillProductForm(product) {
   $('#product_badge_contract').value = product.badge_contract || '';
 }
 
+// 自动填充默认徽章合约地址
+function fillDefaultBadgeContract() {
+  const badgeContract = window.POAP_CONFIG?.BADGE_CONTRACT;
+  
+  if (!badgeContract || badgeContract === "") {
+    toast('⚠️ 徽章合约尚未配置\n\n请先部署 Poap1155WithSig 合约，然后在 poap.config.js 中配置 BADGE_CONTRACT 地址', 'error');
+    return;
+  }
+  
+  // 填充到输入框
+  $('#product_badge_contract').value = badgeContract;
+  toast('✅ 已填充默认徽章合约地址');
+}
+
 // 将函数暴露到全局作用域
 window.editProduct = editProduct;
 window.fillProductForm = fillProductForm;
 window.clearProductForm = clearProductForm;
+window.fillDefaultBadgeContract = fillDefaultBadgeContract;
 </script>
 </body>
 </html>

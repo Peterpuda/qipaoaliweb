@@ -344,7 +344,8 @@
       "ecosystem": "Écosystème",
       "governance": "Gouvernance",
       "admin": "Administrateur",
-      "enter": "Entrer sur la Plateforme"
+      "enter": "Entrer sur la Plateforme",
+      "selectLanguage": "Sélectionner la langue"
     },
     "title": "Plateforme de Mondialisation Culturelle Alimentée par l'IA",
     "description": "Intégrer l'Intelligence Artificielle et la Technologie Web3 pour Préserver le Patrimoine Culturel Immatériel Mondial",
@@ -379,13 +380,13 @@
     },
     "token": {
       "communityEngagement": "Engagement Communautaire",
-      "title": "$QI · Certificat du Gardien",
+      "title": "Communauté Élégante",
       "subtitle": "$QI n'est pas un jeton spéculatif, mais une preuve de participation à la préservation culturelle",
-      "role1Title": "Décideur Culturel",
+      "role1Title": "Vérification de Valeur Culturelle",
       "role1Desc": "Votre vote façonne l'avenir de la culture",
-      "role2Title": "Contributeur Patrimonial",
+      "role2Title": "Validation de Consensus On-Chain",
       "role2Desc": "Enregistrements quotidiens, partage d'histoires, création de contenu",
-      "role3Title": "Collectionneur Culturel",
+      "role3Title": "Identifiants Numériques Perpétuels",
       "role3Desc": "Accès prioritaire aux NFT d'exception, votre portefeuille est un musée",
       "compliance": "Déclaration de Conformité:",
       "stat1Label": "Offre Totale",
@@ -396,14 +397,15 @@
       "proofText": "preuve de participation à la préservation culturelle",
       "introText2": ". Émis sur",
       "introText3": ", détenir $QI signifie que vous devenez :",
-      "role1DescFull": "Quels projets patrimoniaux méritent d'être sur la chaîne, comment les fonds sont alloués, comment l'avenir se développe — votre vote façonne la direction de la culture. Ce n'est pas une formalité, mais un vrai pouvoir décisionnel",
-      "role2DescFull": "Enregistrements quotidiens, partage d'histoires, création de contenu — chaque participation rapporte des récompenses en jetons. Le processus de protection de la culture est aussi le processus d'accumulation de valeur",
-      "role3DescFull": "Accès prioritaire aux chefs-d'œuvre NFT limités, expériences patrimoniales hors ligne, conversations approfondies avec des artisans IA — votre portefeuille est un musée",
+      "role1DescFull": "La participation profonde s'aligne sur l'orientation culturelle de l'écosystème, vérifiée par la cohérence dimensionnelle culturelle pour assurer une haute compatibilité avec le noyau de l'écosystème",
+      "role2DescFull": "Le consensus multi-nœuds complète la vérification de validité technique, les mécanismes de droits incitatifs réalisent l'ancrage précis de la valeur de participation et la mise en œuvre des droits",
+      "role3DescFull": "Inscrit de manière immuable via des algorithmes de hachage, intégré dans des systèmes de preuve distribués, devenant un témoin autoritaire d'identité culturelle inviolable et à vie",
       "complianceLabel": "Déclaration de Conformité :",
       "complianceText": "$QI est un jeton utilitaire communautaire, pas un titre et n'a aucune fonction d'investissement. Il ne prend pas en charge les échanges ou les transferts sur le marché secondaire. Il est uniquement utilisé pour la gouvernance de l'écosystème et les droits d'accès.",
       "header": "Jeton de Gouvernance Web3",
-      "claimButton": "Réclamer l'Airdrop de Jetons",
-      "claimDesc": "Connectez-vous quotidiennement pour recevoir 1000 $QI"
+      "claimButton": "Inscrire la Participation",
+      "claimDesc": "Connectez-vous quotidiennement pour recevoir 1000 $QI",
+      "communityIntro": "Un système d'identité blockchain basé sur le consensus culturel. Chaque engagement profond subit d'abord une vérification de valeur culturelle, puis une validation de consensus blockchain, construisant une double confirmation 'Culture + Technologie'. Grâce aux mécanismes de droits incitatifs, la valeur est précisément ancrée, inscrite de manière immuable via des algorithmes de hachage, et transformée en identifiants numériques perpétuels—c'est le témoin blockchain de la foi culturelle dans l'écosystème Web3."
     },
     "ecosystem": {
       "title": "Écosystème Complet, Autonomiser la Culture",
@@ -503,5 +505,34 @@
       "connector3": "détenir",
       "connector4": "est"
     }
+  },
+  "global": {
+    "nav.mall": "Boutique",
+    "nav.artisans": "Artisans",
+    "nav.dao": "Gouvernance",
+    "nav.checkin": "Pointage",
+    "nav.rewards": "Récompenses"
+  },
+  "admin": {
+    "title": "Panneau d'administration",
+    "loginTitle": "Connexion administrateur",
+    "loginSubtitle": "Connexion avec portefeuille Web3",
+    "walletStatus": "État du portefeuille",
+    "notConnected": "Non connecté",
+    "connected": "Connecté",
+    "loginButton": "Connecter le portefeuille et se connecter",
+    "loginTip1": "⚠️ Seuls les portefeuilles administrateurs autorisés peuvent se connecter",
+    "loginTip2": "📝 La connexion implique l'acceptation de la vérification de signature",
+    "backToHome": "Retour à l'accueil",
+    "logout": "Déconnexion",
+    "loginSuccess": "Connexion réussie",
+    "loginFailed": "Échec de la connexion",
+    "unauthorized": "Adresse de portefeuille non autorisée",
+    "sessionExpired": "Session expirée, veuillez vous reconnecter",
+    "operationCenter": "Centre d'opérations de nœud",
+    "loggedIn": "Connecté",
+    "notLoggedIn": "Non connecté",
+    "loginRequired": "Veuillez vous connecter",
+    "logoutSuccess": "Déconnecté avec succès"
   }
 }

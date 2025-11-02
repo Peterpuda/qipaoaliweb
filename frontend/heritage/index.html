@@ -23,8 +23,11 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     }
   </style>
+  <link rel="stylesheet" href="/common/global-nav.css">
 </head>
 <body class="bg-paper text-ink min-h-screen">
+  <div id="globalNavContainer"></div>
+
   <div class="min-h-screen flex flex-col px-2 sm:px-4 max-w-[600px] mx-auto">
     <!-- 导航栏 -->
     <header class="fixed w-full z-[9999] bg-paper/95 backdrop-blur-sm shadow-md" id="navbar">
@@ -291,6 +294,12 @@
     // 钱包连接功能
     document.getElementById('connectWallet').addEventListener('click', function() {
       alert('钱包连接功能开发中...');
+    });
+  </script>
+  <script src="/common/global-nav.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initGlobalNav({ currentPage: 'heritage' });
     });
   </script>
 </body>

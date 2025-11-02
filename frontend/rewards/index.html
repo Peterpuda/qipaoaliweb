@@ -61,9 +61,12 @@
       transition: transform 0.2s ease;
     }
   </style>
+  <link rel="stylesheet" href="/common/global-nav.css">
 </head>
 
 <body class="bg-paper text-ink font-song min-h-screen" style="background-image: none;">
+  <div id="globalNavContainer"></div>
+
   <div class="min-h-screen flex flex-col px-2 sm:px-4 max-w-[600px] mx-auto">
     <!-- 顶部 -->
     <header class="sticky top-0 bg-paper/95 backdrop-blur-sm shadow-md z-50">
@@ -212,6 +215,12 @@
       document.querySelectorAll('[data-qi-connect]').forEach(btn=>btn.addEventListener('click', connectWallet));
       document.querySelectorAll('.task-btn').forEach(btn=>btn.addEventListener('click', handleTaskClick));
       console.log("📄 页面初始化完成，等待连接钱包");
+    });
+  </script>
+  <script src="/common/global-nav.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initGlobalNav({ currentPage: 'rewards' });
     });
   </script>
 </body>

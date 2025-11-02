@@ -344,7 +344,8 @@
       "ecosystem": "Ecosistema",
       "governance": "Gobernanza",
       "admin": "Administrador",
-      "enter": "Entrar a la Plataforma"
+      "enter": "Entrar a la Plataforma",
+      "selectLanguage": "Seleccionar idioma"
     },
     "title": "Plataforma de Globalización Cultural Impulsada por IA",
     "description": "Integrando Inteligencia Artificial y Tecnología Web3 para Preservar el Patrimonio Cultural Inmaterial Global",
@@ -379,13 +380,13 @@
     },
     "token": {
       "communityEngagement": "Participación Comunitaria",
-      "title": "$QI · Certificado del Guardián",
+      "title": "Comunidad Elegante",
       "subtitle": "$QI no es un token especulativo, sino una prueba de participación en la preservación cultural",
-      "role1Title": "Tomador de Decisiones Culturales",
+      "role1Title": "Verificación de Valor Cultural",
       "role1Desc": "Tu voto da forma al futuro de la cultura",
-      "role2Title": "Contribuidor Patrimonial",
+      "role2Title": "Validación de Consenso On-Chain",
       "role2Desc": "Registros diarios, compartir historias, crear contenido",
-      "role3Title": "Coleccionista Cultural",
+      "role3Title": "Credenciales Digitales Perpetuas",
       "role3Desc": "Acceso prioritario a NFTs de edición limitada, tu billetera es un museo",
       "compliance": "Declaración de Cumplimiento:",
       "stat1Label": "Suministro Total",
@@ -396,14 +397,15 @@
       "proofText": "prueba de participación en la preservación cultural",
       "introText2": ". Emitido en",
       "introText3": ", tener $QI significa que te conviertes en:",
-      "role1DescFull": "Qué proyectos patrimoniales merecen estar en la cadena, cómo se asignan los fondos, cómo se desarrolla el futuro — tu voto da forma a la dirección de la cultura. Esto no es una formalidad, sino un poder de decisión real",
-      "role2DescFull": "Registros diarios, compartir historias, crear contenido — cada participación gana recompensas en tokens. El proceso de proteger la cultura es también el proceso de acumular valor",
-      "role3DescFull": "Acceso prioritario a obras maestras NFT limitadas, experiencias patrimoniales fuera de línea, conversaciones profundas con artesanos IA — tu billetera es un museo",
+      "role1DescFull": "La participación profunda se alinea con la orientación cultural del ecosistema, verificada a través de la consistencia dimensional cultural para garantizar alta compatibilidad con el núcleo del ecosistema",
+      "role2DescFull": "El consenso multi-nodo completa la verificación de validez técnica, los mecanismos de derechos de incentivos logran el anclaje preciso del valor de participación y la implementación de derechos",
+      "role3DescFull": "Inscrito de forma inmutable mediante algoritmos hash, integrado en sistemas de evidencia distribuidos, convirtiéndose en testigo autoritario de identidad cultural inviolable y de por vida",
       "complianceLabel": "Declaración de Cumplimiento:",
       "complianceText": "$QI es un token de utilidad comunitaria, no un valor y no tiene función de inversión. No admite comercio o transferencia en el mercado secundario. Solo se utiliza para la gobernanza del ecosistema y los derechos de acceso.",
       "header": "Token de Gobernanza Web3",
-      "claimButton": "Reclamar Airdrop de Tokens",
-      "claimDesc": "Inicia sesión diariamente para recibir 1000 $QI"
+      "claimButton": "Inscribir Participación",
+      "claimDesc": "Inicia sesión diariamente para recibir 1000 $QI",
+      "communityIntro": "Un sistema de identidad blockchain impulsado por consenso cultural. Cada compromiso profundo se somete primero a verificación de valor cultural, luego a validación de consenso blockchain, construyendo una doble confirmación 'Cultura + Tecnología'. A través de mecanismos de derechos de incentivos, el valor se ancla con precisión, se inscribe de forma inmutable mediante algoritmos hash, y se transforma en credenciales digitales perpetuas—este es el testimonio blockchain de la fe cultural en el ecosistema Web3."
     },
     "ecosystem": {
       "title": "Ecosistema Completo, Empoderando la Cultura",
@@ -503,5 +505,34 @@
       "connector3": "poseer",
       "connector4": "es"
     }
+  },
+  "global": {
+    "nav.mall": "Tienda",
+    "nav.artisans": "Artesanos",
+    "nav.dao": "Gobernanza",
+    "nav.checkin": "Registro",
+    "nav.rewards": "Recompensas"
+  },
+  "admin": {
+    "title": "Panel de administración",
+    "loginTitle": "Inicio de sesión de administrador",
+    "loginSubtitle": "Iniciar sesión con billetera Web3",
+    "walletStatus": "Estado de la billetera",
+    "notConnected": "No conectado",
+    "connected": "Conectado",
+    "loginButton": "Conectar billetera e iniciar sesión",
+    "loginTip1": "⚠️ Solo las billeteras de administrador autorizadas pueden iniciar sesión",
+    "loginTip2": "📝 Iniciar sesión significa que acepta la verificación de firma",
+    "backToHome": "Volver al inicio",
+    "logout": "Cerrar sesión",
+    "loginSuccess": "Inicio de sesión exitoso",
+    "loginFailed": "Error al iniciar sesión",
+    "unauthorized": "Dirección de billetera no autorizada",
+    "sessionExpired": "Sesión expirada, inicie sesión nuevamente",
+    "operationCenter": "Centro de operaciones de nodo",
+    "loggedIn": "Conectado",
+    "notLoggedIn": "No conectado",
+    "loginRequired": "Por favor inicie sesión",
+    "logoutSuccess": "Sesión cerrada con éxito"
   }
 }

@@ -458,16 +458,24 @@
                     multimediaHTML += '<div class="flex gap-2 flex-wrap">';
                     
                     if (narrative.audio_url) {
+                        // ✅ 修复：确保 URL 是完整的绝对路径
+                        const audioUrl = narrative.audio_url.startsWith('http') 
+                            ? narrative.audio_url 
+                            : `${ADMIN_CONFIG.API_BASE}${narrative.audio_url}`;
                         multimediaHTML += `
-                            <a href="${narrative.audio_url}" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm">
+                            <a href="${audioUrl}" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm">
                                 🎵 收听语音版
                             </a>
                         `;
                     }
                     
                     if (narrative.video_url) {
+                        // ✅ 修复：确保 URL 是完整的绝对路径
+                        const videoUrl = narrative.video_url.startsWith('http') 
+                            ? narrative.video_url 
+                            : `${ADMIN_CONFIG.API_BASE}${narrative.video_url}`;
                         multimediaHTML += `
-                            <a href="${narrative.video_url}" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 text-sm">
+                            <a href="${videoUrl}" target="_blank" class="inline-flex items-center gap-2 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 text-sm">
                                 🎬 观看视频版
                             </a>
                         `;

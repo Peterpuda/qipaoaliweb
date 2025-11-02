@@ -235,8 +235,11 @@
   <!-- 统一配置（提供 WORKER_BASE_URL/RPC 等） -->
   <script src="/poap.config.js?v=20251014"></script>
   <script src="../common/wallet-connector.js"></script>
+  <link rel="stylesheet" href="/common/global-nav.css">
 </head>
 <body>
+  <div id="globalNavContainer"></div>
+
 <div class="wrap">
 
   <!-- 卡片1：口号 + 钱包连接 -->
@@ -730,5 +733,11 @@ document.getElementById('btnClaimToken').onclick = claimTokens;
 loadEvent();
 loadCheckinHistory();
 </script>
+  <script src="/common/global-nav.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initGlobalNav({ currentPage: 'checkin' });
+    });
+  </script>
 </body>
 </html>

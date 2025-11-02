@@ -18,5 +18,10 @@ window.POAP_CONFIG = {
   DEFAULT_POAP_CONTRACT: "",
   
   // SimpleAirdropV2 合约地址（管理员部署后填入）
-  DISTRIBUTOR_CONTRACT: "0xb21e9bA27D42c30eCbC155Ed3FFbE575A449f6a2"
+  DISTRIBUTOR_CONTRACT: "0xb21e9bA27D42c30eCbC155Ed3FFbE575A449f6a2",
+  
+  // 🎖️ POAP 徽章合约地址（Poap1155WithSig）
+  // 用于商品购买后发放 NFT 正品认证徽章
+  // ⚠️ 需要先部署合约，然后填入地址
+  BADGE_CONTRACT: "" // 待部署后填入
 };

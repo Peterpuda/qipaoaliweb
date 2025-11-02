@@ -201,18 +201,42 @@ input, select, textarea {
   height: 44px;
   border-radius: 12px;
   font-size: 14px;
-  background: var(--white);
+  background: #FFFFFF !important; /* 纯白色背景，方便用户输入 */
+  background-color: #FFFFFF !important;
   border: 1px solid var(--line);
-  color: var(--text);
+  color: #2D2A26 !important; /* 深色文字 */
   padding: 0 12px;
   font-family: "Noto Serif SC", serif;
   transition: border-color 0.3s ease;
+  -webkit-text-fill-color: #2D2A26 !important; /* 修复 Safari 自动填充文字颜色 */
+}
+
+/* 修复浏览器自动填充样式 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  -webkit-text-fill-color: #2D2A26 !important;
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--brand);
   box-shadow: 0 0 0 2px rgba(158, 42, 43, 0.2);
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
 }
 
 textarea {

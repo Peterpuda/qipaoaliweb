@@ -17,8 +17,11 @@
         "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
     }
   </style>
+  <link rel="stylesheet" href="/common/global-nav.css">
 </head>
 <body class="text-[#4A403A]">
+  <div id="globalNavContainer"></div>
+
 
   <!-- 顶部栏 -->
   <header class="p-4 flex items-center justify-between">
@@ -257,6 +260,7 @@
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
+    await initGlobalNav({ currentPage: 'orders' });
       // 如果钱包已经连接过，自动带上地址
       if (window.ethereum) {
         try {
@@ -272,5 +276,6 @@
       document.getElementById("connectBtn").addEventListener("click", connectWallet);
     });
   </script>
+  <script src="/common/global-nav.js"></script>
 </body>
 </html>

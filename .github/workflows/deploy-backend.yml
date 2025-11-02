@@ -1,0 +1,158 @@
+name: Deploy Backend to Aliyun FC
+
+on:
+  push:
+    branches:
+      - main
+      - prod
+    paths:
+      - 'worker-api/**'
+      - '.github/workflows/deploy-backend.yml'
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: worker-api/package-lock.json
+
+      - name: 📦 安装依赖
+        run: |
+          cd worker-api
+          npm ci --production
+          echo "✅ 依赖安装完成"
+
+      - name: 🛠️ 安装 Serverless Devs
+        run: |
+          npm install -g @serverless-devs/s
+          s -v
+
+      - name: ⚙️ 配置 Serverless Devs
+        run: |
+          s config add \
+            --AccountID ${{ secrets.ALIYUN_ACCOUNT_ID }} \
+            --AccessKeyID ${{ secrets.ALIYUN_ACCESS_KEY_ID }} \
+            --AccessKeySecret ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }} \
+            -a default
+
+      - name: 📝 创建 s.yaml 配置
+        run: |
+          cd worker-api
+          cat > s.yaml << 'EOF'
+          edition: 1.0.0
+          name: songbrocade-api
+          access: default
+
+          services:
+            songbrocade-api:
+              component: fc
+              props:
+                region: cn-shanghai
+                service:
+                  name: songbrocade-api
+                  description: 旗袍会后端API服务
+                  logConfig:
+                    project: aliyun-fc-cn-shanghai-xxx
+                    logstore: function-log
+                  role: acs:ram::${{ secrets.ALIYUN_ACCOUNT_ID }}:role/aliyunfcdefaultrole
+                function:
+                  name: api-handler
+                  description: API处理函数
+                  runtime: custom
+                  codeUri: ./
+                  handler: index.handler
+                  memorySize: 1024
+                  timeout: 60
+                  instanceConcurrency: 10
+                  environmentVariables:
+                    NODE_ENV: production
+                    DB_HOST: ${{ secrets.DB_HOST }}
+                    DB_PORT: ${{ secrets.DB_PORT }}
+                    DB_USER: ${{ secrets.DB_USER }}
+                    DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+                    DB_NAME: ${{ secrets.DB_NAME }}
+                    OSS_REGION: ${{ secrets.OSS_REGION }}
+                    OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
+                    OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+                    OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+                    RPC_URL: ${{ secrets.RPC_URL }}
+                    BROCADE_ADDR: ${{ secrets.BROCADE_ADDR }}
+                    RDA_REG_ADDR: ${{ secrets.RDA_REG_ADDR }}
+                    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                    REPLICATE_API_KEY: ${{ secrets.REPLICATE_API_KEY }}
+                    ADMIN_WALLETS: ${{ secrets.ADMIN_WALLETS }}
+                    SHIPPING_KEY: ${{ secrets.SHIPPING_KEY }}
+                triggers:
+                  - name: httpTrigger
+                    type: http
+                    config:
+                      authType: anonymous
+                      methods:
+                        - GET
+                        - POST
+                        - PUT
+                        - DELETE
+                        - OPTIONS
+          EOF
+
+      - name: 📝 创建 bootstrap 文件
+        run: |
+          cd worker-api
+          cat > bootstrap << 'EOF'
+          #!/bin/bash
+          export PORT=9000
+          node index.js
+          EOF
+          chmod +x bootstrap
+
+      - name: 🚀 部署到函数计算
+        run: |
+          cd worker-api
+          s deploy -y --use-local
+          echo "✅ 后端部署完成"
+
+      - name: 🧪 测试 API
+        run: |
+          echo "🧪 测试API健康检查..."
+          sleep 5
+          # 这里需要替换为实际的API地址
+          # curl -f https://api.songbrocade.com/health || echo "⚠️ 健康检查失败"
+
+      - name: 📊 部署信息
+        run: |
+          echo "=========================================="
+          echo "✅ 后端部署成功！"
+          echo "=========================================="
+          echo "🔧 服务名称: songbrocade-api"
+          echo "⚡ 函数名称: api-handler"
+          echo "🌍 区域: cn-shanghai"
+          echo "🔗 API地址: https://api.songbrocade.com"
+          echo "🕐 部署时间: $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "📝 提交信息: ${{ github.event.head_commit.message }}"
+          echo "👤 提交者: ${{ github.actor }}"
+          echo "=========================================="
+
+      - name: 📢 发送钉钉通知
+        if: always() && secrets.DINGTALK_WEBHOOK != ''
+        uses: zcong1993/actions-ding@master
+        with:
+          dingToken: ${{ secrets.DINGTALK_WEBHOOK }}
+          body: |
+            {
+              "msgtype": "markdown",
+              "markdown": {
+                "title": "后端部署通知",
+                "text": "## 🚀 后端部署${{ job.status == 'success' && '成功 ✅' || '失败 ❌' }}\n\n- **服务**: songbrocade-api\n- **分支**: ${{ github.ref_name }}\n- **提交**: ${{ github.event.head_commit.message }}\n- **提交者**: ${{ github.actor }}\n- **时间**: $(date '+%Y-%m-%d %H:%M:%S')\n- **API**: https://api.songbrocade.com"
+              }
+            }
+

@@ -1,8 +1,12 @@
 // 通用认证模块
 // 用于商品详情页和商城页的统一认证逻辑
 
-// API 基础配置
-const API_BASE = 'https://songbrocade-api.petterbrand03.workers.dev';
+// API 基础配置 - 使用函数获取以避免与其他脚本冲突
+function getAPIBase() {
+  return window.POAP_CONFIG?.WORKER_BASE_URL || 
+         window.POAP_CONFIG?.API_BASE || 
+         'https://songbrocade-api.petterbrand03.workers.dev';
+}
 
 // 获取 Bearer Token
 function getBearer() {
@@ -60,7 +64,7 @@ async function walletLogin() {
     const wallet = accounts[0];
     
     // 2. 获取挑战
-    const challengeResponse = await fetch(`${API_BASE}/auth/challenge`, {
+    const challengeResponse = await fetch(`${getAPIBase()}/auth/challenge`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ address: wallet })
@@ -78,7 +82,7 @@ async function walletLogin() {
     });
     
     // 4. 验证签名获取token
-    const verifyResponse = await fetch(`${API_BASE}/auth/verify`, {
+    const verifyResponse = await fetch(`${getAPIBase()}/auth/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -111,7 +115,7 @@ async function walletLogin() {
 
 // 通用 API 请求函数
 async function apiFetch(endpoint, options = {}) {
-  const url = API_BASE + endpoint;
+  const url = getAPIBase() + endpoint;
   const defaultOptions = {
     headers: authHeaders(true),
     method: 'GET',
@@ -181,5 +185,5 @@ window.authModule = {
   apiFetch,
   showToast,
   shortAddr,
-  API_BASE
+  getAPIBase
 };

@@ -1,7 +1,10 @@
 /**
- * i18n 辅助函数
+ * i18n 辅助函数 v2.1
  * 提供页面翻译、语言切换器等实用功能
+ * Updated: 2024-10-31 - Enhanced debugging for language switcher click issue
  */
+
+console.log('🔄 i18n-helper.js v2.1 loaded - Enhanced debugging enabled');
 
 /**
  * 翻译页面上的所有元素
@@ -122,8 +125,8 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
   if (style === 'dropdown') {
     // 下拉菜单样式
     container.innerHTML = `
-      <div class="language-switcher-dropdown">
-        <button class="lang-btn" id="${langBtnId}">
+      <div class="language-switcher-dropdown" style="position: relative; z-index: 10001;">
+        <button class="lang-btn" id="${langBtnId}" style="pointer-events: auto; cursor: pointer;">
           ${showFlag ? getFlagEmoji(currentLocale) : ''}
           ${showText ? window.i18n.getLocaleName(currentLocale) : ''}
           <i class="fas fa-chevron-down"></i>
@@ -138,6 +141,10 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
         </div>
       </div>
     `;
+    
+    console.log('✅ Language switcher HTML created for container:', containerId);
+    console.log('✅ Button ID:', langBtnId);
+    console.log('✅ Dropdown ID:', langDropdownId);
 
     // 添加样式
     if (!document.getElementById('i18n-switcher-styles')) {
@@ -225,8 +232,12 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
     const langBtn = document.getElementById(langBtnId);
     const langDropdown = document.getElementById(langDropdownId);
 
+    console.log('🔍 Looking for elements:', { langBtnId, langDropdownId });
+    console.log('🔍 Found button:', langBtn);
+    console.log('🔍 Found dropdown:', langDropdown);
+
     if (!langBtn || !langDropdown) {
-      console.error(`Language switcher elements not found: ${langBtnId}, ${langDropdownId}`);
+      console.error(`❌ Language switcher elements not found: ${langBtnId}, ${langDropdownId}`);
       return;
     }
 
@@ -238,51 +249,107 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
     const btn = document.getElementById(langBtnId);
     const dropdown = document.getElementById(langDropdownId);
 
+    console.log('🔍 Re-fetched button:', btn);
+    console.log('🔍 Button computed style:', {
+      pointerEvents: window.getComputedStyle(btn).pointerEvents,
+      cursor: window.getComputedStyle(btn).cursor,
+      zIndex: window.getComputedStyle(btn).zIndex,
+      position: window.getComputedStyle(btn).position
+    });
+
+    // 标记当前点击来自按钮本身
+    let isButtonClick = false;
+
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
-      console.log('Language switcher button clicked');
       
-      // 使用 class 而不是 style.display，更可靠
+      isButtonClick = true;
+      
+      console.log('🔘 Language switcher button clicked');
+      
+      // 检查当前状态
       const isVisible = dropdown.classList.contains('show');
-      console.log('Current dropdown has show class:', isVisible);
+      console.log('📊 Current dropdown visibility:', isVisible);
       
+      // 先关闭所有其他下拉菜单
+      document.querySelectorAll('.lang-dropdown').forEach(dd => {
+        if (dd !== dropdown) {
+          dd.classList.remove('show');
+          const otherContainer = dd.closest('.language-switcher-dropdown');
+          if (otherContainer) {
+            const otherBtn = otherContainer.querySelector('.lang-btn');
+            if (otherBtn) otherBtn.classList.remove('active');
+          }
+        }
+      });
+      
+      // 切换当前下拉菜单
       if (isVisible) {
         dropdown.classList.remove('show');
         btn.classList.remove('active');
-        dropdown.style.display = 'none';
-        console.log('Dropdown hidden');
+        console.log('❌ Dropdown hidden');
       } else {
         dropdown.classList.add('show');
-        dropdown.style.display = 'block';
         btn.classList.add('active');
-        console.log('Dropdown shown');
+        console.log('✅ Dropdown shown, classList:', dropdown.classList.toString());
+        console.log('✅ Computed display:', window.getComputedStyle(dropdown).display);
       }
+      
+      // 延迟重置标记，确保外部点击监听器不会立即触发
+      setTimeout(() => {
+        isButtonClick = false;
+      }, 50);
     });
+    
+    console.log('✅ Click event listener added to button:', langBtnId);
 
-    // 点击外部关闭（使用事件委托，只在冒泡阶段处理，避免与按钮点击冲突）
-    if (!window._i18nOutsideClickHandler) {
-      window._i18nOutsideClickHandler = (e) => {
-        // 检查点击目标是否在语言切换器内
-        const clickedSwitcher = e.target.closest('.language-switcher-dropdown');
-        
-        // 关闭所有不在点击目标内的下拉菜单
+    // 点击外部关闭
+    if (!window._i18nOutsideClickHandlers) {
+      window._i18nOutsideClickHandlers = new Set();
+    }
+    
+    const outsideClickHandler = (e) => {
+      // 如果是按钮点击，不处理
+      if (isButtonClick) {
+        console.log('🔘 Ignoring outside click because button was just clicked');
+        return;
+      }
+      
+      // 检查点击目标是否在移动端菜单内（排除移动端菜单）
+      const clickedInMobileMenu = e.target.closest('#mobileMenu') || 
+                                   e.target.closest('#mobileMenuBtn') ||
+                                   e.target.id === 'mobileMenu' ||
+                                   e.target.id === 'mobileMenuBtn';
+      
+      if (clickedInMobileMenu) {
+        console.log('📱 Click inside mobile menu, ignoring');
+        return;
+      }
+      
+      // 检查点击目标是否在任何语言切换器内
+      const clickedInside = e.target.closest('.language-switcher-dropdown');
+      
+      if (!clickedInside) {
+        console.log('🌐 Clicked outside, closing all dropdowns');
+        // 关闭所有下拉菜单
         document.querySelectorAll('.lang-dropdown').forEach(dd => {
+          dd.classList.remove('show');
           const container = dd.closest('.language-switcher-dropdown');
-          // 如果点击的不是这个切换器，则关闭它
-          if (container && container !== clickedSwitcher) {
-            dd.classList.remove('show');
-            dd.style.display = 'none';
+          if (container) {
             const btn = container.querySelector('.lang-btn');
             if (btn) btn.classList.remove('active');
           }
         });
-      };
-      // 使用延迟处理，确保按钮点击事件先执行
-      setTimeout(() => {
-        document.addEventListener('click', window._i18nOutsideClickHandler, false);
-      }, 100);
+      }
+    };
+    
+    // 只添加一次外部点击监听器
+    if (window._i18nOutsideClickHandlers.size === 0) {
+      document.addEventListener('click', outsideClickHandler, false);
+      console.log('✅ Outside click handler added');
     }
+    window._i18nOutsideClickHandlers.add(outsideClickHandler);
 
     // 语言选项点击
     dropdown.querySelectorAll('.lang-option').forEach(option => {
@@ -291,9 +358,22 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
         e.preventDefault();
         const locale = option.getAttribute('data-locale');
         
+        console.log('🌐 Language option clicked:', locale);
+        
         if (!locale) {
           console.error('Locale not found');
           return;
+        }
+        
+        // 立即关闭下拉菜单（在切换语言前，提升响应速度）
+        dropdown.classList.remove('show');
+        btn.classList.remove('active');
+        console.log('✅ Dropdown closed immediately after selection');
+        
+        // 如果是在移动端菜单中，也关闭移动端侧边抽屉
+        if (typeof window.closeMobileMenu === 'function') {
+          window.closeMobileMenu();
+          console.log('✅ Mobile drawer menu closed after language selection');
         }
         
         try {
@@ -311,11 +391,6 @@ function createLanguageSwitcher(containerId = 'languageSwitcher', options = {}) 
             opt.classList.remove('active');
           });
           option.classList.add('active');
-          
-          // 关闭下拉菜单
-          dropdown.classList.remove('show');
-          dropdown.style.display = 'none';
-          btn.classList.remove('active');
           
           // 重新翻译页面
           translatePage();

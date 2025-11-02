@@ -411,8 +411,8 @@
     }
     </style>
     <!-- i18n -->
-  <script src="/i18n/index.js"></script>
-  <script src="/common/i18n-helper.js"></script>
+  <script src="/i18n/index.js?v=2.1"></script>
+  <script src="/common/i18n-helper.js?v=2.1"></script>
 </head>
 <body class="bg-[#0a0a0a] text-white">
   
@@ -441,7 +441,7 @@
             <i class="fas fa-user-shield mr-2"></i><span data-i18n="homepage.nav.admin">管理员</span>
           </a>
           <!-- 语言切换器 -->
-          <div id="languageSwitcher"></div>
+          <div id="languageSwitcher" style="position: relative; z-index: 9999;"></div>
           <a href="./mall/" class="px-6 py-2 bg-gradient-to-r from-[#D4AF37] to-[#9E2A2B] rounded-full text-white font-medium hover:opacity-90 transition" data-i18n="homepage.nav.enter">
             进入平台
                 </a>
@@ -454,24 +454,34 @@
                 </div>
     </div>
     
-    <!-- 移动端菜单 -->
-    <div id="mobileMenu" class="hidden md:hidden bg-[#0a0a0a] border-t border-white/10">
-      <div class="px-6 py-4 space-y-4">
-        <a href="#platform" class="block text-gray-300 hover:text-[#D4AF37] py-2" data-i18n="homepage.nav.platform">平台</a>
-        <a href="#token" class="block text-gray-300 hover:text-[#D4AF37] py-2" data-i18n="homepage.nav.token">通证</a>
-        <a href="#ecosystem" class="block text-gray-300 hover:text-[#D4AF37] py-2" data-i18n="homepage.nav.ecosystem">生态系统</a>
-        <a href="#governance" class="block text-gray-300 hover:text-[#D4AF37] py-2" data-i18n="homepage.nav.governance">治理</a>
-        <a href="./admin/" class="block text-gray-300 hover:text-[#D4AF37] py-2 flex items-center">
+    <!-- 移动端下拉菜单（从顶部展开） -->
+    <div id="mobileMenu" class="fixed top-16 left-0 right-0 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a] shadow-2xl z-40 md:hidden overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0;">
+      <div class="px-6 py-4 space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <!-- 菜单内容 -->
+        <a href="#platform" class="mobile-menu-link block text-gray-300 hover:text-[#D4AF37] hover:bg-white/5 py-3 px-4 rounded-lg transition" data-i18n="homepage.nav.platform">平台</a>
+        <a href="#token" class="mobile-menu-link block text-gray-300 hover:text-[#D4AF37] hover:bg-white/5 py-3 px-4 rounded-lg transition" data-i18n="homepage.nav.token">通证</a>
+        <a href="#ecosystem" class="mobile-menu-link block text-gray-300 hover:text-[#D4AF37] hover:bg-white/5 py-3 px-4 rounded-lg transition" data-i18n="homepage.nav.ecosystem">生态系统</a>
+        <a href="#governance" class="mobile-menu-link block text-gray-300 hover:text-[#D4AF37] hover:bg-white/5 py-3 px-4 rounded-lg transition" data-i18n="homepage.nav.governance">治理</a>
+        <a href="./admin/" class="mobile-menu-link block text-gray-300 hover:text-[#D4AF37] hover:bg-white/5 py-3 px-4 rounded-lg transition flex items-center">
           <i class="fas fa-user-shield mr-2"></i><span data-i18n="homepage.nav.admin">管理员</span>
         </a>
+        
+        <!-- 分隔线 -->
+        <div class="border-t border-white/10 my-4"></div>
+        
         <!-- 移动端语言切换器 -->
         <div class="py-2">
+          <div class="text-xs text-gray-500 mb-2 px-4" data-i18n="homepage.nav.selectLanguage">选择语言</div>
           <div id="languageSwitcherMobile"></div>
         </div>
-        <a href="./mall/" class="block px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#9E2A2B] rounded-full text-white text-center font-medium" data-i18n="homepage.nav.enter">
-          进入平台
-                </a>
-              </div>
+        
+        <!-- 进入平台按钮 -->
+        <div class="pt-4 pb-2">
+          <a href="./mall/" class="block px-6 py-3 bg-gradient-to-r from-[#D4AF37] to-[#9E2A2B] rounded-full text-white text-center font-medium hover:opacity-90 transition shadow-lg" data-i18n="homepage.nav.enter">
+            进入平台
+          </a>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -660,46 +670,46 @@
                         </div>
           
           <h2 class="text-4xl sm:text-5xl md:text-6xl font-black mt-4 mb-6">
-            <span class="gradient-text" data-i18n="homepage.token.title">$QI · 文化守护者的凭证</span>
+            <span class="gradient-text" data-i18n="homepage.token.title">优雅共同体</span>
           </h2>
           
-          <p class="text-base sm:text-xl text-gray-300 mb-8 leading-relaxed">
-            <span class="text-white font-semibold">$QI</span> <span data-i18n="homepage.token.introText1">不是炒币的筹码，而是</span> <strong class="text-[#D4AF37]" data-i18n="homepage.token.proofText">参与文化守护的身份证明</strong><span data-i18n="homepage.token.introText2">。基于</span> <strong class="text-white">Base Chain</strong> <span data-i18n="homepage.token.introText3">发行，持有 $QI 意味着你成为了：</span>
+          <p class="text-base sm:text-lg text-gray-300 mb-8 leading-relaxed max-w-4xl" data-i18n="homepage.token.communityIntro">
+            文化共识驱动的链上身份体系。每一次深度参与，先经文化价值核验，再由链上共识验证，构建"文化+技术"双重确认。通过激励确权机制精准锚定价值，经哈希算法不可逆铭刻，转化为永续持有的数字凭证——这是Web3生态中文化信仰的链上见证。
           </p>
           
           <div class="space-y-4 mb-10">
             <div class="flex items-start space-x-4 group">
               <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4AF37]/20 to-[#9E2A2B]/20 flex items-center justify-center flex-shrink-0 mt-1 group-hover:scale-110 transition border border-[#D4AF37]/30">
-                <i class="fas fa-gavel text-[#D4AF37] text-lg"></i>
+                <i class="fas fa-shield-alt text-[#D4AF37] text-lg"></i>
                       </div>
               <div>
-                <h4 class="font-bold text-lg mb-1 text-white" data-i18n="homepage.token.role1Title">文化决策者</h4>
+                <h4 class="font-bold text-lg mb-1 text-white" data-i18n="homepage.token.role1Title">文化价值核验</h4>
                 <p class="text-gray-400 text-sm sm:text-base leading-relaxed" data-i18n="homepage.token.role1DescFull">
-                  对哪些非遗项目值得上链、资金如何分配、未来如何发展 — 你的一票决定文化的走向。这不是形式，而是真正的话语权
+                  深度参与行为契合生态文化导向，经文化维度一致性验证，确保与生态内核高度契合
                 </p>
               </div>
                       </div>
         
             <div class="flex items-start space-x-4 group">
               <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4AF37]/20 to-[#9E2A2B]/20 flex items-center justify-center flex-shrink-0 mt-1 group-hover:scale-110 transition border border-[#D4AF37]/30">
-                <i class="fas fa-gift text-[#D4AF37] text-lg"></i>
+                <i class="fas fa-network-wired text-[#D4AF37] text-lg"></i>
               </div>
                       <div>
-                <h4 class="font-bold text-lg mb-1 text-white" data-i18n="homepage.token.role2Title">传承贡献者</h4>
+                <h4 class="font-bold text-lg mb-1 text-white" data-i18n="homepage.token.role2Title">链上共识验证</h4>
                 <p class="text-gray-400 text-sm sm:text-base leading-relaxed" data-i18n="homepage.token.role2DescFull">
-                  每日签到、分享故事、创作内容 — 每一次参与都会获得通证奖励。守护文化的过程，也是价值累积的过程
+                  通过多节点共识完成技术层面有效性验证，激励确权机制实现参与价值的精准锚定与权益落地
                 </p>
               </div>
                       </div>
                       
             <div class="flex items-start space-x-4 group">
               <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4AF37]/20 to-[#9E2A2B]/20 flex items-center justify-center flex-shrink-0 mt-1 group-hover:scale-110 transition border border-[#D4AF37]/30">
-                <i class="fas fa-star text-[#D4AF37] text-lg"></i>
+                <i class="fas fa-fingerprint text-[#D4AF37] text-lg"></i>
               </div>
                       <div>
-                <h4 class="font-bold text-lg mb-1 text-white" data-i18n="homepage.token.role3Title">文化收藏家</h4>
+                <h4 class="font-bold text-lg mb-1 text-white" data-i18n="homepage.token.role3Title">永续数字凭证</h4>
                 <p class="text-gray-400 text-sm sm:text-base leading-relaxed" data-i18n="homepage.token.role3DescFull">
-                  优先购买限量 NFT 真品、参加线下非遗体验、与 AI 匠人深度对话 — 你的钱包，就是博物馆
+                  经哈希算法不可逆铭刻，纳入分布式存证体系，成为不可篡改、终身持有的文化身份权威见证
                 </p>
                           </div>
                           </div>
@@ -715,52 +725,16 @@
         
         <!-- 右侧卡片 -->
         <div class="relative">
-          <div class="card-glass p-8 sm:p-12 rounded-3xl text-center border-2 border-[#D4AF37]/20">
-            <div class="mb-8">
-              <div class="w-28 h-28 sm:w-32 sm:h-32 mx-auto bg-gradient-to-br from-[#D4AF37] to-[#9E2A2B] rounded-full flex items-center justify-center mb-6 float-animation pulse-glow">
-                <i class="fas fa-coins text-white text-4xl sm:text-5xl"></i>
-              </div>
-              <h3 class="text-2xl sm:text-3xl font-black gradient-text mb-2">$QI Token</h3>
-              <p class="text-gray-400 text-sm">Web3 Community Token</p>
-              <div class="mt-3 flex items-center justify-center gap-2">
-                <span class="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-xs border border-blue-400/30">
-                  <i class="fab fa-ethereum mr-1"></i>ERC-20
-                </span>
-                <span class="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-xs border border-purple-400/30">
-                  Base Chain
-                </span>
-                      </div>
-                    </div>
+          <div class="h-full flex items-center justify-center">
+            
         
-            <!-- 代币数据 -->
-            <div class="grid grid-cols-2 gap-3 sm:gap-4 text-left mb-8">
-              <div class="bg-white/5 p-3 sm:p-4 rounded-xl border border-white/10 hover:border-[#D4AF37]/30 transition">
-                <div class="text-gray-400 text-xs sm:text-sm mb-1" data-i18n="homepage.token.stat1Label">总供应量</div>
-                <div class="text-xl sm:text-2xl font-bold text-white">1B</div>
-                        </div>
-              <div class="bg-white/5 p-3 sm:p-4 rounded-xl border border-white/10 hover:border-[#D4AF37]/30 transition">
-                <div class="text-gray-400 text-xs sm:text-sm mb-1" data-i18n="homepage.token.stat2Label">流通量</div>
-                <div class="text-xl sm:text-2xl font-bold text-white">10M</div>
-                      </div>
-              <div class="bg-white/5 p-3 sm:p-4 rounded-xl border border-white/10 hover:border-[#D4AF37]/30 transition">
-                <div class="text-gray-400 text-xs sm:text-sm mb-1" data-i18n="homepage.token.stat3Label">持有人</div>
-                <div class="text-xl sm:text-2xl font-bold text-white">1.2K</div>
-                    </div>
-              <div class="bg-white/5 p-3 sm:p-4 rounded-xl border border-white/10 hover:border-[#D4AF37]/30 transition">
-                <div class="text-gray-400 text-xs sm:text-sm mb-1" data-i18n="homepage.token.stat4Label">链上网络</div>
-                <div class="text-xl sm:text-2xl font-bold text-white">Base</div>
-                  </div>
-            </div>
-        
-            <!-- 领取通证按钮 (保持不变) -->
-            <a href="./checkin/?event=airdrop-2025&code=airdrop-2025" class="block px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#9E2A2B] rounded-full text-white text-base sm:text-lg font-bold hover:opacity-90 transition shadow-2xl pulse-glow">
-              <i class="fas fa-gift mr-2"></i><span data-i18n="homepage.token.claimButton">领取通证空投</span>
+            
+            
+            <!-- 领取通证按钮 -->
+            <a href="./checkin/?event=airdrop-2025&code=airdrop-2025" class="inline-flex items-center justify-center w-full sm:w-auto px-5 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-[#D4AF37] to-[#9E2A2B] rounded-full text-white text-base sm:text-lg font-bold hover:opacity-90 transition shadow-2xl pulse-glow">
+              <i class="fas fa-gift mr-2"></i><span data-i18n="homepage.token.claimButton">铭刻参与凭证</span>
             </a>
             
-            <p class="mt-4 text-xs text-gray-500">
-              <i class="fas fa-calendar-check mr-1"></i>
-              <span data-i18n="homepage.token.claimDesc">每日签到可领取 1000 $QI</span>
-            </p>
           </div>
         </div>
       </div>
@@ -1075,9 +1049,65 @@
   </footer>
 
   <script>
-    // 移动端菜单切换
-    document.getElementById('mobileMenuBtn').addEventListener('click', function() {
-      document.getElementById('mobileMenu').classList.toggle('hidden');
+    // 移动端下拉菜单控制（简化版）
+    document.addEventListener('DOMContentLoaded', function() {
+      const mobileMenu = document.getElementById('mobileMenu');
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      let isMenuOpen = false;
+      
+      // 切换菜单
+      function toggleMobileMenu() {
+        isMenuOpen = !isMenuOpen;
+        
+        if (isMenuOpen) {
+          // 打开菜单
+          mobileMenu.style.maxHeight = '80vh';
+          mobileMenuBtn.querySelector('i').classList.remove('fa-bars');
+          mobileMenuBtn.querySelector('i').classList.add('fa-times');
+          console.log('✅ Mobile menu opened');
+        } else {
+          // 关闭菜单
+          mobileMenu.style.maxHeight = '0';
+          mobileMenuBtn.querySelector('i').classList.remove('fa-times');
+          mobileMenuBtn.querySelector('i').classList.add('fa-bars');
+          console.log('✅ Mobile menu closed');
+        }
+      }
+      
+      // 关闭菜单（供外部调用）
+      function closeMobileMenu() {
+        if (isMenuOpen) {
+          toggleMobileMenu();
+        }
+      }
+      
+      // 暴露到全局，供语言切换器调用
+      window.closeMobileMenu = closeMobileMenu;
+      
+      // 点击汉堡按钮切换菜单
+      if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', function(e) {
+          e.stopPropagation(); // 阻止事件冒泡
+          toggleMobileMenu();
+        });
+        console.log('✅ Mobile menu button listener attached');
+      }
+      
+      // 点击菜单内的导航链接后关闭菜单
+      document.querySelectorAll('.mobile-menu-link').forEach(link => {
+        link.addEventListener('click', function() {
+          closeMobileMenu();
+        });
+      });
+      
+      // 点击页面其他地方关闭菜单
+      document.addEventListener('click', function(e) {
+        if (isMenuOpen && 
+            !mobileMenu.contains(e.target) && 
+            !mobileMenuBtn.contains(e.target)) {
+          closeMobileMenu();
+        }
+      });
     });
     
     // 平滑滚动
@@ -1088,7 +1118,7 @@
         if (target) {
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
           // 关闭移动端菜单
-          document.getElementById('mobileMenu').classList.add('hidden');
+          closeMobileMenu();
         }
       });
     });
@@ -1369,12 +1399,12 @@
     })();
     </script>
     
-    <!-- 初始化 i18n，默认英文 -->
+    <!-- 初始化 i18n，自动跟随系统语言 -->
     <script>
       window.addEventListener('DOMContentLoaded', async () => {
         await initI18n({
-          defaultLocale: 'en',  // 设置默认语言为英文
-          autoDetect: false,     // 禁用自动检测，强制使用默认语言
+          defaultLocale: 'zh',   // 设置默认语言为中文（作为后备）
+          autoDetect: true,      // 启用自动检测，跟随系统语言
           translateOnInit: true,
           createSwitcher: true,
           switcherContainerId: 'languageSwitcher',
@@ -1386,7 +1416,7 @@
         });
         
         // 为移动端也创建语言切换器
-        if (window.i18n && document.getElementById('languageSwitcherMobile')) {
+        if (window.createLanguageSwitcher && document.getElementById('languageSwitcherMobile')) {
           window.createLanguageSwitcher('languageSwitcherMobile', {
             showFlag: true,
             showText: true,
@@ -1394,7 +1424,9 @@
           });
         }
         
-        console.log('Homepage i18n initialized, default language: English');
+        // 获取当前检测到的语言
+        const currentLocale = window.i18n ? window.i18n.locale : 'zh';
+        console.log('Homepage i18n initialized, detected language:', currentLocale);
       });
     </script>
           </body>

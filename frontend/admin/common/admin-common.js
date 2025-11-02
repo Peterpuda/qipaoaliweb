@@ -111,7 +111,14 @@ async function adminLogin() {
     const verifyData = await verifyResponse.json();
     
     if (verifyData.ok) {
-      setToken(verifyData.token);
+      // 使用带时间戳的 token 设置（如果 admin-auth.js 已加载）
+      if (window.adminAuth && window.adminAuth.setTokenWithTimestamp) {
+        window.adminAuth.setTokenWithTimestamp(verifyData.token);
+      } else {
+        setToken(verifyData.token);
+        // 手动设置时间戳
+        localStorage.setItem(ADMIN_CONFIG.ADMIN_TOKEN_KEY + '.timestamp', Date.now().toString());
+      }
       toast('管理员登录成功！', 'success');
       return true;
     } else {

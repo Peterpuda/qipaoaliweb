@@ -344,7 +344,8 @@
       "ecosystem": "Ecosystem",
       "governance": "Governance",
       "admin": "Admin",
-      "enter": "Enter Platform"
+      "enter": "Enter Platform",
+      "selectLanguage": "Select Language"
     },
     "title": "AI-Powered Cultural Globalization Platform",
     "description": "Integrating AI Intelligence and Web3 Technology to Preserve Global Intangible Cultural Heritage",
@@ -379,13 +380,14 @@
     },
     "token": {
       "communityEngagement": "Community Engagement",
-      "title": "$QI · Guardian's Certificate",
+      "title": "Elegant Community",
+      "communityIntro": "A blockchain-based identity system driven by cultural consensus. Every deep engagement undergoes cultural value verification first, then blockchain consensus validation, building a dual 'Culture + Technology' confirmation. Through incentive rights mechanisms, value is precisely anchored, immutably inscribed via hash algorithms, and transformed into perpetual digital credentials—this is the blockchain witness of cultural faith in the Web3 ecosystem.",
       "subtitle": "$QI is not a speculative token, but a proof of participation in cultural preservation",
-      "role1Title": "Cultural Decision Maker",
+      "role1Title": "Cultural Value Verification",
       "role1Desc": "Your vote shapes the future of culture",
-      "role2Title": "Heritage Contributor",
+      "role2Title": "On-Chain Consensus Validation",
       "role2Desc": "Daily check-ins, share stories, create content",
-      "role3Title": "Cultural Collector",
+      "role3Title": "Perpetual Digital Credentials",
       "role3Desc": "Priority access to limited NFT masterpieces, your wallet is a museum",
       "compliance": "Compliance Statement:",
       "stat1Label": "Total Supply",
@@ -396,13 +398,13 @@
       "proofText": "proof of participation in cultural preservation",
       "introText2": ". Issued on",
       "introText3": ", holding $QI means you become:",
-      "role1DescFull": "Which heritage projects deserve to be on-chain, how funds are allocated, how the future develops — your vote shapes the direction of culture. This is not a formality, but real decision-making power",
-      "role2DescFull": "Daily check-ins, sharing stories, creating content — every participation earns token rewards. The process of protecting culture is also the process of accumulating value",
-      "role3DescFull": "Priority access to limited NFT masterpieces, offline heritage experiences, deep conversations with AI artisans — your wallet is a museum",
+      "role1DescFull": "Deep participation aligns with ecosystem cultural orientation, verified through cultural dimension consistency to ensure high compatibility with the ecosystem core",
+      "role2DescFull": "Multi-node consensus completes technical validity verification, incentive rights mechanisms achieve precise anchoring of participation value and rights implementation",
+      "role3DescFull": "Immutably inscribed through hash algorithms, integrated into distributed evidence systems, becoming tamper-proof, lifelong cultural identity authoritative witness",
       "complianceLabel": "Compliance Statement:",
       "complianceText": "$QI is a community utility token, not a security and has no investment function. It does not support secondary market trading or transfer. It is only used for ecosystem governance and access rights.",
       "header": "Web3 Governance Token",
-      "claimButton": "Claim Token Airdrop",
+      "claimButton": "Inscribe Participation",
       "claimDesc": "Sign in daily to receive 1000 $QI"
     },
     "ecosystem": {
@@ -503,5 +505,34 @@
       "connector3": "holding",
       "connector4": "is"
     }
+  },
+  "global": {
+    "nav.mall": "Mall",
+    "nav.artisans": "Artisans",
+    "nav.dao": "Governance",
+    "nav.checkin": "Check-in",
+    "nav.rewards": "Rewards"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "loginTitle": "Admin Login",
+    "loginSubtitle": "Login with Web3 Wallet",
+    "walletStatus": "Wallet Status",
+    "notConnected": "Not Connected",
+    "connected": "Connected",
+    "loginButton": "Connect Wallet & Login",
+    "loginTip1": "⚠️ Only authorized admin wallets can login",
+    "loginTip2": "📝 Login means you agree to signature verification",
+    "backToHome": "Back to Home",
+    "logout": "Logout",
+    "loginSuccess": "Login Successful",
+    "loginFailed": "Login Failed",
+    "unauthorized": "Unauthorized wallet address",
+    "sessionExpired": "Session expired, please login again",
+    "operationCenter": "Node Operation Center",
+    "loggedIn": "Logged In",
+    "notLoggedIn": "Not Logged In",
+    "loginRequired": "Please login first",
+    "logoutSuccess": "Logged out successfully"
   }
 }

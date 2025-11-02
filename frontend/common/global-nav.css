@@ -1,0 +1,327 @@
+/**
+ * 全局导航栏样式
+ * 适用于所有应用层页面（商城、产品、DAO、匠人等）
+ * 主页黑金风格统一
+ */
+
+.global-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.global-nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+/* Logo 区域 */
+.global-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+
+.global-nav-logo:hover {
+  opacity: 0.8;
+}
+
+.global-nav-logo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #D4AF37 0%, #9E2A2B 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.global-nav-logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.global-nav-logo-title {
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #D4AF37, #9E2A2B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.global-nav-logo-subtitle {
+  font-size: 10px;
+  color: #999;
+  line-height: 1.2;
+}
+
+/* 导航菜单 */
+.global-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.global-nav-menu a {
+  color: #ccc;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.3s;
+  position: relative;
+  padding: 8px 0;
+}
+
+.global-nav-menu a:hover {
+  color: #D4AF37;
+}
+
+.global-nav-menu a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #D4AF37, #9E2A2B);
+  transition: width 0.3s;
+}
+
+.global-nav-menu a:hover::after,
+.global-nav-menu a.active::after {
+  width: 100%;
+}
+
+.global-nav-menu a.active {
+  color: #D4AF37;
+}
+
+/* 工具栏 */
+.global-nav-tools {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.global-nav-back-btn,
+.global-nav-home-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 16px;
+}
+
+.global-nav-back-btn:hover,
+.global-nav-home-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: #D4AF37;
+  transform: translateY(-2px);
+}
+
+.global-nav-wallet-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #9E2A2B, #D5BDAF);
+  color: white;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 14px rgba(158, 42, 43, 0.6);
+}
+
+.global-nav-wallet-btn:hover {
+  background: #7a1b1c;
+  transform: translateY(-2px);
+}
+
+.global-nav-wallet-btn.connected {
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid #D4AF37;
+  color: #D4AF37;
+  box-shadow: none;
+}
+
+/* 移动端菜单按钮 */
+.global-nav-mobile-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  font-size: 20px;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.global-nav-mobile-toggle:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: #D4AF37;
+}
+
+/* 移动端菜单 */
+.global-nav-mobile-menu {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 10, 0.98);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  z-index: 999;
+}
+
+.global-nav-mobile-menu.show {
+  max-height: 500px;
+}
+
+.global-nav-mobile-menu-content {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.global-nav-mobile-menu a {
+  color: #ccc;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.global-nav-mobile-menu a:hover,
+.global-nav-mobile-menu a.active {
+  background: rgba(212, 175, 55, 0.1);
+  color: #D4AF37;
+}
+
+.global-nav-mobile-menu a i {
+  width: 20px;
+  text-align: center;
+}
+
+/* 移动端工具栏 */
+.global-nav-mobile-tools {
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 响应式 */
+@media (max-width: 1024px) {
+  .global-nav-menu {
+    gap: 20px;
+  }
+  
+  .global-nav-menu a {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 768px) {
+  .global-nav-container {
+    padding: 0 16px;
+    height: 56px;
+  }
+  
+  .global-nav-logo-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  
+  .global-nav-logo-title {
+    font-size: 16px;
+  }
+  
+  .global-nav-logo-subtitle {
+    font-size: 9px;
+  }
+  
+  .global-nav-menu {
+    display: none;
+  }
+  
+  .global-nav-mobile-toggle {
+    display: flex;
+  }
+  
+  .global-nav-mobile-menu {
+    top: 56px;
+  }
+  
+  .global-nav-wallet-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .global-nav-back-btn,
+  .global-nav-home-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+}
+
+/* 页面内容顶部留白（避免被固定导航遮挡） */
+body.has-global-nav {
+  padding-top: 64px;
+}
+
+@media (max-width: 768px) {
+  body.has-global-nav {
+    padding-top: 56px;
+  }
+}
+
+/* 语言切换器容器（在导航栏中） */
+.global-nav-tools #languageSwitcher {
+  display: inline-block;
+}
+
