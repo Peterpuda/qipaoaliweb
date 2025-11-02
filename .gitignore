@@ -93,3 +93,9 @@ typechain-types/
 
 # Wrangler
 .wrangler/
+
+# 敏感配置文件
+deploy-config.sh
+DEPLOYMENT_READY.md
+*-config.sh
+*.secret
